@@ -264,6 +264,9 @@ select option{background:var(--bg3);}
 </nav>
 
 <script>
+// ── CONFIG ──
+const DS_KEY = "sk-2bcc88303629498791976689e32db13c"; // Reemplaza con tu API key de DeepSeek
+
 // ── STATE ──
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem('ms_meds')||'[]'),INT=[],ALM={},REC={},recog=null;
 
@@ -467,9 +470,9 @@ PACIENTE:
 SOLO JSON sin backticks:
 {"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"máx 3 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"..."}`;
   try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:prompt}]})});
+    const r=await fetch("https://little-voice-6621.mdq2804.workers.dev",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-v4-flash",max_tokens:800,messages:[{role:"user",content:prompt}]})});
     const d=await r.json();
-    const txt=d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const txt=d.choices[0].message.content.replace(/```json|```/g,'').trim();
     rResult(JSON.parse(txt));
   }catch(e){
     document.getElementById('trc').innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.85rem">Error al conectar con la IA.<br><small style="color:var(--mu)">${e.message}</small></div><button class="bsec" onclick="resetT()">← Reintentar</button></div>`;
@@ -519,9 +522,9 @@ async function buscarDrug(){
   if(!nm){toast('Escribe el nombre del medicamento');return;}
   document.getElementById('dr').innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Consultando información del fármaco...</div></div>`;
   try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:900,messages:[{role:"user",content:`Información farmacológica completa sobre: "${nm}". SOLO JSON sin backticks ni texto extra:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"..."}`}]})});
+    const r=await fetch("https://little-voice-6621.mdq2804.workers.dev",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-v4-flash",max_tokens:900,messages:[{role:"user",content:`Información farmacológica completa sobre: "${nm}". SOLO JSON sin backticks ni texto extra:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"..."}`}]})});
     const d=await r.json();
-    const inf=JSON.parse(d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,'').trim());
     document.getElementById('dr').innerHTML=`<div class="card">
       <div style="font-size:1.15rem;font-weight:700;margin-bottom:3px">${inf.nombre_comercial||nm}</div>
       <div style="font-size:.75rem;color:var(--mu);margin-bottom:12px">${inf.nombre_generico||''}</div>
@@ -608,9 +611,9 @@ async function checkInt(){
   if(INT.length<2)return;
   document.getElementById('ir').innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Verificando interacciones farmacológicas...</div></div>`;
   try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:900,messages:[{role:"user",content:`Analiza interacciones entre: ${INT.join(', ')}. SOLO JSON sin backticks:\n{"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]})});
+    const r=await fetch("https://little-voice-6621.mdq2804.workers.dev",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-v4-flash",max_tokens:900,messages:[{role:"user",content:`Analiza interacciones entre: ${INT.join(', ')}. SOLO JSON sin backticks:\n{"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]})});
     const d=await r.json();
-    const inf=JSON.parse(d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,'').trim());
     const cm={BAJO:'gn',MODERADO:'yw',ALTO:'rd',CONTRAINDICADO:'rd'};
     const im={BAJO:'✅',MODERADO:'⚠️',ALTO:'🚨',CONTRAINDICADO:'⛔'};
     document.getElementById('ir').innerHTML=`<div class="card">
