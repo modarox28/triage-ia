@@ -1,4 +1,4 @@
-const CACHE = 'media-suite-v3';
+const CACHE = 'media-suite-v4';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -25,11 +25,23 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  // Network first para index.html — siempre trae la versión más nueva
+  if (e.request.url.includes('index.html') || e.request.url.endsWith('/')) {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return res;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Cache first para el resto
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
-        if (res && res.status === 200 && res.type === 'basic') {
+        if (res && res.status === 200) {
           const clone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
