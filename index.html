@@ -287,6 +287,128 @@ select option{background:var(--bg3);}
 #qrCanvas{border-radius:12px;margin:0 auto 16px;display:block;}
 /* ── PROFILE ── */
 .prof-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:#000;margin:0 auto 12px;}
+
+/* ── PREMIUM ANIMATIONS ── */
+*{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+
+/* Smooth transitions everywhere */
+button,.opt,.card,.nb,.snav-btn,.htab,.auth-tab{transition:all .22s cubic-bezier(.4,0,.2,1)!important;}
+
+/* Button press effect */
+button:active{transform:scale(.96)!important;}
+.bpri:active,.bnxt:active,.auth-btn:active{transform:scale(.97) translateY(0)!important;}
+
+/* Card hover lift */
+.card{transition:box-shadow .3s cubic-bezier(.4,0,.2,1),transform .3s cubic-bezier(.4,0,.2,1),background .3s!important;}
+.card:hover{box-shadow:0 8px 40px rgba(0,0,0,.25);transform:translateY(-1px);}
+
+/* Screen transitions */
+.sc{transition:opacity .3s ease,transform .3s cubic-bezier(.4,0,.2,1);}
+.sc.on{animation:slideIn .32s cubic-bezier(.4,0,.2,1);}
+@keyframes slideIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+
+/* Auth box entrance */
+.auth-box{animation:authIn .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes authIn{from{opacity:0;transform:translateY(32px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Logo shimmer */
+.top-logo b,.auth-logo b{
+  background:linear-gradient(90deg,var(--cy),#fff,var(--cy));
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+
+/* Ripple on buttons */
+.bpri,.auth-btn,.bnxt{position:relative;overflow:hidden;}
+.bpri::after,.auth-btn::after,.bnxt::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle,rgba(255,255,255,.3) 0%,transparent 70%);
+  opacity:0;transition:opacity .3s;
+}
+.bpri:hover::after,.auth-btn:hover::after,.bnxt:hover::after{opacity:1;}
+
+/* Opt hover glow */
+.opt:hover{box-shadow:0 0 0 1px var(--cy),0 4px 16px rgba(0,200,240,.12);}
+.opt.sel{box-shadow:0 0 0 2px var(--cy),0 4px 20px rgba(0,200,240,.2);}
+.opt.selm{box-shadow:0 0 0 2px var(--gn),0 4px 20px rgba(0,224,122,.2);}
+
+/* Nav indicator smooth */
+.nind{transition:all .35s cubic-bezier(.4,0,.2,1)!important;}
+
+/* Result card entrance */
+.rcard{animation:rcardIn .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes rcardIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+/* Sidebar nav item */
+.snav-btn{border-radius:0 10px 10px 0;margin-right:12px;}
+.snav-btn:hover{padding-left:24px;}
+.snav-btn.on{padding-left:24px;}
+
+/* Input focus glow */
+input:focus,.fi:focus,select:focus{
+  box-shadow:0 0 0 3px rgba(0,200,240,.15);
+}
+
+/* Toast slide */
+.toast{transition:all .3s cubic-bezier(.34,1.56,.64,1)!important;}
+
+/* Stat card */
+.stat-card{transition:all .25s cubic-bezier(.4,0,.2,1)!important;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.2);}
+.stat-num{animation:countUp .6s cubic-bezier(.4,0,.2,1);}
+@keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Theme toggle spin */
+#themeBtn{transition:all .4s cubic-bezier(.34,1.56,.64,1)!important;}
+#themeBtn:hover{transform:rotate(20deg) scale(1.1);}
+
+/* Modal entrance */
+.modal-box{animation:modalIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes modalIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+
+/* Lang selector */
+.lang-sel{
+  position:relative;display:inline-flex;align-items:center;gap:6px;
+  padding:5px 11px;border-radius:20px;
+  border:1px solid var(--bd);background:var(--bg3);
+  font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;
+  cursor:pointer;color:var(--mu);transition:all .2s;
+}
+.lang-sel:hover{border-color:var(--cy);color:var(--cy);}
+.lang-dropdown{
+  position:absolute;top:calc(100% + 6px);right:0;
+  background:var(--bg2);border:1px solid var(--bd);
+  border-radius:12px;padding:6px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
+  z-index:500;min-width:140px;
+  animation:dropIn .2s cubic-bezier(.4,0,.2,1);
+  display:none;
+}
+.lang-dropdown.on{display:block;}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.lang-opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.82rem;transition:all .15s;color:var(--tx);}
+.lang-opt:hover{background:var(--cy-a);color:var(--cy);}
+.lang-opt.on{background:var(--cy-a);color:var(--cy);font-weight:600;}
+
+/* Stagger children animation */
+.opts .opt:nth-child(1){animation-delay:.03s}
+.opts .opt:nth-child(2){animation-delay:.06s}
+.opts .opt:nth-child(3){animation-delay:.09s}
+.opts .opt:nth-child(4){animation-delay:.12s}
+.opts .opt:nth-child(5){animation-delay:.15s}
+.opts .opt:nth-child(6){animation-delay:.18s}
+.opts .opt:nth-child(7){animation-delay:.21s}
+.opts .opt{animation:optIn .3s cubic-bezier(.4,0,.2,1) both;}
+@keyframes optIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+
+/* Progress bar glow */
+.pgf{box-shadow:0 0 8px var(--cy);}
+
+/* Floating label effect on inputs */
+.vf input:focus{border-color:var(--cy);box-shadow:0 0 0 3px rgba(0,200,240,.12);}
+
 </style>
 </head>
 <body>
@@ -309,7 +431,20 @@ select option{background:var(--bg3);}
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
     <div class="auth-logo"><b>Med</b>IA<s> Suite</s></div>
-    <div class="auth-sub">Sistema médico inteligente</div>
+    <div class="auth-sub" id="authSubTxt">Sistema médico inteligente</div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div class="lang-sel" style="display:inline-flex" id="authLangSel" onclick="toggleAuthLangMenu()">
+        <span id="authLangFlag">🌐</span>
+        <span id="authLangCode">ES</span>
+        <div class="lang-dropdown" id="authLangDropdown">
+          <div class="lang-opt on" onclick="setLang('es',event)">🇪🇸 Español</div>
+          <div class="lang-opt" onclick="setLang('en',event)">🇺🇸 English</div>
+          <div class="lang-opt" onclick="setLang('pt',event)">🇧🇷 Português</div>
+          <div class="lang-opt" onclick="setLang('fr',event)">🇫🇷 Français</div>
+          <div class="lang-opt" onclick="setLang('de',event)">🇩🇪 Deutsch</div>
+        </div>
+      </div>
+    </div>
     <div class="auth-tabs">
       <button class="auth-tab on" id="atab-in" onclick="authTab('in')">Iniciar sesión</button>
       <button class="auth-tab" id="atab-up" onclick="authTab('up')">Registrarse</button>
@@ -360,6 +495,17 @@ select option{background:var(--bg3);}
     <div class="top-bar">
       <div class="top-logo"><b>Med</b>IA<s> Suite</s></div>
       <div class="top-right">
+        <div class="lang-sel" id="langSel" onclick="toggleLangMenu()">
+          <span id="langFlag">🌐</span>
+          <span id="langCode">ES</span>
+          <div class="lang-dropdown" id="langDropdown">
+            <div class="lang-opt on" onclick="setLang('es',event)">🇪🇸 Español</div>
+            <div class="lang-opt" onclick="setLang('en',event)">🇺🇸 English</div>
+            <div class="lang-opt" onclick="setLang('pt',event)">🇧🇷 Português</div>
+            <div class="lang-opt" onclick="setLang('fr',event)">🇫🇷 Français</div>
+            <div class="lang-opt" onclick="setLang('de',event)">🇩🇪 Deutsch</div>
+          </div>
+        </div>
         <span class="role-badge" id="roleBadge"></span>
         <button class="icon-btn" onclick="toggleTheme()" title="Cambiar tema" id="themeBtn">🌙</button>
         <button class="icon-btn" onclick="doSignOut()" title="Cerrar sesión">⬅</button>
@@ -914,7 +1060,129 @@ function rAnalyzing(){
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .2s infinite;display:inline-block"></span>
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .4s infinite;display:inline-block"></span>
     </div>
-    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}</style>
+    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+/* ── PREMIUM ANIMATIONS ── */
+*{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+
+/* Smooth transitions everywhere */
+button,.opt,.card,.nb,.snav-btn,.htab,.auth-tab{transition:all .22s cubic-bezier(.4,0,.2,1)!important;}
+
+/* Button press effect */
+button:active{transform:scale(.96)!important;}
+.bpri:active,.bnxt:active,.auth-btn:active{transform:scale(.97) translateY(0)!important;}
+
+/* Card hover lift */
+.card{transition:box-shadow .3s cubic-bezier(.4,0,.2,1),transform .3s cubic-bezier(.4,0,.2,1),background .3s!important;}
+.card:hover{box-shadow:0 8px 40px rgba(0,0,0,.25);transform:translateY(-1px);}
+
+/* Screen transitions */
+.sc{transition:opacity .3s ease,transform .3s cubic-bezier(.4,0,.2,1);}
+.sc.on{animation:slideIn .32s cubic-bezier(.4,0,.2,1);}
+@keyframes slideIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+
+/* Auth box entrance */
+.auth-box{animation:authIn .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes authIn{from{opacity:0;transform:translateY(32px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Logo shimmer */
+.top-logo b,.auth-logo b{
+  background:linear-gradient(90deg,var(--cy),#fff,var(--cy));
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+
+/* Ripple on buttons */
+.bpri,.auth-btn,.bnxt{position:relative;overflow:hidden;}
+.bpri::after,.auth-btn::after,.bnxt::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle,rgba(255,255,255,.3) 0%,transparent 70%);
+  opacity:0;transition:opacity .3s;
+}
+.bpri:hover::after,.auth-btn:hover::after,.bnxt:hover::after{opacity:1;}
+
+/* Opt hover glow */
+.opt:hover{box-shadow:0 0 0 1px var(--cy),0 4px 16px rgba(0,200,240,.12);}
+.opt.sel{box-shadow:0 0 0 2px var(--cy),0 4px 20px rgba(0,200,240,.2);}
+.opt.selm{box-shadow:0 0 0 2px var(--gn),0 4px 20px rgba(0,224,122,.2);}
+
+/* Nav indicator smooth */
+.nind{transition:all .35s cubic-bezier(.4,0,.2,1)!important;}
+
+/* Result card entrance */
+.rcard{animation:rcardIn .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes rcardIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+/* Sidebar nav item */
+.snav-btn{border-radius:0 10px 10px 0;margin-right:12px;}
+.snav-btn:hover{padding-left:24px;}
+.snav-btn.on{padding-left:24px;}
+
+/* Input focus glow */
+input:focus,.fi:focus,select:focus{
+  box-shadow:0 0 0 3px rgba(0,200,240,.15);
+}
+
+/* Toast slide */
+.toast{transition:all .3s cubic-bezier(.34,1.56,.64,1)!important;}
+
+/* Stat card */
+.stat-card{transition:all .25s cubic-bezier(.4,0,.2,1)!important;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.2);}
+.stat-num{animation:countUp .6s cubic-bezier(.4,0,.2,1);}
+@keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Theme toggle spin */
+#themeBtn{transition:all .4s cubic-bezier(.34,1.56,.64,1)!important;}
+#themeBtn:hover{transform:rotate(20deg) scale(1.1);}
+
+/* Modal entrance */
+.modal-box{animation:modalIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes modalIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+
+/* Lang selector */
+.lang-sel{
+  position:relative;display:inline-flex;align-items:center;gap:6px;
+  padding:5px 11px;border-radius:20px;
+  border:1px solid var(--bd);background:var(--bg3);
+  font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;
+  cursor:pointer;color:var(--mu);transition:all .2s;
+}
+.lang-sel:hover{border-color:var(--cy);color:var(--cy);}
+.lang-dropdown{
+  position:absolute;top:calc(100% + 6px);right:0;
+  background:var(--bg2);border:1px solid var(--bd);
+  border-radius:12px;padding:6px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
+  z-index:500;min-width:140px;
+  animation:dropIn .2s cubic-bezier(.4,0,.2,1);
+  display:none;
+}
+.lang-dropdown.on{display:block;}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.lang-opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.82rem;transition:all .15s;color:var(--tx);}
+.lang-opt:hover{background:var(--cy-a);color:var(--cy);}
+.lang-opt.on{background:var(--cy-a);color:var(--cy);font-weight:600;}
+
+/* Stagger children animation */
+.opts .opt:nth-child(1){animation-delay:.03s}
+.opts .opt:nth-child(2){animation-delay:.06s}
+.opts .opt:nth-child(3){animation-delay:.09s}
+.opts .opt:nth-child(4){animation-delay:.12s}
+.opts .opt:nth-child(5){animation-delay:.15s}
+.opts .opt:nth-child(6){animation-delay:.18s}
+.opts .opt:nth-child(7){animation-delay:.21s}
+.opts .opt{animation:optIn .3s cubic-bezier(.4,0,.2,1) both;}
+@keyframes optIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+
+/* Progress bar glow */
+.pgf{box-shadow:0 0 8px var(--cy);}
+
+/* Floating label effect on inputs */
+.vf input:focus{border-color:var(--cy);box-shadow:0 0 0 3px rgba(0,200,240,.12);}
+
+</style>
     <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--mu);letter-spacing:2px">EVALUANDO RIESGO CLÍNICO</div>
   </div>`;
   callAI();
@@ -1054,6 +1322,183 @@ document.getElementById('aPass').addEventListener('keypress',e=>{if(e.key==='Ent
 
 // ── MEDS INIT ──
 MEDS.forEach(m=>{if(m.active)sAlarm(m);});
+
+
+// ── INTERNATIONALIZATION ──
+const I18N = {
+  es:{
+    appSub:'Sistema médico inteligente',
+    login:'Iniciar sesión',register:'Registrarse',
+    email:'Correo electrónico',password:'Contraseña',fullname:'Nombre completo',
+    continue:'Continuar →',orWith:'o',withGoogle:'Continuar con Google',
+    patientQR:'👤 Soy paciente — tengo código QR',
+    triage:'Triage',meds:'Meds',dashboard:'Dashboard',history:'Historial',profile:'Perfil',
+    search:'Buscar',myMeds:'Mis meds',alerts:'Alertas',interact:'Inter.',
+    searchDrug:'Buscar medicamento',consultAI:'Consultar con IA',
+    newMed:'Nuevo medicamento',medName:'Nombre',dose:'Dosis',freq:'Frecuencia',
+    hour:'Hora',notes:'Notas',addMed:'+ Agregar',
+    checkInteract:'Verificar con IA',addToList:'+ Agregar a lista',
+    verify:'Verificar con IA',
+    patient:'Paciente',symptoms:'Síntomas',vitals:'Vitales',result:'Resultado',
+    step:'Paso',of:'de',back:'← Atrás',analyze:'Analizar →',continueBtn:'Continuar →',
+    signOut:'⬅ Cerrar sesión',changeTheme:'Cambiar tema',
+    recentTriages:'Últimos triages',userMgmt:'Gestión de usuarios',
+    triageHistory:'Historial de triages',
+    noData:'Sin datos aún.',
+    disclaimer:'⚕ Herramienta de apoyo. Decisión final corresponde al personal médico.',
+    newPatient:'← Nuevo paciente',install:'Instalar MedIA Suite',installSub:'Instala la app en tu dispositivo',installBtn:'Instalar',
+    reminders:'Recordatorios de hoy',alarmsNote:'Las alarmas suenan mientras la app está abierta.',
+  },
+  en:{
+    appSub:'Intelligent medical system',
+    login:'Sign in',register:'Sign up',
+    email:'Email address',password:'Password',fullname:'Full name',
+    continue:'Continue →',orWith:'or',withGoogle:'Continue with Google',
+    patientQR:'👤 I am a patient — I have a QR code',
+    triage:'Triage',meds:'Meds',dashboard:'Dashboard',history:'History',profile:'Profile',
+    search:'Search',myMeds:'My meds',alerts:'Alerts',interact:'Interact.',
+    searchDrug:'Search medication',consultAI:'Consult AI',
+    newMed:'New medication',medName:'Name',dose:'Dose',freq:'Frequency',
+    hour:'Time',notes:'Notes',addMed:'+ Add',
+    checkInteract:'Check with AI',addToList:'+ Add to list',
+    verify:'Verify with AI',
+    patient:'Patient',symptoms:'Symptoms',vitals:'Vitals',result:'Result',
+    step:'Step',of:'of',back:'← Back',analyze:'Analyze →',continueBtn:'Continue →',
+    signOut:'⬅ Sign out',changeTheme:'Change theme',
+    recentTriages:'Recent triages',userMgmt:'User management',
+    triageHistory:'Triage history',
+    noData:'No data yet.',
+    disclaimer:'⚕ Support tool. Final decision belongs to medical staff.',
+    newPatient:'← New patient',install:'Install MedIA Suite',installSub:'Install the app on your device',installBtn:'Install',
+    reminders:'Today's reminders',alarmsNote:'Alarms ring while the app is open.',
+  },
+  pt:{
+    appSub:'Sistema médico inteligente',
+    login:'Entrar',register:'Registrar',
+    email:'Endereço de e-mail',password:'Senha',fullname:'Nome completo',
+    continue:'Continuar →',orWith:'ou',withGoogle:'Continuar com Google',
+    patientQR:'👤 Sou paciente — tenho código QR',
+    triage:'Triagem',meds:'Meds',dashboard:'Dashboard',history:'Histórico',profile:'Perfil',
+    search:'Buscar',myMeds:'Meus meds',alerts:'Alertas',interact:'Interaç.',
+    searchDrug:'Buscar medicamento',consultAI:'Consultar IA',
+    newMed:'Novo medicamento',medName:'Nome',dose:'Dose',freq:'Frequência',
+    hour:'Hora',notes:'Notas',addMed:'+ Adicionar',
+    checkInteract:'Verificar com IA',addToList:'+ Adicionar à lista',
+    verify:'Verificar com IA',
+    patient:'Paciente',symptoms:'Sintomas',vitals:'Vitais',result:'Resultado',
+    step:'Passo',of:'de',back:'← Voltar',analyze:'Analisar →',continueBtn:'Continuar →',
+    signOut:'⬅ Sair',changeTheme:'Mudar tema',
+    recentTriages:'Últimas triagens',userMgmt:'Gestão de usuários',
+    triageHistory:'Histórico de triagens',
+    noData:'Sem dados ainda.',
+    disclaimer:'⚕ Ferramenta de apoio. Decisão final cabe à equipe médica.',
+    newPatient:'← Novo paciente',install:'Instalar MedIA Suite',installSub:'Instale o app no seu dispositivo',installBtn:'Instalar',
+    reminders:'Lembretes de hoje',alarmsNote:'Os alarmes soam enquanto o app está aberto.',
+  },
+  fr:{
+    appSub:'Système médical intelligent',
+    login:'Se connecter',register:"S'inscrire",
+    email:'Adresse e-mail',password:'Mot de passe',fullname:'Nom complet',
+    continue:'Continuer →',orWith:'ou',withGoogle:'Continuer avec Google',
+    patientQR:'👤 Je suis patient — j'ai un code QR',
+    triage:'Triage',meds:'Méds',dashboard:'Tableau de bord',history:'Historique',profile:'Profil',
+    search:'Chercher',myMeds:'Mes méds',alerts:'Alertes',interact:'Interact.',
+    searchDrug:'Rechercher un médicament',consultAI:'Consulter l'IA',
+    newMed:'Nouveau médicament',medName:'Nom',dose:'Dose',freq:'Fréquence',
+    hour:'Heure',notes:'Notes',addMed:'+ Ajouter',
+    checkInteract:"Vérifier avec l'IA",addToList:'+ Ajouter à la liste',
+    verify:"Vérifier avec l'IA",
+    patient:'Patient',symptoms:'Symptômes',vitals:'Signes vitaux',result:'Résultat',
+    step:'Étape',of:'sur',back:'← Retour',analyze:'Analyser →',continueBtn:'Continuer →',
+    signOut:'⬅ Se déconnecter',changeTheme:'Changer le thème',
+    recentTriages:'Derniers triages',userMgmt:'Gestion des utilisateurs',
+    triageHistory:'Historique des triages',
+    noData:'Pas encore de données.',
+    disclaimer:'⚕ Outil d'aide. La décision finale appartient au personnel médical.',
+    newPatient:'← Nouveau patient',install:'Installer MedIA Suite',installSub:"Installez l'app sur votre appareil",installBtn:'Installer',
+    reminders:"Rappels d'aujourd'hui",alarmsNote:"Les alarmes sonnent tant que l'app est ouverte.",
+  },
+  de:{
+    appSub:'Intelligentes medizinisches System',
+    login:'Anmelden',register:'Registrieren',
+    email:'E-Mail-Adresse',password:'Passwort',fullname:'Vollständiger Name',
+    continue:'Weiter →',orWith:'oder',withGoogle:'Mit Google fortfahren',
+    patientQR:'👤 Ich bin Patient — ich habe einen QR-Code',
+    triage:'Triage',meds:'Meds',dashboard:'Dashboard',history:'Verlauf',profile:'Profil',
+    search:'Suchen',myMeds:'Meine Meds',alerts:'Alarme',interact:'Interakt.',
+    searchDrug:'Medikament suchen',consultAI:'KI befragen',
+    newMed:'Neues Medikament',medName:'Name',dose:'Dosis',freq:'Häufigkeit',
+    hour:'Uhrzeit',notes:'Notizen',addMed:'+ Hinzufügen',
+    checkInteract:'Mit KI prüfen',addToList:'+ Zur Liste hinzufügen',
+    verify:'Mit KI prüfen',
+    patient:'Patient',symptoms:'Symptome',vitals:'Vitalzeichen',result:'Ergebnis',
+    step:'Schritt',of:'von',back:'← Zurück',analyze:'Analysieren →',continueBtn:'Weiter →',
+    signOut:'⬅ Abmelden',changeTheme:'Design wechseln',
+    recentTriages:'Letzte Triagen',userMgmt:'Benutzerverwaltung',
+    triageHistory:'Triage-Verlauf',
+    noData:'Noch keine Daten.',
+    disclaimer:'⚕ Unterstützungswerkzeug. Endentscheidung liegt beim medizinischen Personal.',
+    newPatient:'← Neuer Patient',install:'MedIA Suite installieren',installSub:'App auf Ihrem Gerät installieren',installBtn:'Installieren',
+    reminders:'Heutige Erinnerungen',alarmsNote:'Alarme klingen, solange die App geöffnet ist.',
+  }
+};
+
+const LANG_FLAGS = {es:'🇪🇸',en:'🇺🇸',pt:'🇧🇷',fr:'🇫🇷',de:'🇩🇪'};
+const LANG_NAMES = {es:'ES',en:'EN',pt:'PT',fr:'FR',de:'DE'};
+let currentLang = localStorage.getItem('ms_lang') || 'es';
+
+function t(key){return (I18N[currentLang]||I18N.es)[key]||key;}
+
+function setLang(lang, e){
+  if(e){e.stopPropagation();}
+  currentLang = lang;
+  localStorage.setItem('ms_lang', lang);
+  // Update all lang selectors
+  ['langFlag','authLangFlag'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=LANG_FLAGS[lang]||'🌐';});
+  ['langCode','authLangCode'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=LANG_NAMES[lang]||'ES';});
+  // Update active state in dropdowns
+  document.querySelectorAll('.lang-opt').forEach(o=>{
+    o.classList.toggle('on', o.textContent.includes(LANG_NAMES[lang])||o.getAttribute('onclick')?.includes("'"+lang+"'"));
+  });
+  // Close dropdowns
+  document.querySelectorAll('.lang-dropdown').forEach(d=>d.classList.remove('on'));
+  // Apply translations
+  applyTranslations();
+}
+
+function applyTranslations(){
+  const L = I18N[currentLang]||I18N.es;
+  // Auth screen
+  const authSubEl = document.getElementById('authSubTxt');
+  if(authSubEl) authSubEl.textContent = L.appSub;
+  const atIn = document.getElementById('atab-in');
+  if(atIn) atIn.textContent = L.login;
+  const atUp = document.getElementById('atab-up');
+  if(atUp) atUp.textContent = L.register;
+  // Dynamic elements via data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(L[key]) el.textContent = L[key];
+  });
+  // Rebuild nav if app is showing
+  if(currentUser) buildNav();
+}
+
+function toggleLangMenu(){
+  document.getElementById('langDropdown').classList.toggle('on');
+}
+function toggleAuthLangMenu(){
+  document.getElementById('authLangDropdown').classList.toggle('on');
+}
+// Close dropdowns when clicking outside
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.lang-sel')){
+    document.querySelectorAll('.lang-dropdown').forEach(d=>d.classList.remove('on'));
+  }
+});
+
+// Apply on load
+setLang(currentLang);
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 </script>
