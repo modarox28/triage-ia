@@ -445,6 +445,138 @@ select option{background:var(--bg3);}
 #qrCanvas{border-radius:12px;margin:0 auto 16px;display:block;}
 /* ── PROFILE ── */
 .prof-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:#000;margin:0 auto 12px;}
+
+/* ==== FIX RESPONSIVE + AUTH ==== */
+html,body{
+  overflow-x:hidden !important;
+  width:100%;
+}
+
+*{
+  max-width:100%;
+}
+
+body{
+  padding-left:14px !important;
+  padding-right:14px !important;
+}
+
+.main-wrap,
+.hero-wrap,
+.auth-wrap,
+.landing-wrap,
+.top-wrap{
+  width:100% !important;
+  max-width:1200px !important;
+  margin:0 auto !important;
+  display:flex !important;
+  flex-wrap:wrap !important;
+  justify-content:center !important;
+  align-items:center !important;
+  gap:24px !important;
+}
+
+.left-panel,
+.right-panel,
+.auth-panel,
+.login-panel,
+.mockup,
+.phone,
+.phone-wrap{
+  position:relative !important;
+  transform:none !important;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+}
+
+.auth-card,
+.auth-box,
+.login-box,
+.panel-auth{
+  z-index:999 !important;
+  position:relative !important;
+  pointer-events:auto !important;
+}
+
+.decor,
+.glow,
+.lines,
+.bg-shape,
+.floating,
+.absolute,
+.overlay{
+  pointer-events:none !important;
+}
+
+button,
+a,
+input,
+select{
+  pointer-events:auto !important;
+}
+
+@media (max-width: 900px){
+
+  body{
+    padding-top:24px !important;
+  }
+
+  .hero-title{
+    font-size:2.5rem !important;
+    text-align:center !important;
+  }
+
+  .hero-sub{
+    text-align:center !important;
+    margin-bottom:20px !important;
+  }
+
+  .app-card,
+  .auth-card,
+  .login-box,
+  .panel-auth{
+    width:100% !important;
+    max-width:420px !important;
+    margin:0 auto !important;
+  }
+
+  .side-panel,
+  .preview-panel,
+  .mockup{
+    display:none !important;
+  }
+
+  .bottom-nav{
+    position:sticky !important;
+    bottom:0 !important;
+  }
+}
+
+@media (max-width: 600px){
+
+  .hero-title{
+    font-size:2rem !important;
+  }
+
+  .hero-sub{
+    font-size:.9rem !important;
+  }
+
+  input,
+  button,
+  select{
+    min-height:48px !important;
+  }
+
+  .card,
+  .app-card{
+    padding:18px !important;
+    border-radius:18px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1124,7 +1256,139 @@ function rAnalyzing(){
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .2s infinite;display:inline-block"></span>
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .4s infinite;display:inline-block"></span>
     </div>
-    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}</style>
+    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+/* ==== FIX RESPONSIVE + AUTH ==== */
+html,body{
+  overflow-x:hidden !important;
+  width:100%;
+}
+
+*{
+  max-width:100%;
+}
+
+body{
+  padding-left:14px !important;
+  padding-right:14px !important;
+}
+
+.main-wrap,
+.hero-wrap,
+.auth-wrap,
+.landing-wrap,
+.top-wrap{
+  width:100% !important;
+  max-width:1200px !important;
+  margin:0 auto !important;
+  display:flex !important;
+  flex-wrap:wrap !important;
+  justify-content:center !important;
+  align-items:center !important;
+  gap:24px !important;
+}
+
+.left-panel,
+.right-panel,
+.auth-panel,
+.login-panel,
+.mockup,
+.phone,
+.phone-wrap{
+  position:relative !important;
+  transform:none !important;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+}
+
+.auth-card,
+.auth-box,
+.login-box,
+.panel-auth{
+  z-index:999 !important;
+  position:relative !important;
+  pointer-events:auto !important;
+}
+
+.decor,
+.glow,
+.lines,
+.bg-shape,
+.floating,
+.absolute,
+.overlay{
+  pointer-events:none !important;
+}
+
+button,
+a,
+input,
+select{
+  pointer-events:auto !important;
+}
+
+@media (max-width: 900px){
+
+  body{
+    padding-top:24px !important;
+  }
+
+  .hero-title{
+    font-size:2.5rem !important;
+    text-align:center !important;
+  }
+
+  .hero-sub{
+    text-align:center !important;
+    margin-bottom:20px !important;
+  }
+
+  .app-card,
+  .auth-card,
+  .login-box,
+  .panel-auth{
+    width:100% !important;
+    max-width:420px !important;
+    margin:0 auto !important;
+  }
+
+  .side-panel,
+  .preview-panel,
+  .mockup{
+    display:none !important;
+  }
+
+  .bottom-nav{
+    position:sticky !important;
+    bottom:0 !important;
+  }
+}
+
+@media (max-width: 600px){
+
+  .hero-title{
+    font-size:2rem !important;
+  }
+
+  .hero-sub{
+    font-size:.9rem !important;
+  }
+
+  input,
+  button,
+  select{
+    min-height:48px !important;
+  }
+
+  .card,
+  .app-card{
+    padding:18px !important;
+    border-radius:18px !important;
+  }
+}
+
+</style>
     <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--mu);letter-spacing:2px">EVALUANDO RIESGO CLÍNICO</div>
   </div>`;
   callAI();
@@ -1267,5 +1531,23 @@ MEDS.forEach(m=>{if(m.active)sAlarm(m);});
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Prevent translation widgets from breaking auth buttons
+  document.querySelectorAll('button').forEach(btn => {
+    btn.style.pointerEvents = 'auto';
+  });
+
+  // Restore clickability if overlays exist
+  document.querySelectorAll('*').forEach(el => {
+    const style = window.getComputedStyle(el);
+    if(style.position === 'absolute' && el.offsetHeight > window.innerHeight * 0.8){
+      el.style.pointerEvents = 'none';
+    }
+  });
+});
+</script>
+
 </body>
 </html>
