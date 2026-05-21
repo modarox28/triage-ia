@@ -2,652 +2,239 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>MedIA Suite</title>
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedIA Suite — Apps Médicas</title>
+<link rel="manifest" href="medi-manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="MedIA Suite">
-<meta name="theme-color" content="#0b1120">
-<meta name="mobile-web-app-capable" content="yes">
-<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2d6a4f">
+<link rel="apple-touch-icon" href="medi-icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;background:var(--bg);}
-body{color:var(--tx);font-family:'Familjen Grotesk',sans-serif;display:flex;flex-direction:column;max-width:430px;margin:0 auto;}
-/* scrollable body */
-.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:76px;}
-.body::-webkit-scrollbar{display:none;}
-/* header */
-.hdr{padding:14px 18px 12px;background:rgba(11,17,32,.97);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:50;}
-.logo{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;letter-spacing:-.5px;}
-.logo b{color:var(--cy);}
-.logo s{color:var(--mu);text-decoration:none;font-style:normal;}
-.tabs{display:flex;gap:5px;}
-.tab{padding:6px 13px;border-radius:20px;font-size:.7rem;font-weight:700;font-family:'JetBrains Mono',monospace;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer;transition:all .2s;letter-spacing:.3px;}
-.tab.on{background:var(--cy);color:#000;border-color:var(--cy);}
-/* screens */
-.sc{display:none;padding:14px;animation:fu .28s ease;}
-.sc.on{display:block;}
-@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-/* bottom nav */
-.bnav{display:flex;background:rgba(11,17,32,.97);border-top:1px solid var(--bd);flex-shrink:0;z-index:50;position:relative;}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0 10px;gap:3px;background:none;border:none;cursor:pointer;transition:all .2s;}
-.nb .ni{font-size:1.15rem;}
-.nb .nl{font-size:.58rem;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--mu);letter-spacing:.5px;text-transform:uppercase;}
-.nb.on .nl{color:var(--cy);}
-.nind{position:absolute;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cy),var(--gn));transition:all .3s cubic-bezier(.4,0,.2,1);}
-/* cards */
-.card{background:var(--bg2);border:1px solid var(--bd);border-radius:18px;padding:16px;margin-bottom:10px;}
-.clabel{font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:700;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
-/* progress */
-.pgw{height:2px;background:var(--bd);border-radius:1px;margin-bottom:14px;overflow:hidden;}
-.pgf{height:100%;background:linear-gradient(90deg,var(--cy),var(--gn));border-radius:1px;transition:width .5s cubic-bezier(.4,0,.2,1);}
-.stag{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
-.qtitle{font-size:1.1rem;font-weight:700;line-height:1.35;margin-bottom:5px;}
-.qsub{font-size:.8rem;color:var(--mu);margin-bottom:16px;line-height:1.5;}
-/* options */
-.opts{display:grid;gap:7px;}
-.opt{background:var(--bg3);border:1.5px solid var(--bd);border-radius:11px;padding:12px 14px;text-align:left;cursor:pointer;font-size:.88rem;color:var(--tx);font-family:'Familjen Grotesk',sans-serif;display:flex;align-items:center;gap:10px;transition:all .15s;}
-.opt:hover{border-color:var(--cy);background:var(--cy-a);}
-.opt.sel{border-color:var(--cy);background:var(--cy-a);color:var(--cy);}
-.opt.selm{border-color:var(--gn);background:var(--gn-a);color:var(--gn);}
-.opic{font-size:1rem;width:22px;text-align:center;flex-shrink:0;}
-/* scale */
-.sgrid{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;}
-.sb{aspect-ratio:1;border-radius:7px;border:1px solid var(--bd);background:var(--bg3);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--mu);transition:all .15s;display:flex;align-items:center;justify-content:center;}
-.sb:hover{border-color:var(--cy);color:var(--cy);}
-.sb.sel{background:var(--cy);border-color:var(--cy);color:#000;font-weight:700;}
-.sb.selh{background:var(--rd);border-color:var(--rd);color:#fff;font-weight:700;}
-.slabs{display:flex;justify-content:space-between;margin-top:6px;font-size:.7rem;color:var(--mu);}
-/* vitals */
-.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-.vf label{display:block;font-size:.65rem;font-family:'JetBrains Mono',monospace;color:var(--mu);margin-bottom:4px;letter-spacing:.5px;}
-/* inputs */
-input,select,.fi{width:100%;background:var(--bg3);border:1.5px solid var(--bd);border-radius:9px;padding:10px 12px;font-size:.88rem;color:var(--tx);font-family:'Familjen Grotesk',sans-serif;outline:none;transition:border-color .2s;}
-input:focus,select:focus,.fi:focus{border-color:var(--cy);}
-input::placeholder{color:#3d5580;}
-select option{background:var(--bg3);}
-/* buttons */
-.bnav-row{display:flex;gap:9px;margin-top:16px;}
-.bbk{flex:0 0 auto;padding:11px 15px;background:transparent;border:1px solid var(--bd);border-radius:9px;color:var(--mu);cursor:pointer;font-family:'Familjen Grotesk',sans-serif;font-size:.85rem;transition:all .2s;}
-.bbk:hover{border-color:var(--mu);color:var(--tx);}
-.bnxt{flex:1;padding:11px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.9rem;cursor:pointer;font-family:'Familjen Grotesk',sans-serif;transition:all .2s;}
-.bnxt:hover{background:#22d4f5;transform:translateY(-1px);}
-.bnxt:disabled{opacity:.3;cursor:not-allowed;transform:none;}
-.bpri{width:100%;padding:12px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.9rem;cursor:pointer;font-family:'Familjen Grotesk',sans-serif;transition:all .2s;}
-.bpri:hover{background:#22d4f5;transform:translateY(-1px);}
-.bpri:disabled{opacity:.35;cursor:not-allowed;transform:none;}
-.bsec{width:100%;padding:11px;background:transparent;border:1.5px solid var(--bd);border-radius:9px;color:var(--mu);font-family:'Familjen Grotesk',sans-serif;font-size:.87rem;cursor:pointer;transition:all .2s;margin-top:7px;}
-.bsec:hover{border-color:var(--cy);color:var(--cy);}
-/* result */
-.rcard{border-radius:18px;padding:22px;text-align:center;animation:fu .4s ease;margin-bottom:10px;}
-.rcard.ro{background:var(--rd-a);border:2px solid var(--rd);}
-.rcard.am{background:var(--yw-a);border:2px solid var(--yw);}
-.rcard.ve{background:var(--gn-a);border:2px solid var(--gn);}
-.ric{font-size:2.8rem;display:block;margin-bottom:8px;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-.rlbl{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;letter-spacing:3px;margin-bottom:4px;}
-.rcard.ro .rlbl{color:var(--rd);}
-.rcard.am .rlbl{color:var(--yw);}
-.rcard.ve .rlbl{color:var(--gn);}
-.rpri{font-size:.8rem;color:var(--mu);margin-bottom:12px;}
-/* info blocks */
-.ib{border-radius:9px;padding:10px 13px;margin-bottom:7px;}
-.ib.gn{background:var(--gn-a);border-left:3px solid var(--gn);}
-.ib.rd{background:var(--rd-a);border-left:3px solid var(--rd);}
-.ib.yw{background:var(--yw-a);border-left:3px solid var(--yw);}
-.ib.cy{background:var(--cy-a);border-left:3px solid var(--cy);}
-.ibl{font-family:'JetBrains Mono',monospace;font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
-.ib.gn .ibl{color:var(--gn);}
-.ib.rd .ibl{color:var(--rd);}
-.ib.yw .ibl{color:var(--yw);}
-.ib.cy .ibl{color:var(--cy);}
-.ibt{font-size:.83rem;line-height:1.6;color:var(--tx);}
-/* loading */
-.ldg{display:flex;align-items:center;gap:10px;padding:14px;color:var(--mu);font-size:.82rem;}
-.sp{width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--cy);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
-@keyframes spin{to{transform:rotate(360deg)}}
-/* form */
-.fg{margin-bottom:10px;}
-.fl{display:block;font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:700;color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
-.fr{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-/* med list */
-.mi{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);}
-.mi:last-child{border-bottom:none;}
-.md{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
-.mn{font-weight:700;font-size:.87rem;}
-.mdt{font-size:.7rem;color:var(--mu);margin-top:1px;}
-.bsm{padding:4px 9px;border-radius:6px;border:1px solid var(--bd);background:var(--bg3);font-size:.7rem;cursor:pointer;color:var(--mu);transition:all .15s;font-family:'Familjen Grotesk',sans-serif;}
-.bsm:hover{border-color:var(--rd);color:var(--rd);}
-/* reminders */
-.ri{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);}
-.ri:last-child{border-bottom:none;}
-.rtm{font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:700;color:var(--cy);min-width:50px;}
-.tgl{width:36px;height:20px;background:var(--bd);border-radius:10px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none;}
-.tgl.on{background:var(--cy);}
-.tgl::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
-.tgl.on::after{transform:translateX(16px);}
-/* interactions */
-.tag{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--bd);border-radius:20px;padding:4px 10px;font-size:.78rem;margin:3px;}
-.tagx{cursor:pointer;color:var(--mu);font-size:.72rem;}
-.tagx:hover{color:var(--rd);}
-.twrap{min-height:32px;margin-bottom:10px;flex-wrap:wrap;display:flex;}
-.srow{display:flex;gap:7px;margin-bottom:9px;}
-.bv{width:40px;height:40px;border-radius:9px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;background:var(--cy);color:#000;transition:all .2s;}
-.bv.rec{background:var(--rd);animation:pr 1s infinite;}
-@keyframes pr{0%,100%{transform:scale(1)}50%{transform:scale(1.07);box-shadow:0 0 0 5px rgba(255,58,92,.15)}}
-/* alarm banner */
-.abanner{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:linear-gradient(135deg,#00c8f0,#00e07a);color:#000;padding:13px 16px;z-index:999;display:none;animation:sd .3s ease;}
-@keyframes sd{from{transform:translateX(-50%) translateY(-100%)}to{transform:translateX(-50%) translateY(0)}}
-.atitle{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.9rem;}
-.asub{font-size:.73rem;opacity:.75;margin-top:2px;}
-.aok{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.15);border:none;color:#000;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:700;}
-/* toast */
-.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--bg3);color:var(--tx);border:1px solid var(--bd);padding:8px 16px;border-radius:9px;font-size:.79rem;z-index:998;opacity:0;transition:all .25s;white-space:nowrap;max-width:90vw;}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
-/* misc */
-.empty{text-align:center;padding:28px 14px;color:var(--mu);}
-.eic{font-size:2.3rem;margin-bottom:7px;}
-.etx{font-size:.82rem;line-height:1.5;}
-.chip{display:inline-flex;align-items:center;gap:4px;background:var(--cy-a);color:var(--cy);border:1px solid rgba(0,200,240,.2);border-radius:20px;padding:3px 8px;font-size:.67rem;font-family:'JetBrains Mono',monospace;margin:2px;}
-.cnote{background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:11px;padding:10px 13px;margin-bottom:11px;font-size:.78rem;color:#c084fc;display:flex;align-items:flex-start;gap:8px;line-height:1.5;}
-.cnic{font-size:.95rem;flex-shrink:0;margin-top:1px;}
-.wnote{padding:9px 13px;background:rgba(255,184,48,.06);border:1px solid rgba(255,184,48,.2);border-radius:7px;font-size:.71rem;color:var(--yw);text-align:center;line-height:1.5;margin-top:10px;}
-.snav{display:flex;gap:5px;padding:10px 14px 0;overflow-x:auto;flex-shrink:0;}
-.snav::-webkit-scrollbar{display:none;}
-/* install banner */
-.ibanner{background:var(--cy-a);border:1px solid rgba(0,200,240,.2);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:none;}
-.ibanner.on{display:flex;align-items:center;gap:12px;}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0e1a 0%, #1a2235 50%, #0d1f17 100%);
+  color: white;
+  font-family: 'Instrument Sans', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 60px;
+}
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #00d4ff, #00e67a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  margin-bottom: 48px;
+}
+.app-card {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px);
+}
+.app-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.app-icon {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.app-icon img { width: 100%; height: 100%; object-fit: cover; }
+.app-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+.app-desc { font-size: 0.82rem; color: rgba(255,255,255,0.55); margin-top: 4px; line-height: 1.4; }
+.btn-open {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+.btn-triage { background: #00d4ff; color: #000; }
+.btn-medi { background: #2d6a4f; color: #fff; }
+.btn-open:hover { transform: translateY(-2px); opacity: 0.9; }
+.install-hint {
+  margin-top: 40px;
+  max-width: 400px;
+  text-align: center;
+}
+.install-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: rgba(255,255,255,0.8);
+}
+.os-block {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+.os-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.step {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  line-height: 1.4;
+}
+.step-num {
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.badge-pwa {
+  display: inline-block;
+  background: rgba(0,212,255,0.15);
+  color: #00d4ff;
+  border: 1px solid rgba(0,212,255,0.3);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  font-family: 'Syne', sans-serif;
+  letter-spacing: 1px;
+  margin-bottom: 32px;
+}
+#installBtn {
+  display: none;
+  width: 100%;
+  max-width: 400px;
+  padding: 16px;
+  background: linear-gradient(90deg, #00d4ff, #00e67a);
+  color: #000;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: all 0.2s;
+}
+#installBtn:hover { transform: translateY(-2px); }
 </style>
 </head>
 <body>
-<div class="abanner" id="ab"><div class="atitle" id="at">💊 Medicamento</div><div class="asub" id="as"></div><button class="aok" onclick="dA()">OK</button></div>
-<div class="toast" id="toast"></div>
+<div class="badge-pwa">PWA — SIN TIENDAS</div>
+<div class="hero-title">MedIA Suite</div>
+<div class="hero-sub">Herramientas médicas con inteligencia artificial</div>
 
-<div class="hdr">
-  <div class="logo"><b>Med</b>IA<s> Suite</s></div>
-  <div class="tabs">
-    <button class="tab on" id="ht-tr" onclick="sw('tr')">🏥 Triage</button>
-    <button class="tab" id="ht-md" onclick="sw('md')">💊 Meds</button>
+<button id="installBtn" onclick="installPWA()">📲 Instalar en este dispositivo</button>
+
+<div class="app-card">
+  <div class="app-row">
+    <div class="app-icon"><img src="triage-icon-192.png" alt="TriageIA"></div>
+    <div>
+      <div class="app-name">🔴 TriageIA</div>
+      <div class="app-desc">Clasificación de emergencias hospitalarias por riesgo de vida.</div>
+    </div>
   </div>
+  <a class="btn-open btn-triage" href="triage-ia.html">Abrir TriageIA →</a>
 </div>
 
-<div class="body" id="body">
-
-  <!-- ═══ TRIAGE MODULE ═══ -->
-  <div id="m-tr">
-    <div class="sc on" id="sc-tr">
-      <div class="pgw"><div class="pgf" id="pg" style="width:0%"></div></div>
-      <div id="trc"></div>
+<div class="app-card">
+  <div class="app-row">
+    <div class="app-icon"><img src="medi-icon-192.png" alt="MediApp"></div>
+    <div>
+      <div class="app-name">💊 MediApp</div>
+      <div class="app-desc">Recordatorios de medicamentos e interacciones farmacológicas.</div>
     </div>
   </div>
-
-  <!-- ═══ MEDI MODULE ═══ -->
-  <div id="m-md" style="display:none">
-    <div class="snav">
-      <button class="tab on" id="st-bs" onclick="ss('bs')">🔍 Buscar</button>
-      <button class="tab" id="st-ms" onclick="ss('ms')">💊 Mis meds</button>
-      <button class="tab" id="st-al" onclick="ss('al')">⏰ Alertas</button>
-      <button class="tab" id="st-in" onclick="ss('in')">⚠️ Inter.</button>
-    </div>
-
-    <div class="sc on" id="ms-bs" style="padding-top:10px">
-      <div class="card">
-        <div class="clabel">Buscar medicamento</div>
-        <div class="srow">
-          <input class="fi" id="di" type="text" placeholder="Nombre del fármaco..." style="flex:1;height:40px">
-          <button class="bv" id="vd" onclick="voz('di','vd')">🎤</button>
-        </div>
-        <button class="bpri" onclick="buscarDrug()">Consultar con IA</button>
-      </div>
-      <div id="dr"></div>
-    </div>
-
-    <div class="sc" id="ms-ms" style="padding-top:10px">
-      <div class="card">
-        <div class="clabel">Nuevo medicamento</div>
-        <div class="fg"><label class="fl">Nombre</label><input class="fi" id="nn" type="text" placeholder="ej. Metformina 500mg"></div>
-        <div class="fr">
-          <div class="fg"><label class="fl">Dosis</label><input class="fi" id="nd" type="text" placeholder="ej. 1 tableta"></div>
-          <div class="fg"><label class="fl">Frecuencia</label>
-            <select class="fi" id="nf">
-              <option>Cada 8 horas</option><option>Cada 12 horas</option>
-              <option>Una vez al día</option><option>Dos veces al día</option>
-              <option>Con las comidas</option><option>Según necesidad</option>
-            </select>
-          </div>
-        </div>
-        <div class="fg"><label class="fl">Hora</label><input class="fi" id="nh" type="time" value="08:00"></div>
-        <div class="fg"><label class="fl">Notas</label><input class="fi" id="no2" type="text" placeholder="ej. Tomar con comida"></div>
-        <button class="bpri" onclick="addMed()">+ Agregar</button>
-      </div>
-      <div class="card"><div class="clabel">Mis medicamentos</div><div id="ml"></div></div>
-    </div>
-
-    <div class="sc" id="ms-al" style="padding-top:10px">
-      <div class="card"><div class="clabel">Recordatorios de hoy</div><div id="rl"></div></div>
-      <div class="card" style="background:var(--cy-a);border-color:rgba(0,200,240,.15)">
-        <div style="display:flex;gap:10px;align-items:center">
-          <span style="font-size:1.3rem">🔔</span>
-          <div><div style="font-weight:700;font-size:.85rem;color:var(--cy)">Alarmas activas</div>
-          <div style="font-size:.73rem;color:var(--mu);margin-top:2px">Las alarmas suenan mientras la app está abierta.</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sc" id="ms-in" style="padding-top:10px">
-      <div class="card">
-        <div class="clabel">Verificar interacciones</div>
-        <div style="font-size:.78rem;color:var(--mu);margin-bottom:11px">Agrega 2 o más medicamentos para verificar si pueden tomarse juntos.</div>
-        <div class="srow">
-          <input class="fi" id="ii" type="text" placeholder="Nombre del medicamento..." style="flex:1;height:40px">
-          <button class="bv" id="vi" onclick="voz('ii','vi')">🎤</button>
-        </div>
-        <button class="bpri" onclick="addInt()" style="margin-bottom:10px">+ Agregar a lista</button>
-        <div class="twrap" id="itags"></div>
-        <button class="bpri" id="chkint" onclick="checkInt()" disabled>Verificar con IA</button>
-      </div>
-      <div id="ir"></div>
-    </div>
-  </div>
+  <a class="btn-open btn-medi" href="mediapp.html">Abrir MediApp →</a>
 </div>
 
-<nav class="bnav" id="bnav">
-  <div class="nind" id="nind" style="width:25%;left:0"></div>
-  <button class="nb on" onclick="nv(0,this)"><span class="ni">👤</span><span class="nl">Paciente</span></button>
-  <button class="nb" onclick="nv(1,this)"><span class="ni">🩺</span><span class="nl">Síntomas</span></button>
-  <button class="nb" onclick="nv(2,this)"><span class="ni">📊</span><span class="nl">Vitales</span></button>
-  <button class="nb" onclick="nv(3,this)"><span class="ni">🎯</span><span class="nl">Resultado</span></button>
-</nav>
+<div class="install-hint">
+  <div class="install-title">📲 Instalar en tu celular</div>
+  
+  <div class="os-block">
+    <div class="os-name">🤖 Android (Chrome)</div>
+    <div class="step"><span class="step-num">1</span>Abre esta página en Chrome</div>
+    <div class="step"><span class="step-num">2</span>Toca el menú ⋮ (tres puntos arriba a la derecha)</div>
+    <div class="step"><span class="step-num">3</span>Selecciona "Añadir a pantalla de inicio"</div>
+    <div class="step"><span class="step-num">4</span>Confirma — aparecerá el ícono en tu pantalla</div>
+  </div>
+
+  <div class="os-block">
+    <div class="os-name">🍎 iPhone / iPad (Safari)</div>
+    <div class="step"><span class="step-num">1</span>Abre esta página en Safari</div>
+    <div class="step"><span class="step-num">2</span>Toca el botón compartir ↑ (abajo en el centro)</div>
+    <div class="step"><span class="step-num">3</span>Selecciona "Añadir a pantalla de inicio"</div>
+    <div class="step"><span class="step-num">4</span>Confirma — aparecerá el ícono como una app</div>
+  </div>
+</div>
 
 <script>
-// ── STATE ──
-let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem('ms_meds')||'[]'),INT=[],ALM={},REC={},recog=null;
-
-// ── MODULE/SCREEN ──
-function sw(m){
-  document.getElementById('m-tr').style.display=m==='tr'?'block':'none';
-  document.getElementById('m-md').style.display=m==='md'?'block':'none';
-  document.getElementById('bnav').style.display=m==='tr'?'flex':'none';
-  document.getElementById('ht-tr').classList.toggle('on',m==='tr');
-  document.getElementById('ht-md').classList.toggle('on',m==='md');
-  if(m==='md'){rML();rRL();}
-  document.getElementById('body').scrollTop=0;
-}
-function ss(n){
-  ['bs','ms','al','in'].forEach(x=>{
-    document.getElementById('ms-'+x).classList.remove('on');
-    document.getElementById('st-'+x).classList.remove('on');
-  });
-  document.getElementById('ms-'+n).classList.add('on');
-  document.getElementById('st-'+n).classList.add('on');
-  if(n==='al')rRL();if(n==='ms')rML();
-}
-function nv(i,el){
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('nind').style.left=(i*25)+'%';
-}
-
-// ── TOAST ──
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2400);}
-
-// ── VOICE ──
-function voz(inp,btn){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){toast('Tu navegador no soporta voz');return;}
-  const b=document.getElementById(btn);
-  if(REC[btn]){recog&&recog.stop();return;}
-  recog=new SR();recog.lang='es-ES';recog.interimResults=false;
-  recog.onresult=e=>{document.getElementById(inp).value=e.results[0][0].transcript;toast('🎤 "'+e.results[0][0].transcript+'"');};
-  recog.onend=()=>{REC[btn]=false;b.classList.remove('rec');b.textContent='🎤';};
-  recog.start();REC[btn]=true;b.classList.add('rec');b.textContent='⏹';
-}
-
-// ── TRIAGE STEPS ──
-const STEPS=[
-  {id:'tipo',title:'Tipo de paciente',sub:'Seleccione el perfil del paciente.',t:'opts',opts:[
-    {ic:'🧑',l:'Adulto (18–59 años)',v:'adulto'},
-    {ic:'👴',l:'Adulto mayor (60+ años)',v:'adulto_mayor'},
-    {ic:'🤰',l:'Embarazada',v:'embarazada'},
-    {ic:'👶',l:'Niño / Pediátrico (0–17 años)',v:'nino'},
-  ]},
-  {id:'motivo',title:'Motivo principal de consulta',sub:'Seleccione el síntoma dominante.',t:'opts',opts:[
-    {ic:'💔',l:'Dolor en el pecho',v:'dolor_pecho'},
-    {ic:'🫁',l:'Dificultad para respirar',v:'disnea'},
-    {ic:'🤕',l:'Trauma / golpe / herida',v:'trauma'},
-    {ic:'🤢',l:'Dolor abdominal / vómito',v:'abdominal'},
-    {ic:'🧠',l:'Pérdida de consciencia / convulsión',v:'neuro'},
-    {ic:'🌡️',l:'Fiebre alta',v:'fiebre'},
-    {ic:'😰',l:'Otro / síntomas generales',v:'otro'},
-  ]},
-  {id:'consc',title:'Nivel de consciencia',sub:'Evalúe el estado de alerta del paciente.',t:'opts',opts:[
-    {ic:'👁️',l:'Alerta — responde normalmente',v:'alerta'},
-    {ic:'🗣️',l:'Responde solo a voz',v:'voz'},
-    {ic:'✊',l:'Responde solo al dolor',v:'dolor_e'},
-    {ic:'❌',l:'No responde (inconsciente)',v:'inconsc'},
-  ]},
-  {id:'vit',title:'Signos vitales',sub:'Ingrese los valores disponibles. Puede dejar en blanco los que no tenga.',t:'vitals'},
-  {id:'dolor',title:'Escala de dolor',sub:'El paciente indica su nivel de dolor del 0 al 10.',t:'scale'},
-  {id:'sint',title:'Síntomas adicionales',sub:'Marque todos los que apliquen.',t:'multi',opts:[
-    {ic:'🩸',l:'Sangrado activo',v:'sangrado'},
-    {ic:'💧',l:'Palidez o sudoración fría',v:'palido'},
-    {ic:'🌀',l:'Mareo / pérdida de equilibrio',v:'mareo'},
-    {ic:'👄',l:'Labios o uñas azulados (cianosis)',v:'cianosis'},
-    {ic:'🔥',l:'Temperatura muy alta (>39°C)',v:'temp_alta'},
-    {ic:'📉',l:'Debilidad muscular intensa',v:'debilidad'},
-    {ic:'❌',l:'Ninguno de los anteriores',v:'ninguno'},
-  ]},
-  {id:'enino',title:'Edad del niño',sub:'Ingrese la edad en años (0–17).',t:'num',unit:'años',min:0,max:17,skip:d=>d.tipo!=='nino'},
-  {id:'semanas',title:'Semanas de gestación',sub:'Ingrese las semanas aproximadas.',t:'num',unit:'semanas',min:1,max:42,skip:d=>d.tipo!=='embarazada'},
-];
-
-function aSteps(){return STEPS.filter(s=>!s.skip||!s.skip(TD));}
-
-function rTriage(){
-  const steps=aSteps();const tot=steps.length;
-  document.getElementById('pg').style.width=((TS/tot)*100)+'%';
-  if(TS>=tot){rAnalyzing();return;}
-  const s=steps[TS];const c=document.getElementById('trc');c.innerHTML='';
-  // step tag
-  const st=document.createElement('div');st.className='stag';st.textContent=`Paso ${TS+1} de ${tot}`;c.appendChild(st);
-  // child notice
-  if(TD.tipo==='nino'){
-    const n=document.createElement('div');n.className='cnote';
-    n.innerHTML=`<span class="cnic">👨‍👩‍👦</span><span><strong>Paciente pediátrico</strong> — Evaluación completada por padre, madre o tutor responsable. Los datos corresponden al niño/a.</span>`;
-    c.appendChild(n);
-  }
-  const card=document.createElement('div');card.className='card';
-  card.innerHTML=`<div class="qtitle">${s.title}</div><div class="qsub">${s.sub}</div>`;
-
-  if(s.t==='opts'){
-    const g=document.createElement('div');g.className='opts';
-    s.opts.forEach(o=>{
-      const b=document.createElement('button');
-      b.className='opt'+(TD[s.id]===o.v?' sel':'');
-      b.innerHTML=`<span class="opic">${o.ic}</span>${o.l}`;
-      b.onclick=()=>{TD[s.id]=o.v;rTriage();};g.appendChild(b);
-    });card.appendChild(g);
-  }
-  else if(s.t==='multi'){
-    if(!TM.length&&TD[s.id])TM=[...TD[s.id]];
-    const g=document.createElement('div');g.className='opts';
-    s.opts.forEach(o=>{
-      const sel=TM.includes(o.v);
-      const b=document.createElement('button');b.className='opt'+(sel?' selm':'');
-      b.innerHTML=`<span class="opic">${o.ic}</span>${o.l}`;
-      b.onclick=()=>{
-        if(o.v==='ninguno'){TM=['ninguno'];}
-        else{TM=TM.filter(x=>x!=='ninguno');TM.includes(o.v)?TM=TM.filter(x=>x!==o.v):TM.push(o.v);}
-        TD[s.id]=[...TM];rTriage();
-      };g.appendChild(b);
-    });card.appendChild(g);
-  }
-  else if(s.t==='vitals'){
-    if(!TD.vit)TD.vit={};
-    const vg=document.createElement('div');vg.className='vgrid';
-    [{id:'ps',l:'Presión sistólica (mmHg)',ph:'ej. 120'},{id:'pd',l:'Presión diastólica (mmHg)',ph:'ej. 80'},
-     {id:'fc',l:'Frec. cardíaca (lpm)',ph:'ej. 80'},{id:'sat',l:'Saturación O₂ (%)',ph:'ej. 97'},
-     {id:'tem',l:'Temperatura (°C)',ph:'ej. 37'},{id:'fr',l:'Frec. respiratoria (rpm)',ph:'ej. 16'}
-    ].forEach(f=>{
-      const w=document.createElement('div');w.className='vf';w.innerHTML=`<label>${f.l}</label>`;
-      const i=document.createElement('input');i.type='number';i.placeholder=f.ph;i.value=TD.vit[f.id]||'';
-      i.oninput=()=>{TD.vit[f.id]=i.value;};w.appendChild(i);vg.appendChild(w);
-    });card.appendChild(vg);
-  }
-  else if(s.t==='scale'){
-    const sg=document.createElement('div');sg.className='sgrid';
-    for(let i=0;i<=10;i++){
-      const b=document.createElement('button');const hi=i>=7;
-      b.className='sb'+(TD[s.id]==i?(hi?' selh':' sel'):'');b.textContent=i;
-      b.onclick=()=>{TD[s.id]=i;rTriage();};sg.appendChild(b);
-    }
-    const lb=document.createElement('div');lb.className='slabs';lb.innerHTML='<span>Sin dolor</span><span>Insoportable</span>';
-    card.appendChild(sg);card.appendChild(lb);
-  }
-  else if(s.t==='num'){
-    const i=document.createElement('input');i.type='number';i.placeholder=`Ingrese ${s.unit}`;i.min=s.min;i.max=s.max;i.value=TD[s.id]||'';
-    i.oninput=()=>{TD[s.id]=i.value;};card.appendChild(i);
-  }
-
-  const nav=document.createElement('div');nav.className='bnav-row';
-  if(TS>0){const b=document.createElement('button');b.className='bbk';b.textContent='← Atrás';b.onclick=()=>{TS--;TM=[];rTriage();};nav.appendChild(b);}
-  const nx=document.createElement('button');nx.className='bnxt';
-  nx.textContent=TS===steps.length-1?'Analizar →':'Continuar →';
-  nx.disabled=!canAdv(s);
-  nx.onclick=()=>{TS++;TM=[];rTriage();};
-  nav.appendChild(nx);card.appendChild(nav);c.appendChild(card);
-}
-
-function canAdv(s){
-  if(s.t==='vitals')return true;
-  if(s.t==='multi')return TM.length>0||(TD[s.id]&&TD[s.id].length>0);
-  if(s.t==='num')return!!TD[s.id];
-  if(s.t==='scale')return TD[s.id]!==undefined;
-  return!!TD[s.id];
-}
-
-function rAnalyzing(){
-  document.getElementById('trc').innerHTML=`<div class="card" style="text-align:center;padding:26px 16px">
-    <div style="font-size:1.9rem;margin-bottom:10px">🔬</div>
-    <div class="qtitle" style="text-align:center">Analizando datos...</div>
-    <div class="qsub" style="text-align:center">La IA está evaluando los signos vitales y síntomas.</div>
-    <div style="display:flex;gap:6px;justify-content:center;margin:16px 0">
-      <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s infinite;display:inline-block"></span>
-      <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .2s infinite;display:inline-block"></span>
-      <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .4s infinite;display:inline-block"></span>
-    </div>
-    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}</style>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--mu);letter-spacing:2px">EVALUANDO RIESGO CLÍNICO</div>
-  </div>`;
-  callAI();
-}
-
-async function callAI(){
-  const mM={dolor_pecho:'Dolor en el pecho',disnea:'Dificultad para respirar',trauma:'Trauma/golpe/herida',abdominal:'Dolor abdominal/vómito',neuro:'Pérdida de consciencia/convulsión',fiebre:'Fiebre alta',otro:'Otro'};
-  const cM={alerta:'Alerta',voz:'Responde a voz',dolor_e:'Solo al dolor',inconsc:'Inconsciente'};
-  const tM={adulto:'Adulto (18-59)',adulto_mayor:'Adulto mayor (60+)',embarazada:'Embarazada',nino:'Niño/Pediátrico (0-17 años)'};
-  const sM={sangrado:'Sangrado activo',palido:'Palidez/sudoración fría',mareo:'Mareo',cianosis:'Cianosis',temp_alta:'Temperatura >39°C',debilidad:'Debilidad muscular',ninguno:'Ninguno'};
-  const vt=TD.vit||{};
-  const vtx=[vt.ps?`PA:${vt.ps}/${vt.pd||'?'}mmHg`:null,vt.fc?`FC:${vt.fc}lpm`:null,vt.sat?`SatO2:${vt.sat}%`:null,vt.tem?`T:${vt.tem}°C`:null,vt.fr?`FR:${vt.fr}rpm`:null].filter(Boolean).join(' ')||'No disponibles';
-  const sx=TD.sint?TD.sint.map(s=>sM[s]||s).join(', '):'No indicados';
-  const pedN=TD.tipo==='nino'?`\nNIÑO PEDIÁTRICO ${TD.enino||'?'} años. Usa rangos vitales pediátricos. El tutor reporta.`:'';
-  const prompt=`Eres experto en triage hospitalario ESI/Manchester.${pedN}
-PACIENTE:
-- Tipo: ${tM[TD.tipo]||TD.tipo}
-- Motivo: ${mM[TD.motivo]||TD.motivo}
-- Consciencia: ${cM[TD.consc]||TD.consc}
-- Vitales: ${vtx}
-- Dolor 0-10: ${TD.dolor!==undefined?TD.dolor:'N/A'}
-- Síntomas: ${sx}${TD.semanas?`\n- Sem.gestación: ${TD.semanas}`:''}${TD.enino?`\n- Edad: ${TD.enino} años`:''}
-
-SOLO JSON sin backticks:
-{"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"máx 3 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"..."}`;
-  try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:prompt}]})});
-    const d=await r.json();
-    const txt=d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-    rResult(JSON.parse(txt));
-  }catch(e){
-    document.getElementById('trc').innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.85rem">Error al conectar con la IA.<br><small style="color:var(--mu)">${e.message}</small></div><button class="bsec" onclick="resetT()">← Reintentar</button></div>`;
-  }
-}
-
-function rResult(r){
-  const cc={ROJO:'ro',AMARILLO:'am',VERDE:'ve'}[r.clasificacion]||'ve';
-  const ic={ROJO:'🔴',AMARILLO:'🟡',VERDE:'🟢'}[r.clasificacion];
-  const pm={ROJO:'ATENCIÓN INMEDIATA',AMARILLO:'URGENTE',VERDE:'PUEDE ESPERAR'}[r.clasificacion];
-  const tM2={adulto:'Adulto',adulto_mayor:'Adulto mayor',embarazada:'Embarazada',nino:'Pediátrico'};
-  const vt=TD.vit||{};
-  const dc={normal:'var(--gn)',warning:'var(--yw)',critical:'var(--rd)'};
-  const vcs=[vt.ps?{l:'Presión arterial',v:`${vt.ps}/${vt.pd}mmHg`,s:chkPA(vt.ps)}:null,vt.fc?{l:'Frec. cardíaca',v:`${vt.fc}lpm`,s:chkFC(vt.fc)}:null,vt.sat?{l:'Saturación O₂',v:`${vt.sat}%`,s:chkSat(vt.sat)}:null,vt.tem?{l:'Temperatura',v:`${vt.tem}°C`,s:chkT(vt.tem)}:null,vt.fr?{l:'Frec. resp.',v:`${vt.fr}rpm`,s:chkFR(vt.fr)}:null].filter(Boolean);
-  const alH=r.alertas_criticas&&r.alertas_criticas.length?`<div style="background:var(--rd-a);border:1px solid rgba(255,58,92,.25);border-radius:9px;padding:10px;margin-top:9px"><div style="font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--rd);margin-bottom:5px;letter-spacing:1px">⚠ ALERTAS CRÍTICAS</div>${r.alertas_criticas.map(a=>`<div style="font-size:.8rem;color:#ff8fa3;margin-bottom:2px">• ${a}</div>`).join('')}</div>`:'';
-  const pedH=TD.tipo==='nino'?`<div class="cnote"><span class="cnic">👨‍👩‍👦</span><span>Paciente pediátrico${TD.enino?` — ${TD.enino} años`:''} — Requiere supervisión del tutor. Confirmar con pediatra.</span></div>`:'';
-  document.getElementById('trc').innerHTML=`
-    ${pedH}
-    <div class="rcard ${cc}">
-      <span class="ric">${ic}</span>
-      <div class="rlbl">${r.clasificacion}</div>
-      <div class="rpri">${pm}${r.tiempo_atencion?' · '+r.tiempo_atencion:''}</div>
-      <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap">
-        <span class="chip">${tM2[TD.tipo]||''}</span>
-        ${TD.semanas?`<span class="chip">${TD.semanas} sem.</span>`:''}
-        ${TD.enino?`<span class="chip">${TD.enino} años</span>`:''}
-        <span class="chip">Dolor: ${TD.dolor}/10</span>
-      </div>
-    </div>
-    <div class="card"><div class="clabel">Análisis clínico</div><div style="font-size:.84rem;line-height:1.65">${r.justificacion}</div>${alH}</div>
-    ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bd)"><div style="width:7px;height:7px;border-radius:50%;background:${dc[v.s]};flex-shrink:0"></div><div style="flex:1;font-size:.78rem;color:var(--mu)">${v.l}</div><div style="font-family:'JetBrains Mono',monospace;font-size:.78rem">${v.v}</div></div>`).join('')}</div>`:''}
-    <div class="card"><div class="clabel">Acciones prioritarias</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:9px;margin-bottom:7px;align-items:flex-start"><span style="font-family:'JetBrains Mono',monospace;font-size:.66rem;color:var(--cy);flex-shrink:0;margin-top:3px">${String(i+1).padStart(2,'0')}</span><span style="font-size:.84rem;line-height:1.5">${a}</span></div>`).join('')}</div>
-    <div class="wnote">⚕ Herramienta de apoyo clínico. La decisión final corresponde al personal médico calificado.</div>
-    <button class="bsec" onclick="resetT()">← Nuevo paciente</button>`;
-}
-
-function resetT(){TS=0;TD={};TM=[];rTriage();}
-function chkPA(s){s=parseFloat(s);return s<90||s>180?'critical':s<100||s>150?'warning':'normal';}
-function chkFC(f){f=parseFloat(f);return f<50||f>130?'critical':f<60||f>100?'warning':'normal';}
-function chkSat(s){s=parseFloat(s);return s<90?'critical':s<95?'warning':'normal';}
-function chkT(t){t=parseFloat(t);return t>40||t<35?'critical':t>38.5||t<36?'warning':'normal';}
-function chkFR(f){f=parseFloat(f);return f<8||f>30?'critical':f<12||f>24?'warning':'normal';}
-
-// ── DRUG SEARCH ──
-async function buscarDrug(){
-  const nm=document.getElementById('di').value.trim();
-  if(!nm){toast('Escribe el nombre del medicamento');return;}
-  document.getElementById('dr').innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Consultando información del fármaco...</div></div>`;
-  try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:900,messages:[{role:"user",content:`Información farmacológica completa sobre: "${nm}". SOLO JSON sin backticks ni texto extra:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"..."}`}]})});
-    const d=await r.json();
-    const inf=JSON.parse(d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
-    document.getElementById('dr').innerHTML=`<div class="card">
-      <div style="font-size:1.15rem;font-weight:700;margin-bottom:3px">${inf.nombre_comercial||nm}</div>
-      <div style="font-size:.75rem;color:var(--mu);margin-bottom:12px">${inf.nombre_generico||''}</div>
-      <div style="margin-bottom:12px"><span style="display:inline-flex;align-items:center;gap:4px;background:var(--cy-a);color:var(--cy);border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:600">💊 ${inf.dosis_tipica||'Ver prospecto'}</span></div>
-      <div class="ib gn"><div class="ibl">✅ Para qué sirve</div><div class="ibt">${inf.para_que_sirve||''}</div></div>
-      <div class="ib cy"><div class="ibl">📋 Cómo tomarlo</div><div class="ibt">${inf.como_tomar||''}</div></div>
-      <div class="ib yw"><div class="ibl">⚠ Efectos secundarios</div><div class="ibt">${inf.efectos_secundarios||''}</div></div>
-      <div class="ib rd"><div class="ibl">🚫 Contraindicaciones</div><div class="ibt">${inf.contraindicaciones||''}</div></div>
-      <div class="ib yw"><div class="ibl">🔄 Interacciones</div><div class="ibt">${inf.interacciones_comunes||''}</div></div>
-      ${inf.advertencias?`<div class="ib rd"><div class="ibl">⛔ Advertencias</div><div class="ibt">${inf.advertencias}</div></div>`:''}
-    </div>`;
-  }catch(e){document.getElementById('dr').innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.85rem">Error al consultar. Verifica tu conexión.</div></div>`;}
-}
-
-// ── MEDICATIONS ──
-function addMed(){
-  const nm=document.getElementById('nn').value.trim();
-  if(!nm){toast('Escribe el nombre del medicamento');return;}
-  const m={id:Date.now(),name:nm,dose:document.getElementById('nd').value.trim(),freq:document.getElementById('nf').value,time:document.getElementById('nh').value,notes:document.getElementById('no2').value.trim(),active:true,color:['#00c8f0','#00e07a','#a855f7','#ffb830','#ff3a5c'][MEDS.length%5]};
-  MEDS.push(m);saveMeds();rML();sAlarm(m);toast('✅ Medicamento agregado');
-  document.getElementById('nn').value='';document.getElementById('nd').value='';document.getElementById('no2').value='';
-}
-function saveMeds(){localStorage.setItem('ms_meds',JSON.stringify(MEDS));}
-function delMed(id){
-  MEDS=MEDS.filter(m=>m.id!==id);
-  if(ALM[id]){clearInterval(ALM[id]);delete ALM[id];}
-  saveMeds();rML();rRL();toast('Eliminado');
-}
-function rML(){
-  const el=document.getElementById('ml');
-  if(!MEDS.length){el.innerHTML='<div class="empty"><div class="eic">💊</div><div class="etx">Sin medicamentos registrados.</div></div>';return;}
-  el.innerHTML=MEDS.map(m=>`<div class="mi">
-    <div class="md" style="background:${m.color}18"><span style="font-size:.95rem;color:${m.color}">💊</span></div>
-    <div style="flex:1"><div class="mn">${m.name}</div>
-    <div class="mdt">${m.dose?m.dose+' · ':''}${m.freq} · ${m.time}</div>
-    ${m.notes?`<div class="mdt" style="font-style:italic">${m.notes}</div>`:''}</div>
-    <button class="bsm" onclick="delMed(${m.id})">🗑</button>
-  </div>`).join('');
-}
-function rRL(){
-  const el=document.getElementById('rl');
-  if(!MEDS.length){el.innerHTML='<div class="empty"><div class="eic">⏰</div><div class="etx">Agrega medicamentos para ver recordatorios.</div></div>';return;}
-  el.innerHTML=[...MEDS].sort((a,b)=>a.time.localeCompare(b.time)).map(m=>`<div class="ri">
-    <div class="rtm">${m.time}</div>
-    <div style="flex:1"><div style="font-weight:700;font-size:.86rem">${m.name}</div>
-    <div style="font-size:.7rem;color:var(--mu)">${m.dose?m.dose+' · ':''}${m.freq}</div></div>
-    <button class="tgl ${m.active?'on':''}" onclick="togR(${m.id},this)"></button>
-  </div>`).join('');
-}
-function togR(id,btn){
-  const m=MEDS.find(x=>x.id===id);if(!m)return;
-  m.active=!m.active;btn.classList.toggle('on',m.active);saveMeds();
-  if(m.active)sAlarm(m);else if(ALM[id]){clearInterval(ALM[id]);delete ALM[id];}
-  toast(m.active?'🔔 Activado':'🔕 Desactivado');
-}
-function sAlarm(m){
-  if(ALM[m.id])clearInterval(ALM[m.id]);
-  ALM[m.id]=setInterval(()=>{
-    if(!m.active)return;
-    const n=new Date();const[h,min]=m.time.split(':').map(Number);
-    if(n.getHours()===h&&n.getMinutes()===min&&n.getSeconds()<5)showAlarm(m);
-  },4000);
-}
-function showAlarm(m){
-  document.getElementById('at').textContent=`💊 ${m.name}`;
-  document.getElementById('as').textContent=`${m.dose?m.dose+' · ':''}${m.freq}${m.notes?' · '+m.notes:''}`;
-  document.getElementById('ab').style.display='block';
-  try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.8);o.start();o.stop(ctx.currentTime+.8);}catch(e){}
-}
-function dA(){document.getElementById('ab').style.display='none';}
-
-// ── INTERACTIONS ──
-function addInt(){
-  const v=document.getElementById('ii').value.trim();if(!v)return;
-  if(INT.includes(v)){toast('Ya está en la lista');return;}
-  INT.push(v);document.getElementById('ii').value='';rIntTags();
-}
-function remInt(n){INT=INT.filter(d=>d!==n);rIntTags();}
-function rIntTags(){
-  document.getElementById('itags').innerHTML=INT.map(d=>`<span class="tag">💊 ${d}<span class="tagx" onclick="remInt('${d}')">✕</span></span>`).join('');
-  document.getElementById('chkint').disabled=INT.length<2;
-}
-async function checkInt(){
-  if(INT.length<2)return;
-  document.getElementById('ir').innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Verificando interacciones farmacológicas...</div></div>`;
-  try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:900,messages:[{role:"user",content:`Analiza interacciones entre: ${INT.join(', ')}. SOLO JSON sin backticks:\n{"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]})});
-    const d=await r.json();
-    const inf=JSON.parse(d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
-    const cm={BAJO:'gn',MODERADO:'yw',ALTO:'rd',CONTRAINDICADO:'rd'};
-    const im={BAJO:'✅',MODERADO:'⚠️',ALTO:'🚨',CONTRAINDICADO:'⛔'};
-    document.getElementById('ir').innerHTML=`<div class="card">
-      <div class="ib ${cm[inf.nivel_riesgo]||'yw'}" style="margin-bottom:11px">
-        <div class="ibl">${im[inf.nivel_riesgo]||'⚠️'} Riesgo: ${inf.nivel_riesgo}</div>
-        <div class="ibt">${inf.resumen}</div>
-      </div>
-      ${(inf.interacciones||[]).map(i=>`<div style="padding:9px 0;border-bottom:1px solid var(--bd)">
-        <div style="font-weight:600;font-size:.82rem;margin-bottom:3px">💊 ${i.par}</div>
-        <div style="font-size:.78rem;color:var(--mu)">${i.descripcion}</div>
-      </div>`).join('')}
-      <div class="ib cy" style="margin-top:10px">
-        <div class="ibl">📋 Recomendación</div>
-        <div class="ibt">${inf.recomendacion}</div>
-      </div>
-      ${inf.consultar_medico?`<div class="wnote" style="color:var(--rd);border-color:rgba(255,58,92,.2);background:var(--rd-a)">⚕ Consulta a tu médico antes de combinar estos medicamentos.</div>`:''}
-    </div>`;
-  }catch(e){document.getElementById('ir').innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.85rem">Error al verificar.</div></div>`;}
-}
-
-// ── INSTALL PROMPT (Android) ──
-let installEvt=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();installEvt=e;
-  const b=document.createElement('div');
-  b.style.cssText='background:var(--cy-a);border:1px solid rgba(0,200,240,.2);border-radius:12px;padding:12px 16px;margin:14px 14px 0;display:flex;align-items:center;gap:12px;';
-  b.innerHTML=`<span style="font-size:1.3rem">📲</span><div style="flex:1"><div style="font-weight:700;font-size:.85rem;color:var(--cy)">Instalar MedIA Suite</div><div style="font-size:.73rem;color:var(--mu);margin-top:2px">Instala la app en tu dispositivo</div></div><button onclick="doInstall(this.parentNode)" style="padding:6px 13px;background:var(--cy);border:none;border-radius:7px;font-family:'Familjen Grotesk',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;color:#000">Instalar</button>`;
-  document.getElementById('body').prepend(b);
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'block';
 });
-function doInstall(el){if(installEvt){installEvt.prompt();installEvt.userChoice.then(()=>{installEvt=null;el&&el.remove();});}}
 
-// ── INIT ──
-rTriage();rML();
-MEDS.forEach(m=>{if(m.active)sAlarm(m);});
-document.getElementById('di').addEventListener('keypress',e=>{if(e.key==='Enter')buscarDrug();});
-document.getElementById('ii').addEventListener('keypress',e=>{if(e.key==='Enter')addInt();});
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('installBtn').style.display = 'none';
+    });
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
