@@ -1,18 +1,12 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MedIA Suite — Apps Médicas</title>
-<link rel="manifest" href="medi-manifest.json">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>MedIA Suite</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#2d6a4f">
-<link rel="apple-touch-icon" href="medi-icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MedIA Suite">
 <meta name="theme-color" content="#0b1120">
@@ -41,158 +35,6 @@ window._fb = { auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassw
 window.dispatchEvent(new Event('fbready'));
 </script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0a0e1a 0%, #1a2235 50%, #0d1f17 100%);
-  color: white;
-  font-family: 'Instrument Sans', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 20px 60px;
-}
-.hero-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: 8px;
-  background: linear-gradient(90deg, #00d4ff, #00e67a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.hero-sub {
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.5);
-  text-align: center;
-  margin-bottom: 48px;
-}
-.app-card {
-  width: 100%;
-  max-width: 400px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 24px;
-  padding: 28px;
-  margin-bottom: 16px;
-  backdrop-filter: blur(10px);
-}
-.app-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.app-icon {
-  width: 64px; height: 64px;
-  border-radius: 16px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.app-icon img { width: 100%; height: 100%; object-fit: cover; }
-.app-name {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.15rem;
-  font-weight: 800;
-}
-.app-desc { font-size: 0.82rem; color: rgba(255,255,255,0.55); margin-top: 4px; line-height: 1.4; }
-.btn-open {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  font-family: 'Syne', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: none;
-  text-align: center;
-  transition: all 0.2s;
-  margin-bottom: 8px;
-}
-.btn-triage { background: #00d4ff; color: #000; }
-.btn-medi { background: #2d6a4f; color: #fff; }
-.btn-open:hover { transform: translateY(-2px); opacity: 0.9; }
-.install-hint {
-  margin-top: 40px;
-  max-width: 400px;
-  text-align: center;
-}
-.install-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: rgba(255,255,255,0.8);
-}
-.os-block {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 12px;
-  text-align: left;
-}
-.os-name {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.step {
-  font-size: 0.8rem;
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 6px;
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  line-height: 1.4;
-}
-.step-num {
-  background: rgba(255,255,255,0.1);
-  border-radius: 50%;
-  width: 20px; height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  flex-shrink: 0;
-  font-weight: 700;
-}
-.badge-pwa {
-  display: inline-block;
-  background: rgba(0,212,255,0.15);
-  color: #00d4ff;
-  border: 1px solid rgba(0,212,255,0.3);
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 0.7rem;
-  font-family: 'Syne', sans-serif;
-  letter-spacing: 1px;
-  margin-bottom: 32px;
-}
-#installBtn {
-  display: none;
-  width: 100%;
-  max-width: 400px;
-  padding: 16px;
-  background: linear-gradient(90deg, #00d4ff, #00e67a);
-  color: #000;
-  border: none;
-  border-radius: 14px;
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  cursor: pointer;
-  margin-bottom: 24px;
-  transition: all 0.2s;
-}
-#installBtn:hover { transform: translateY(-2px); }
 :root{
   --bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;
   --tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;
@@ -445,154 +287,9 @@ select option{background:var(--bg3);}
 #qrCanvas{border-radius:12px;margin:0 auto 16px;display:block;}
 /* ── PROFILE ── */
 .prof-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:#000;margin:0 auto 12px;}
-
-/* ==== FIX RESPONSIVE + AUTH ==== */
-html,body{
-  overflow-x:hidden !important;
-  width:100%;
-}
-
-*{
-  max-width:100%;
-}
-
-body{
-  padding-left:14px !important;
-  padding-right:14px !important;
-}
-
-.main-wrap,
-.hero-wrap,
-.auth-wrap,
-.landing-wrap,
-.top-wrap{
-  width:100% !important;
-  max-width:1200px !important;
-  margin:0 auto !important;
-  display:flex !important;
-  flex-wrap:wrap !important;
-  justify-content:center !important;
-  align-items:center !important;
-  gap:24px !important;
-}
-
-.left-panel,
-.right-panel,
-.auth-panel,
-.login-panel,
-.mockup,
-.phone,
-.phone-wrap{
-  position:relative !important;
-  transform:none !important;
-  left:auto !important;
-  right:auto !important;
-  top:auto !important;
-  bottom:auto !important;
-}
-
-.auth-card,
-.auth-box,
-.login-box,
-.panel-auth{
-  z-index:999 !important;
-  position:relative !important;
-  pointer-events:auto !important;
-}
-
-.decor,
-.glow,
-.lines,
-.bg-shape,
-.floating,
-.absolute,
-.overlay{
-  pointer-events:none !important;
-}
-
-button,
-a,
-input,
-select{
-  pointer-events:auto !important;
-}
-
-@media (max-width: 900px){
-
-  body{
-    padding-top:24px !important;
-  }
-
-  .hero-title{
-    font-size:2.5rem !important;
-    text-align:center !important;
-  }
-
-  .hero-sub{
-    text-align:center !important;
-    margin-bottom:20px !important;
-  }
-
-  .app-card,
-  .auth-card,
-  .login-box,
-  .panel-auth{
-    width:100% !important;
-    max-width:420px !important;
-    margin:0 auto !important;
-  }
-
-  .side-panel,
-  .preview-panel,
-  .mockup{
-    display:none !important;
-  }
-
-  .bottom-nav{
-    position:sticky !important;
-    bottom:0 !important;
-  }
-}
-
-@media (max-width: 600px){
-
-  .hero-title{
-    font-size:2rem !important;
-  }
-
-  .hero-sub{
-    font-size:.9rem !important;
-  }
-
-  input,
-  button,
-  select{
-    min-height:48px !important;
-  }
-
-  .card,
-  .app-card{
-    padding:18px !important;
-    border-radius:18px !important;
-  }
-}
-
 </style>
 </head>
 <body>
-<div class="badge-pwa">PWA — SIN TIENDAS</div>
-<div class="hero-title">MedIA Suite</div>
-<div class="hero-sub">Herramientas médicas con inteligencia artificial</div>
-
-<button id="installBtn" onclick="installPWA()">📲 Instalar en este dispositivo</button>
-
-<div class="app-card">
-  <div class="app-row">
-    <div class="app-icon"><img src="triage-icon-192.png" alt="TriageIA"></div>
-    <div>
-      <div class="app-name">🔴 TriageIA</div>
-      <div class="app-desc">Clasificación de emergencias hospitalarias por riesgo de vida.</div>
-    </div>
 
 <div class="abanner" id="ab"><div class="atitle" id="at">💊 Medicamento</div><div class="asub" id="as"></div><button class="aok" onclick="dA()">OK</button></div>
 <div class="toast" id="toast"></div>
@@ -605,16 +302,9 @@ select{
     <canvas id="qrCanvas" width="200" height="200"></canvas>
     <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--mu);margin-bottom:16px">Válido solo en instalaciones autorizadas</div>
     <button class="bpri" onclick="document.getElementById('qrModal').classList.remove('on')">Cerrar</button>
-</div>
-  <a class="btn-open btn-triage" href="triage-ia.html">Abrir TriageIA →</a>
+  </div>
 </div>
 
-<div class="app-card">
-  <div class="app-row">
-    <div class="app-icon"><img src="medi-icon-192.png" alt="MediApp"></div>
-    <div>
-      <div class="app-name">💊 MediApp</div>
-      <div class="app-desc">Recordatorios de medicamentos e interacciones farmacológicas.</div>
 <!-- AUTH SCREEN -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
@@ -647,20 +337,10 @@ select{
     <div class="auth-err" id="authErr"></div>
     <div class="auth-qr">
       <button class="auth-qr-btn" onclick="patientQRLogin()">👤 Soy paciente — tengo código QR</button>
-</div>
-</div>
-  <a class="btn-open btn-medi" href="mediapp.html">Abrir MediApp →</a>
+    </div>
+  </div>
 </div>
 
-<div class="install-hint">
-  <div class="install-title">📲 Instalar en tu celular</div>
-  
-  <div class="os-block">
-    <div class="os-name">🤖 Android (Chrome)</div>
-    <div class="step"><span class="step-num">1</span>Abre esta página en Chrome</div>
-    <div class="step"><span class="step-num">2</span>Toca el menú ⋮ (tres puntos arriba a la derecha)</div>
-    <div class="step"><span class="step-num">3</span>Selecciona "Añadir a pantalla de inicio"</div>
-    <div class="step"><span class="step-num">4</span>Confirma — aparecerá el ícono en tu pantalla</div>
 <!-- MAIN APP -->
 <div class="app" id="mainApp">
   <!-- SIDEBAR (desktop only) -->
@@ -673,14 +353,8 @@ select{
       <div class="user-chip" id="sideUserChip"></div>
       <button class="bsec" onclick="doSignOut()" style="margin-top:0;font-size:.8rem">⬅ Cerrar sesión</button>
     </div>
-</div>
+  </div>
 
-  <div class="os-block">
-    <div class="os-name">🍎 iPhone / iPad (Safari)</div>
-    <div class="step"><span class="step-num">1</span>Abre esta página en Safari</div>
-    <div class="step"><span class="step-num">2</span>Toca el botón compartir ↑ (abajo en el centro)</div>
-    <div class="step"><span class="step-num">3</span>Selecciona "Añadir a pantalla de inicio"</div>
-    <div class="step"><span class="step-num">4</span>Confirma — aparecerá el ícono como una app</div>
   <!-- MAIN AREA -->
   <div class="main-area">
     <div class="top-bar">
@@ -799,27 +473,13 @@ select{
     <nav class="bottom-nav" id="bnav">
       <div class="nind" id="nind" style="width:25%;left:0"></div>
     </nav>
-</div>
+  </div>
 </div>
 
 <!-- QR lib -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installBtn').style.display = 'block';
-});
-
-function installPWA() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => {
-      deferredPrompt = null;
-      document.getElementById('installBtn').style.display = 'none';
-    });
 const DS_KEY = "sk-2bcc88303629498791976689e32db13c";
 const PROXY = "https://little-voice-6621.mdq2804.workers.dev";
 
@@ -897,11 +557,9 @@ async function doAuth(){
   }catch(e){
     const msgs={'auth/invalid-credential':'Correo o contraseña incorrectos','auth/email-already-in-use':'Este correo ya está registrado','auth/weak-password':'La contraseña debe tener al menos 6 caracteres','auth/invalid-email':'Correo no válido'};
     err.textContent=msgs[e.code]||e.message;
-}
+  }
 }
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
 async function doGoogle(){
   try{
     await FB.signInWithPopup(FB.auth,FB.gProvider);
@@ -1256,139 +914,7 @@ function rAnalyzing(){
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .2s infinite;display:inline-block"></span>
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .4s infinite;display:inline-block"></span>
     </div>
-    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
-/* ==== FIX RESPONSIVE + AUTH ==== */
-html,body{
-  overflow-x:hidden !important;
-  width:100%;
-}
-
-*{
-  max-width:100%;
-}
-
-body{
-  padding-left:14px !important;
-  padding-right:14px !important;
-}
-
-.main-wrap,
-.hero-wrap,
-.auth-wrap,
-.landing-wrap,
-.top-wrap{
-  width:100% !important;
-  max-width:1200px !important;
-  margin:0 auto !important;
-  display:flex !important;
-  flex-wrap:wrap !important;
-  justify-content:center !important;
-  align-items:center !important;
-  gap:24px !important;
-}
-
-.left-panel,
-.right-panel,
-.auth-panel,
-.login-panel,
-.mockup,
-.phone,
-.phone-wrap{
-  position:relative !important;
-  transform:none !important;
-  left:auto !important;
-  right:auto !important;
-  top:auto !important;
-  bottom:auto !important;
-}
-
-.auth-card,
-.auth-box,
-.login-box,
-.panel-auth{
-  z-index:999 !important;
-  position:relative !important;
-  pointer-events:auto !important;
-}
-
-.decor,
-.glow,
-.lines,
-.bg-shape,
-.floating,
-.absolute,
-.overlay{
-  pointer-events:none !important;
-}
-
-button,
-a,
-input,
-select{
-  pointer-events:auto !important;
-}
-
-@media (max-width: 900px){
-
-  body{
-    padding-top:24px !important;
-  }
-
-  .hero-title{
-    font-size:2.5rem !important;
-    text-align:center !important;
-  }
-
-  .hero-sub{
-    text-align:center !important;
-    margin-bottom:20px !important;
-  }
-
-  .app-card,
-  .auth-card,
-  .login-box,
-  .panel-auth{
-    width:100% !important;
-    max-width:420px !important;
-    margin:0 auto !important;
-  }
-
-  .side-panel,
-  .preview-panel,
-  .mockup{
-    display:none !important;
-  }
-
-  .bottom-nav{
-    position:sticky !important;
-    bottom:0 !important;
-  }
-}
-
-@media (max-width: 600px){
-
-  .hero-title{
-    font-size:2rem !important;
-  }
-
-  .hero-sub{
-    font-size:.9rem !important;
-  }
-
-  input,
-  button,
-  select{
-    min-height:48px !important;
-  }
-
-  .card,
-  .app-card{
-    padding:18px !important;
-    border-radius:18px !important;
-  }
-}
-
-</style>
+    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}</style>
     <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--mu);letter-spacing:2px">EVALUANDO RIESGO CLÍNICO</div>
   </div>`;
   callAI();
@@ -1531,23 +1057,5 @@ MEDS.forEach(m=>{if(m.active)sAlarm(m);});
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 </script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // Prevent translation widgets from breaking auth buttons
-  document.querySelectorAll('button').forEach(btn => {
-    btn.style.pointerEvents = 'auto';
-  });
-
-  // Restore clickability if overlays exist
-  document.querySelectorAll('*').forEach(el => {
-    const style = window.getComputedStyle(el);
-    if(style.position === 'absolute' && el.offsetHeight > window.innerHeight * 0.8){
-      el.style.pointerEvents = 'none';
-    }
-  });
-});
-</script>
-
 </body>
 </html>
