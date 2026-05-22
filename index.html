@@ -287,6 +287,62 @@ select option{background:var(--bg3);}
 #qrCanvas{border-radius:12px;margin:0 auto 16px;display:block;}
 /* ── PROFILE ── */
 .prof-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:#000;margin:0 auto 12px;}
+
+/* ── PREMIUM ANIMATIONS ── */
+*{-webkit-font-smoothing:antialiased;}
+button,.opt,.card,.htab,.auth-tab,.nb,.snav-btn{transition:all .22s cubic-bezier(.4,0,.2,1)!important;}
+button:active:not(.tgl){transform:scale(.96)!important;}
+.card{transition:box-shadow .3s,transform .3s,background .3s!important;}
+@media(hover:hover){.card:hover{box-shadow:0 8px 40px rgba(0,0,0,.25);transform:translateY(-1px);}}
+.sc.on{animation:scIn .3s cubic-bezier(.4,0,.2,1);}
+@keyframes scIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+.auth-box{animation:authIn .45s cubic-bezier(.34,1.4,.64,1);}
+@keyframes authIn{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.auth-logo b{background:linear-gradient(90deg,var(--cy),#fff,var(--cy));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;}
+@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+.rcard{animation:rcIn .45s cubic-bezier(.34,1.4,.64,1);}
+@keyframes rcIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.opts .opt{animation:optIn .28s cubic-bezier(.4,0,.2,1) both;}
+.opts .opt:nth-child(1){animation-delay:.03s}
+.opts .opt:nth-child(2){animation-delay:.07s}
+.opts .opt:nth-child(3){animation-delay:.11s}
+.opts .opt:nth-child(4){animation-delay:.15s}
+.opts .opt:nth-child(5){animation-delay:.19s}
+.opts .opt:nth-child(6){animation-delay:.23s}
+.opts .opt:nth-child(7){animation-delay:.27s}
+@keyframes optIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@media(hover:hover){
+  .opt:hover{box-shadow:0 0 0 1.5px var(--cy),0 4px 16px rgba(0,200,240,.1);}
+  .opt.sel{box-shadow:0 0 0 2px var(--cy),0 4px 20px rgba(0,200,240,.18);}
+  .opt.selm{box-shadow:0 0 0 2px var(--gn),0 4px 20px rgba(0,224,122,.18);}
+  .stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.2);}
+  .snav-btn:hover{padding-left:26px;}
+}
+.snav-btn.on{padding-left:26px;}
+.pgf{box-shadow:0 0 8px var(--cy);}
+input:focus,.fi:focus,select:focus,.auth-fi:focus{box-shadow:0 0 0 3px rgba(0,200,240,.13);}
+.nind{transition:all .35s cubic-bezier(.4,0,.2,1)!important;}
+.modal-box{animation:modalIn .35s cubic-bezier(.34,1.4,.64,1);}
+@keyframes modalIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+/* ── LANGUAGE SELECTOR ── */
+.lang-wrap{position:relative;}
+.lang-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;border:1px solid var(--bd);background:var(--bg3);font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;cursor:pointer;color:var(--mu);transition:all .2s;}
+.lang-btn:hover{border-color:var(--cy);color:var(--cy);}
+.lang-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:5px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:600;min-width:148px;display:none;}
+.lang-menu.open{display:block;animation:dropIn .18s cubic-bezier(.4,0,.2,1);}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.lang-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.83rem;color:var(--tx);transition:all .15s;}
+.lang-item:hover{background:var(--cy-a);color:var(--cy);}
+.lang-item.cur{background:var(--cy-a);color:var(--cy);font-weight:700;}
+/* ── FORGOT PASSWORD ── */
+.forgot-link{display:block;text-align:center;font-size:.75rem;color:var(--mu);margin-top:8px;cursor:pointer;transition:color .2s;}
+.forgot-link:hover{color:var(--cy);}
+/* ── QR CAMERA ── */
+#qrVideo{width:100%;border-radius:12px;background:#000;}
+.qr-scan-wrap{position:relative;margin-bottom:14px;}
+.qr-scan-line{position:absolute;left:10%;right:10%;height:2px;background:var(--cy);animation:scan 2s linear infinite;box-shadow:0 0 8px var(--cy);}
+@keyframes scan{0%{top:10%}100%{top:90%}}
+
 </style>
 </head>
 <body>
@@ -294,14 +350,28 @@ select option{background:var(--bg3);}
 <div class="abanner" id="ab"><div class="atitle" id="at">💊 Medicamento</div><div class="asub" id="as"></div><button class="aok" onclick="dA()">OK</button></div>
 <div class="toast" id="toast"></div>
 
-<!-- QR MODAL -->
+<!-- QR SHOW MODAL (admin shows QR) -->
 <div class="modal" id="qrModal">
   <div class="modal-box">
     <div class="modal-title">📱 Acceso Paciente</div>
-    <div class="modal-sub">Escanea este código en recepción para acceder como paciente</div>
-    <canvas id="qrCanvas" width="200" height="200"></canvas>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--mu);margin-bottom:16px">Válido solo en instalaciones autorizadas</div>
+    <div class="modal-sub" style="margin-bottom:14px">Muestra este código en recepción para que los pacientes accedan.</div>
+    <canvas id="qrCanvas" width="200" height="200" style="border-radius:12px;margin:0 auto 14px;display:block"></canvas>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--mu);margin-bottom:14px;text-align:center">Solo válido en instalaciones autorizadas</div>
     <button class="bpri" onclick="document.getElementById('qrModal').classList.remove('on')">Cerrar</button>
+  </div>
+</div>
+
+<!-- QR SCAN MODAL (patient scans) -->
+<div class="modal" id="qrScanModal">
+  <div class="modal-box">
+    <div class="modal-title">📷 Escanear código QR</div>
+    <div class="modal-sub" style="margin-bottom:14px">Apunta la cámara al código QR de la clínica.</div>
+    <div class="qr-scan-wrap">
+      <video id="qrVideo" autoplay playsinline></video>
+      <div class="qr-scan-line"></div>
+    </div>
+    <div id="qrScanStatus" style="font-size:.78rem;color:var(--mu);text-align:center;margin-bottom:14px">Buscando código...</div>
+    <button class="bpri" onclick="stopQRScan()" style="background:var(--rd);color:#fff">Cancelar</button>
   </div>
 </div>
 
@@ -309,7 +379,19 @@ select option{background:var(--bg3);}
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
     <div class="auth-logo"><b>Med</b>IA<s> Suite</s></div>
-    <div class="auth-sub">Sistema médico inteligente</div>
+    <div class="auth-sub" id="authSubTxt">Sistema médico inteligente</div>
+    <div style="text-align:center;margin-bottom:18px">
+      <div class="lang-wrap" style="display:inline-block">
+        <button class="lang-btn" onclick="toggleLang('auth')" id="authLangBtn">🌐 <span id="authLangCode">ES</span></button>
+        <div class="lang-menu" id="authLangMenu">
+          <div class="lang-item cur" onclick="setLang('es')">🇪🇸 Español</div>
+          <div class="lang-item" onclick="setLang('en')">🇺🇸 English</div>
+          <div class="lang-item" onclick="setLang('pt')">🇧🇷 Português</div>
+          <div class="lang-item" onclick="setLang('fr')">🇫🇷 Français</div>
+          <div class="lang-item" onclick="setLang('de')">🇩🇪 Deutsch</div>
+        </div>
+      </div>
+    </div>
     <div class="auth-tabs">
       <button class="auth-tab on" id="atab-in" onclick="authTab('in')">Iniciar sesión</button>
       <button class="auth-tab" id="atab-up" onclick="authTab('up')">Registrarse</button>
@@ -327,7 +409,8 @@ select option{background:var(--bg3);}
         <label class="auth-fl">Contraseña</label>
         <input class="auth-fi" id="aPass" type="password" placeholder="••••••••">
       </div>
-      <button class="auth-btn" onclick="doAuth()">Continuar →</button>
+      <button class="auth-btn" id="authMainBtn" onclick="doAuth()">Continuar →</button>
+      <span class="forgot-link" id="forgotLink" onclick="doForgot()">¿Olvidaste tu contraseña?</span>
       <div class="auth-div">o</div>
       <button class="auth-goo" onclick="doGoogle()">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -336,7 +419,7 @@ select option{background:var(--bg3);}
     </div>
     <div class="auth-err" id="authErr"></div>
     <div class="auth-qr">
-      <button class="auth-qr-btn" onclick="patientQRLogin()">👤 Soy paciente — tengo código QR</button>
+      <button class="auth-qr-btn" id="qrAccessBtn" onclick="startQRScan()">📷 Soy paciente — escanear código QR</button>
     </div>
   </div>
 </div>
@@ -360,6 +443,16 @@ select option{background:var(--bg3);}
     <div class="top-bar">
       <div class="top-logo"><b>Med</b>IA<s> Suite</s></div>
       <div class="top-right">
+        <div class="lang-wrap" id="topLangWrap">
+          <button class="lang-btn" onclick="toggleLang('top')" id="topLangBtn">🌐 <span id="topLangCode">ES</span></button>
+          <div class="lang-menu" id="topLangMenu">
+            <div class="lang-item cur" onclick="setLang('es')">🇪🇸 Español</div>
+            <div class="lang-item" onclick="setLang('en')">🇺🇸 English</div>
+            <div class="lang-item" onclick="setLang('pt')">🇧🇷 Português</div>
+            <div class="lang-item" onclick="setLang('fr')">🇫🇷 Français</div>
+            <div class="lang-item" onclick="setLang('de')">🇩🇪 Deutsch</div>
+          </div>
+        </div>
         <span class="role-badge" id="roleBadge"></span>
         <button class="icon-btn" onclick="toggleTheme()" title="Cambiar tema" id="themeBtn">🌙</button>
         <button class="icon-btn" onclick="doSignOut()" title="Cerrar sesión">⬅</button>
@@ -914,7 +1007,63 @@ function rAnalyzing(){
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .2s infinite;display:inline-block"></span>
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .4s infinite;display:inline-block"></span>
     </div>
-    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}</style>
+    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+/* ── PREMIUM ANIMATIONS ── */
+*{-webkit-font-smoothing:antialiased;}
+button,.opt,.card,.htab,.auth-tab,.nb,.snav-btn{transition:all .22s cubic-bezier(.4,0,.2,1)!important;}
+button:active:not(.tgl){transform:scale(.96)!important;}
+.card{transition:box-shadow .3s,transform .3s,background .3s!important;}
+@media(hover:hover){.card:hover{box-shadow:0 8px 40px rgba(0,0,0,.25);transform:translateY(-1px);}}
+.sc.on{animation:scIn .3s cubic-bezier(.4,0,.2,1);}
+@keyframes scIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+.auth-box{animation:authIn .45s cubic-bezier(.34,1.4,.64,1);}
+@keyframes authIn{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.auth-logo b{background:linear-gradient(90deg,var(--cy),#fff,var(--cy));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;}
+@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+.rcard{animation:rcIn .45s cubic-bezier(.34,1.4,.64,1);}
+@keyframes rcIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.opts .opt{animation:optIn .28s cubic-bezier(.4,0,.2,1) both;}
+.opts .opt:nth-child(1){animation-delay:.03s}
+.opts .opt:nth-child(2){animation-delay:.07s}
+.opts .opt:nth-child(3){animation-delay:.11s}
+.opts .opt:nth-child(4){animation-delay:.15s}
+.opts .opt:nth-child(5){animation-delay:.19s}
+.opts .opt:nth-child(6){animation-delay:.23s}
+.opts .opt:nth-child(7){animation-delay:.27s}
+@keyframes optIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@media(hover:hover){
+  .opt:hover{box-shadow:0 0 0 1.5px var(--cy),0 4px 16px rgba(0,200,240,.1);}
+  .opt.sel{box-shadow:0 0 0 2px var(--cy),0 4px 20px rgba(0,200,240,.18);}
+  .opt.selm{box-shadow:0 0 0 2px var(--gn),0 4px 20px rgba(0,224,122,.18);}
+  .stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.2);}
+  .snav-btn:hover{padding-left:26px;}
+}
+.snav-btn.on{padding-left:26px;}
+.pgf{box-shadow:0 0 8px var(--cy);}
+input:focus,.fi:focus,select:focus,.auth-fi:focus{box-shadow:0 0 0 3px rgba(0,200,240,.13);}
+.nind{transition:all .35s cubic-bezier(.4,0,.2,1)!important;}
+.modal-box{animation:modalIn .35s cubic-bezier(.34,1.4,.64,1);}
+@keyframes modalIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+/* ── LANGUAGE SELECTOR ── */
+.lang-wrap{position:relative;}
+.lang-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;border:1px solid var(--bd);background:var(--bg3);font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;cursor:pointer;color:var(--mu);transition:all .2s;}
+.lang-btn:hover{border-color:var(--cy);color:var(--cy);}
+.lang-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:5px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:600;min-width:148px;display:none;}
+.lang-menu.open{display:block;animation:dropIn .18s cubic-bezier(.4,0,.2,1);}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.lang-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.83rem;color:var(--tx);transition:all .15s;}
+.lang-item:hover{background:var(--cy-a);color:var(--cy);}
+.lang-item.cur{background:var(--cy-a);color:var(--cy);font-weight:700;}
+/* ── FORGOT PASSWORD ── */
+.forgot-link{display:block;text-align:center;font-size:.75rem;color:var(--mu);margin-top:8px;cursor:pointer;transition:color .2s;}
+.forgot-link:hover{color:var(--cy);}
+/* ── QR CAMERA ── */
+#qrVideo{width:100%;border-radius:12px;background:#000;}
+.qr-scan-wrap{position:relative;margin-bottom:14px;}
+.qr-scan-line{position:absolute;left:10%;right:10%;height:2px;background:var(--cy);animation:scan 2s linear infinite;box-shadow:0 0 8px var(--cy);}
+@keyframes scan{0%{top:10%}100%{top:90%}}
+
+</style>
     <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--mu);letter-spacing:2px">EVALUANDO RIESGO CLÍNICO</div>
   </div>`;
   callAI();
@@ -1056,6 +1205,21 @@ document.getElementById('aPass').addEventListener('keypress',e=>{if(e.key==='Ent
 MEDS.forEach(m=>{if(m.active)sAlarm(m);});
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+
+const LANGS={es:{sub:'Sistema medico inteligente',login:'Iniciar sesion',register:'Registrarse',cont:'Continuar',forgot:'Olvide mi contrasena',google:'Continuar con Google',qrBtn:'Escanear codigo QR de paciente',resetSent:'Correo enviado. Revisa tu bandeja.',resetErr:'No se pudo enviar.'},en:{sub:'Intelligent medical system',login:'Sign in',register:'Sign up',cont:'Continue',forgot:'Forgot password',google:'Continue with Google',qrBtn:'Scan patient QR code',resetSent:'Recovery email sent.',resetErr:'Could not send email.'},pt:{sub:'Sistema medico inteligente',login:'Entrar',register:'Registrar',cont:'Continuar',forgot:'Esqueci minha senha',google:'Continuar com Google',qrBtn:'Escanear codigo QR',resetSent:'Email enviado.',resetErr:'Nao foi possivel enviar.'},fr:{sub:'Systeme medical intelligent',login:'Se connecter',register:'Inscription',cont:'Continuer',forgot:'Mot de passe oublie',google:'Continuer avec Google',qrBtn:'Scanner code QR',resetSent:'Email envoye.',resetErr:'Impossible envoyer.'},de:{sub:'Intelligentes System',login:'Anmelden',register:'Registrieren',cont:'Weiter',forgot:'Passwort vergessen',google:'Mit Google',qrBtn:'QR-Code scannen',resetSent:'Email gesendet.',resetErr:'Email fehlgeschlagen.'}};
+const LANG_CODES={es:'ES',en:'EN',pt:'PT',fr:'FR',de:'DE'};
+let curLang=localStorage.getItem('ms_lang')||'es';
+function t(k){return(LANGS[curLang]||LANGS.es)[k]||k;}
+function setLang(lang){curLang=lang;localStorage.setItem('ms_lang',lang);['topLangCode','authLangCode'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=LANG_CODES[lang]||'ES';});document.querySelectorAll('.lang-item').forEach(el=>{const o=el.getAttribute('onclick')||'';el.classList.toggle('cur',o.includes("'"+lang+"'"));});document.querySelectorAll('.lang-menu').forEach(m=>m.classList.remove('open'));applyTrans();}
+function toggleLang(which){const id=which==='top'?'topLangMenu':'authLangMenu';const m=document.getElementById(id);if(!m)return;const was=m.classList.contains('open');document.querySelectorAll('.lang-menu').forEach(x=>x.classList.remove('open'));if(!was)m.classList.add('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.lang-wrap'))document.querySelectorAll('.lang-menu').forEach(m=>m.classList.remove('open'));});
+function applyTrans(){const L=LANGS[curLang]||LANGS.es;[['authSubTxt','sub'],['atab-in','login'],['atab-up','register'],['authMainBtn','cont'],['forgotLink','forgot'],['qrAccessBtn','qrBtn']].forEach(([id,k])=>{const el=document.getElementById(id);if(el&&L[k])el.textContent=L[k];});}
+async function doForgot(){const{sendPasswordResetEmail}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');const email=document.getElementById('aEmail').value.trim();if(!email){document.getElementById('authErr').textContent='Ingresa tu correo primero';return;}try{await sendPasswordResetEmail(FB.auth,email);document.getElementById('authErr').style.color='var(--gn)';document.getElementById('authErr').textContent=t('resetSent');}catch(e){document.getElementById('authErr').style.color='var(--rd)';document.getElementById('authErr').textContent=t('resetErr');}}
+let qrStream=null,qrInt=null;
+async function startQRScan(){const modal=document.getElementById('qrScanModal');modal.classList.add('on');try{qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('qrVideo').srcObject=qrStream;if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});qrInt=setInterval(async()=>{try{const codes=await det.detect(document.getElementById('qrVideo'));if(codes.length>0){if(codes[0].rawValue===btoa('media-patient-2025')){stopQRScan();currentRole='paciente';currentUser={uid:'patient-qr',email:'Paciente QR',displayName:'Paciente'};showApp();}else document.getElementById('qrScanStatus').textContent='Codigo no valido.';}}catch(e){}},500);}else{stopQRScan();const c=prompt('Ingresa el codigo de acceso:');if(c===btoa('media-patient-2025')){currentRole='paciente';currentUser={uid:'patient-qr',email:'Paciente QR',displayName:'Paciente'};showApp();}else if(c)alert('Codigo incorrecto.');}}catch(e){stopQRScan();const c=prompt('Camara no disponible. Ingresa el codigo:');if(c===btoa('media-patient-2025')){currentRole='paciente';currentUser={uid:'patient-qr',email:'Paciente QR',displayName:'Paciente'};showApp();}}}
+function stopQRScan(){if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}if(qrInt){clearInterval(qrInt);qrInt=null;}document.getElementById('qrScanModal').classList.remove('on');}
+document.addEventListener('DOMContentLoaded',()=>setLang(curLang));
+
 </script>
 </body>
 </html>
