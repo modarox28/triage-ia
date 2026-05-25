@@ -293,9 +293,39 @@ select option{background:var(--bg3);}
 .modal-title{font-family:"JetBrains Mono",monospace;font-size:.95rem;font-weight:700;margin-bottom:5px;}
 .modal-sub{font-size:.78rem;color:var(--mu);margin-bottom:16px;}
 
-/* HISTORY FILTERS */
+/* HISTORY FILTERS + LEGEND */
 .hist-flt{padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);font-size:.78rem;cursor:pointer;transition:all .2s;touch-action:manipulation;}
 .hist-flt.on{background:var(--cy);color:#000;border-color:var(--cy);font-weight:700;}
+.hist-legend-btn{background:none;border:none;font-size:1rem;cursor:pointer;padding:4px 6px;border-radius:8px;transition:opacity .2s;touch-action:manipulation;opacity:.7;}
+.hist-legend-btn:hover{opacity:1;}
+.hist-legend-panel{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;padding:12px 14px;margin-bottom:8px;animation:fadeUp .25s ease;}
+.hlg-row{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:.78rem;border-bottom:1px solid var(--bd);}
+.hlg-row:last-child{border-bottom:none;}
+.hlg-ic{font-size:1rem;width:24px;text-align:center;flex-shrink:0;}
+.hlg-lbl{font-weight:600;min-width:70px;font-size:.75rem;}
+.hlg-desc{color:var(--mu);font-size:.72rem;}
+/* MEDS REDESIGN */
+.med-add-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:2px 0 4px;}
+.med-add-toggle{font-size:1.3rem;transition:transform .25s cubic-bezier(.34,1.4,.64,1);color:var(--cy);line-height:1;}
+.med-add-form{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.med-add-form.on{max-height:600px;}
+.mi2{display:flex;align-items:stretch;border-radius:11px;background:var(--bg3);margin-bottom:7px;overflow:hidden;border:1px solid var(--bd);transition:box-shadow .2s;}
+.mi2:active{box-shadow:0 0 0 2px var(--cy);}
+.mi2-bar{width:3px;flex-shrink:0;}
+.mi2-body{flex:1;padding:10px 6px 10px 12px;min-width:0;}
+.mi2-name{font-weight:700;font-size:.88rem;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mi2-info{font-size:.71rem;color:var(--mu);}
+.mi2-note{font-size:.68rem;color:var(--mu);font-style:italic;margin-top:2px;}
+.mi2-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px 10px 8px 4px;}
+.mi2-del{background:none;border:none;color:var(--mu);cursor:pointer;font-size:.85rem;padding:4px 5px;border-radius:6px;transition:color .2s;touch-action:manipulation;}
+.mi2-del:hover{color:var(--rd);}
+.ri2{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);}
+.ri2:last-child{border-bottom:none;}
+.ri2-time{font-family:"JetBrains Mono",monospace;font-size:.78rem;color:var(--cy);min-width:44px;font-weight:700;}
+.ri2-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ri2-body{flex:1;min-width:0;}
+.ri2-name{font-weight:700;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ri2-dose{font-size:.69rem;color:var(--mu);}
 /* QR SCAN */
 .qr-video-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:12px;}
 #qrVideo{width:100%;display:block;border-radius:12px;}
@@ -631,9 +661,9 @@ select option{background:var(--bg3);}
         </div>
         <div class="card" id="nearbyCard" style="display:none">
           <div class="clabel" id="lbNearbyTitle">Centros de salud cercanos</div>
-          <div style="display:flex;gap:8px;margin-bottom:10px">
-            <input class="fi" id="nearbyEpsInput" type="text" placeholder="EPS / aseguradora..." style="flex:1;height:38px">
-            <button class="bpri" style="flex:0 0 auto;padding:0 16px;height:38px" onclick="searchNearby()">Buscar</button>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <input class="fi" id="nearbyEpsInput" type="text" placeholder="EPS / aseguradora..." style="flex:1;min-width:140px;height:38px">
+            <button class="bpri" id="nearbySearchBtn" style="flex:0 0 auto;width:auto;padding:0 18px;height:38px;white-space:nowrap" onclick="searchNearby()">Buscar</button>
           </div>
           <div id="nearbyStatus" style="font-size:.75rem;color:var(--mu);margin-bottom:8px"></div>
           <div id="nearbyMap" style="height:220px;border-radius:12px;overflow:hidden;background:var(--bg3)"></div>
@@ -654,6 +684,7 @@ select option{background:var(--bg3);}
           <button class="htab" id="st-al" onclick="ss('al')">⏰ <span class="sst" data-k="alerts">Alertas</span></button>
           <button class="htab" id="st-in" onclick="ss('in')">⚠️ <span class="sst" data-k="inter">Inter.</span></button>
         </div>
+        <!-- BUSCAR -->
         <div class="sc on" id="ms-bs" style="padding:10px 0 0">
           <div class="card">
             <div class="clabel" id="lbSearchDrug">Buscar medicamento</div>
@@ -662,30 +693,44 @@ select option{background:var(--bg3);}
           </div>
           <div id="dr"></div>
         </div>
+        <!-- MIS MEDS -->
         <div class="sc" id="ms-ms" style="padding:10px 0 0">
           <div class="card">
-            <div class="clabel" id="lbNewMed">Nuevo medicamento</div>
-            <div class="fg"><label class="fl" id="lbMedName">Nombre</label><input class="fi" id="nn" type="text" placeholder="ej. Metformina 500mg"></div>
-            <div class="fr">
-              <div class="fg"><label class="fl" id="lbDose">Dosis</label><input class="fi" id="nd" type="text" placeholder="1 tableta"></div>
-              <div class="fg"><label class="fl" id="lbFreq">Frecuencia</label>
-                <select class="fi" id="nf"><option>Cada 8h</option><option>Cada 12h</option><option>Una vez/dia</option><option>Dos veces/dia</option><option>Con comidas</option><option>Segun necesidad</option></select>
+            <div class="med-add-header" onclick="toggleMedForm()">
+              <div class="clabel" style="margin:0" id="lbNewMed">Nuevo medicamento</div>
+              <span class="med-add-toggle" id="medAddToggle">＋</span>
+            </div>
+            <div class="med-add-form" id="medAddForm">
+              <div style="padding-top:10px">
+                <div class="fg"><label class="fl" id="lbMedName">Nombre</label><input class="fi" id="nn" type="text" placeholder="ej. Metformina 500mg"></div>
+                <div class="fr">
+                  <div class="fg"><label class="fl" id="lbDose">Dosis</label><input class="fi" id="nd" type="text" placeholder="1 tableta"></div>
+                  <div class="fg"><label class="fl" id="lbFreq">Frecuencia</label>
+                    <select class="fi" id="nf"><option>Cada 8h</option><option>Cada 12h</option><option>Una vez/dia</option><option>Dos veces/dia</option><option>Con comidas</option><option>Segun necesidad</option></select>
+                  </div>
+                </div>
+                <div class="fr">
+                  <div class="fg"><label class="fl" id="lbHour">Hora</label><input class="fi" id="nh" type="time" value="08:00"></div>
+                  <div class="fg"><label class="fl" id="lbNotes">Notas</label><input class="fi" id="no2" type="text" placeholder="opcional"></div>
+                </div>
+                <button class="bpri" id="addMedBtn" onclick="addMed()">+ <span id="addMedTxt">Agregar</span></button>
               </div>
             </div>
-            <div class="fg"><label class="fl" id="lbHour">Hora</label><input class="fi" id="nh" type="time" value="08:00"></div>
-            <div class="fg"><label class="fl" id="lbNotes">Notas</label><input class="fi" id="no2" type="text" placeholder="ej. Tomar con comida"></div>
-            <button class="bpri" id="addMedBtn" onclick="addMed()">+ Agregar</button>
           </div>
           <div class="card"><div class="clabel" id="lbMyMeds">Mis medicamentos</div><div id="ml"></div></div>
         </div>
+        <!-- ALERTAS -->
         <div class="sc" id="ms-al" style="padding:10px 0 0">
-          <div class="card"><div class="clabel" id="lbReminders">Recordatorios de hoy</div><div id="rl"></div></div>
-          <div class="card" style="background:var(--cy-a);border-color:rgba(0,200,240,.15)">
-            <div style="display:flex;gap:10px;align-items:center"><span style="font-size:1.2rem">🔔</span>
-            <div><div style="font-weight:700;font-size:.83rem;color:var(--cy)" id="alarmsTitle">Alarmas activas</div>
-            <div style="font-size:.71rem;color:var(--mu);margin-top:2px" id="alarmsNote">Las alarmas suenan mientras la app esta abierta.</div></div></div>
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div class="clabel" style="margin:0" id="lbReminders">Recordatorios de hoy</div>
+              <span style="font-size:.72rem;background:var(--cy-a);color:var(--cy);padding:3px 8px;border-radius:8px;font-family:'JetBrains Mono',monospace" id="alarmsTitle">🔔 ON</span>
+            </div>
+            <div id="rl"></div>
+            <div style="font-size:.69rem;color:var(--mu);margin-top:8px;text-align:center" id="alarmsNote">Las alarmas suenan mientras la app esta abierta.</div>
           </div>
         </div>
+        <!-- INTERACCIONES -->
         <div class="sc" id="ms-in" style="padding:10px 0 0">
           <div class="card">
             <div class="clabel" id="lbCheckInter">Verificar interacciones</div>
@@ -784,7 +829,7 @@ select option{background:var(--bg3);}
 </div>
 
 <div class="sc" id="sc-hist">
-        <div style="padding:10px 0 4px;display:flex;gap:6px;flex-wrap:wrap" id="histFilters">
+        <div style="padding:10px 0 4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center" id="histFilters">
           <button class="hist-flt on" data-f="all" onclick="setHistFilter('all',this)">Todos</button>
           <button class="hist-flt" data-f="ROJO" onclick="setHistFilter('ROJO',this)" style="color:var(--rd)">🔴</button>
           <button class="hist-flt" data-f="AMARILLO" onclick="setHistFilter('AMARILLO',this)" style="color:var(--yw)">🟡</button>
@@ -795,7 +840,9 @@ select option{background:var(--bg3);}
           <button class="hist-flt" data-f="abdominal" onclick="setHistFilter('abdominal',this)">🤢</button>
           <button class="hist-flt" data-f="neuro" onclick="setHistFilter('neuro',this)">🧠</button>
           <button class="hist-flt" data-f="fiebre" onclick="setHistFilter('fiebre',this)">🌡️</button>
+          <button class="hist-legend-btn" onclick="toggleHistLegend()" aria-label="Leyenda">ℹ️</button>
         </div>
+        <div id="histLegendPanel" class="hist-legend-panel" style="display:none"></div>
         <div class="card"><div class="clabel" id="lbHistTitle">Historial de triages</div><div id="histList"></div></div>
       </div>
       <!-- CONFIGURACION -->
@@ -1018,6 +1065,12 @@ const L={
     nearbyTitle:"Centros de salud cercanos",nearbyEpsLbl:"Tu aseguradora / EPS",nearbyBtn:"Buscar centros",nearbyLocating:"Obteniendo ubicacion...",nearbyNone:"Sin resultados cercanos.",nearbyError:"No se pudo obtener la ubicacion.",
     chartTitle:"Estadisticas",chartDay:"Hoy",chartWeek:"Semana",chartMonth:"Mes",chartYear:"Ano",chartByColor:"Por clasificacion",chartByType:"Por tipo de paciente",chartByMotivo:"Por motivo",chartNoData:"Sin datos suficientes",
     filterAll:"Todos",filterByMotivo:"Por motivo",
+    histAll:"Todos",statTotal:"Total",statCritical:"Criticos",statUrgent:"Urgentes",statStable:"Estables",
+    nearbySearching:"Buscando...",nearbyFoundN:"centros encontrados",
+    histLegend:"Leyenda",legendCritical:"Atencion inmediata",legendUrgent:"Atencion urgente",legendStable:"Puede esperar",legendNotes:"Anotaciones clinicas",legendPerformedBy:"Realizado por",
+    mPecho:"Dolor pecho",mDisnea:"Dif. respirar",mTrauma:"Trauma",mAbdominal:"Dolor abdominal",mNeuro:"Neurologico",mFiebre:"Fiebre",mOtro:"Otro",
+    tAdulto:"Adulto",tMayor:"Mayor",tNino:"Nino",tAdol:"Adol.",tEmbar:"Embar.",tMovil:"Movil.",
+    noMeds:"Sin medicamentos registrados.",noReminders:"Agrega medicamentos para ver recordatorios.",medAdded:"Medicamento agregado",medDeleted:"Eliminado",medActivated:"Activado",medDeactivated:"Desactivado",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -1109,6 +1162,12 @@ const L={
     nearbyTitle:"Nearby health centers",nearbyEpsLbl:"Your insurance",nearbyBtn:"Search centers",nearbyLocating:"Getting location...",nearbyNone:"No nearby results.",nearbyError:"Could not get location.",
     chartTitle:"Statistics",chartDay:"Today",chartWeek:"Week",chartMonth:"Month",chartYear:"Year",chartByColor:"By classification",chartByType:"By patient type",chartByMotivo:"By reason",chartNoData:"Not enough data",
     filterAll:"All",filterByMotivo:"By reason",
+    histAll:"All",statTotal:"Total",statCritical:"Critical",statUrgent:"Urgent",statStable:"Stable",
+    nearbySearching:"Searching...",nearbyFoundN:"centers found",
+    histLegend:"Legend",legendCritical:"Immediate care",legendUrgent:"Priority care",legendStable:"Can wait",legendNotes:"Clinical notes",legendPerformedBy:"Performed by",
+    mPecho:"Chest pain",mDisnea:"Dyspnea",mTrauma:"Trauma",mAbdominal:"Abdominal pain",mNeuro:"Neurological",mFiebre:"Fever",mOtro:"Other",
+    tAdulto:"Adult",tMayor:"Elder",tNino:"Child",tAdol:"Adol.",tEmbar:"Preg.",tMovil:"Mobil.",
+    noMeds:"No medications registered.",noReminders:"Add medications to see reminders.",medAdded:"Medication added",medDeleted:"Removed",medActivated:"Activated",medDeactivated:"Deactivated",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -1200,6 +1259,12 @@ const L={
     nearbyTitle:"Centros de saude proximos",nearbyEpsLbl:"Seu convenio",nearbyBtn:"Buscar centros",nearbyLocating:"Obtendo localizacao...",nearbyNone:"Sem resultados proximos.",nearbyError:"Nao foi possivel obter a localizacao.",
     chartTitle:"Estatisticas",chartDay:"Hoje",chartWeek:"Semana",chartMonth:"Mes",chartYear:"Ano",chartByColor:"Por classificacao",chartByType:"Por tipo de paciente",chartByMotivo:"Por motivo",chartNoData:"Dados insuficientes",
     filterAll:"Todos",filterByMotivo:"Por motivo",
+    histAll:"Todos",statTotal:"Total",statCritical:"Criticos",statUrgent:"Urgentes",statStable:"Estaveis",
+    nearbySearching:"Buscando...",nearbyFoundN:"centros encontrados",
+    histLegend:"Legenda",legendCritical:"Atencao imediata",legendUrgent:"Atencao urgente",legendStable:"Pode esperar",legendNotes:"Anotacoes clinicas",legendPerformedBy:"Realizado por",
+    mPecho:"Dor no peito",mDisnea:"Dispneia",mTrauma:"Trauma",mAbdominal:"Dor abdominal",mNeuro:"Neurologico",mFiebre:"Febre",mOtro:"Outro",
+    tAdulto:"Adulto",tMayor:"Idoso",tNino:"Crianca",tAdol:"Adol.",tEmbar:"Gest.",tMovil:"Movil.",
+    noMeds:"Sem medicamentos.",noReminders:"Adicione medicamentos para ver lembretes.",medAdded:"Medicamento adicionado",medDeleted:"Removido",medActivated:"Ativado",medDeactivated:"Desativado",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -1291,6 +1356,12 @@ const L={
     nearbyTitle:"Centres de sante proches",nearbyEpsLbl:"Votre assurance",nearbyBtn:"Rechercher centres",nearbyLocating:"Localisation en cours...",nearbyNone:"Aucun resultat proche.",nearbyError:"Impossible d obtenir la localisation.",
     chartTitle:"Statistiques",chartDay:"Aujourd hui",chartWeek:"Semaine",chartMonth:"Mois",chartYear:"Annee",chartByColor:"Par classification",chartByType:"Par type de patient",chartByMotivo:"Par motif",chartNoData:"Donnees insuffisantes",
     filterAll:"Tous",filterByMotivo:"Par motif",
+    histAll:"Tous",statTotal:"Total",statCritical:"Critiques",statUrgent:"Urgents",statStable:"Stables",
+    nearbySearching:"Recherche...",nearbyFoundN:"centres trouves",
+    histLegend:"Legende",legendCritical:"Soins immediats",legendUrgent:"Soins urgents",legendStable:"Peut attendre",legendNotes:"Notes cliniques",legendPerformedBy:"Realise par",
+    mPecho:"Douleur thoracique",mDisnea:"Dyspnee",mTrauma:"Trauma",mAbdominal:"Douleur abdominale",mNeuro:"Neurologique",mFiebre:"Fievre",mOtro:"Autre",
+    tAdulto:"Adulte",tMayor:"Age",tNino:"Enfant",tAdol:"Adol.",tEmbar:"Gros.",tMovil:"Mobil.",
+    noMeds:"Aucun medicament.",noReminders:"Ajoutez des medicaments pour voir les rappels.",medAdded:"Medicament ajoute",medDeleted:"Supprime",medActivated:"Active",medDeactivated:"Desactive",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -1382,6 +1453,12 @@ const L={
     nearbyTitle:"Nahegelegene Gesundheitszentren",nearbyEpsLbl:"Ihre Krankenkasse",nearbyBtn:"Zentren suchen",nearbyLocating:"Standort wird ermittelt...",nearbyNone:"Keine nahegelegenen Ergebnisse.",nearbyError:"Standort konnte nicht ermittelt werden.",
     chartTitle:"Statistiken",chartDay:"Heute",chartWeek:"Woche",chartMonth:"Monat",chartYear:"Jahr",chartByColor:"Nach Klassifikation",chartByType:"Nach Patientenart",chartByMotivo:"Nach Grund",chartNoData:"Nicht genug Daten",
     filterAll:"Alle",filterByMotivo:"Nach Grund",
+    histAll:"Alle",statTotal:"Gesamt",statCritical:"Kritisch",statUrgent:"Dringend",statStable:"Stabil",
+    nearbySearching:"Suche...",nearbyFoundN:"Zentren gefunden",
+    histLegend:"Legende",legendCritical:"Sofortige Versorgung",legendUrgent:"Dringende Versorgung",legendStable:"Kann warten",legendNotes:"Klinische Notizen",legendPerformedBy:"Durchgefuhrt von",
+    mPecho:"Brustschmerz",mDisnea:"Dyspnoe",mTrauma:"Trauma",mAbdominal:"Bauchschmerz",mNeuro:"Neurologisch",mFiebre:"Fieber",mOtro:"Andere",
+    tAdulto:"Erwach.",tMayor:"Senior",tNino:"Kind",tAdol:"Jugend.",tEmbar:"Schwan.",tMovil:"Mobil.",
+    noMeds:"Keine Medikamente.",noReminders:"Medikamente hinzufugen um Erinnerungen zu sehen.",medAdded:"Medikament hinzugefugt",medDeleted:"Entfernt",medActivated:"Aktiviert",medDeactivated:"Deaktiviert",
   },
   ja:{sub:"インテリジェント医療システム",login:"ログイン",register:"登録",cont:"続ける",forgot:"パスワードを忘れた",google:"Googleで続ける",
     ptnTitle:"患者アクセス",ptnSub:"クリニックのQRコードをスキャン",staffLink:"医療スタッフ / 管理者",
@@ -1472,6 +1549,12 @@ const L={
     nearbyTitle:"近くの医療施設",nearbyEpsLbl:"あなたの健康保険",nearbyBtn:"施設を検索",nearbyLocating:"位置情報を取得中...",nearbyNone:"近くに結果がありません。",nearbyError:"位置情報を取得できませんでした。",
     chartTitle:"統計",chartDay:"今日",chartWeek:"週",chartMonth:"月",chartYear:"年",chartByColor:"分類別",chartByType:"患者タイプ別",chartByMotivo:"理由別",chartNoData:"データが不十分です",
     filterAll:"すべて",filterByMotivo:"理由別",
+    histAll:"すべて",statTotal:"合計",statCritical:"重篤",statUrgent:"緊急",statStable:"安定",
+    nearbySearching:"検索中...",nearbyFoundN:"施設が見つかりました",
+    histLegend:"凡例",legendCritical:"即時対応",legendUrgent:"緊急対応",legendStable:"待機可能",legendNotes:"臨床メモあり",legendPerformedBy:"実施者",
+    mPecho:"胸痛",mDisnea:"呼吸困難",mTrauma:"外傷",mAbdominal:"腹痛",mNeuro:"神経",mFiebre:"発熱",mOtro:"その他",
+    tAdulto:"成人",tMayor:"高齢",tNino:"小児",tAdol:"青少年",tEmbar:"妊婦",tMovil:"行動障害",
+    noMeds:"薬なし。",noReminders:"薬を追加してリマインダーを見てください。",medAdded:"薬が追加されました",medDeleted:"削除されました",medActivated:"有効化",medDeactivated:"無効化",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE",ja:"JA"};
@@ -1518,6 +1601,10 @@ function applyTrans(){
     lbAppearance:"appearance",lbDarkMode:"darkMode",lbDarkSub:"darkSub",lbAccount:"account",
     // Sign out buttons (all of them)
     signOutTxt:"signOut",signOutTxt2:"signOut",signOutTxt3:"signOut",
+    // Chart + nearby
+    lbChartTitle:"chartTitle",lbNearbyTitle:"nearbyTitle",
+    chartPer_day:"chartDay",chartPer_week:"chartWeek",chartPer_month:"chartMonth",
+    nearbySearchBtn:"nearbyBtn",
   };
   Object.entries(ids).forEach(([id,key])=>{
     const el=document.getElementById(id);
@@ -1532,6 +1619,12 @@ function applyTrans(){
   document.querySelectorAll(".sst").forEach(el=>{
     const k=el.getAttribute("data-k");if(k&&tx[k])el.textContent=tx[k];
   });
+  // Hist filter "all" button
+  const hfAll=document.querySelector('.hist-flt[data-f="all"]');
+  if(hfAll)hfAll.textContent=tx.histAll||tx.filterAll||"Todos";
+  // Meds empty states (re-render if visible)
+  if(document.getElementById("ms-ms")?.classList.contains("on"))rML();
+  if(document.getElementById("ms-al")?.classList.contains("on"))rRL();
   // Triage step titles and subs (if triage is showing)
   translateTriageStep(tx);
   // Rebuild nav with new language
@@ -2188,22 +2281,25 @@ function buildChart(){
     const ro=filtered.filter(d=>d.clasificacion==="ROJO").length;
     const am=filtered.filter(d=>d.clasificacion==="AMARILLO").length;
     const ve=filtered.filter(d=>d.clasificacion==="VERDE").length;
-    cfg={type:"doughnut",data:{labels:["ROJO","AMARILLO","VERDE"],datasets:[{data:[ro,am,ve],backgroundColor:["#ff3a5c","#ffb830","#00e07a"],borderWidth:0,hoverOffset:6}]},options:{cutout:"65%",plugins:{legend:{labels:{color:textC,font:{size:11}}}}}};
+    const rdC="#ff3a5c",ywC="#ffb830",gnC="#00e07a";
+    cfg={type:"doughnut",data:{labels:[t("legendCritical")||"ROJO",t("legendUrgent")||"AMARILLO",t("legendStable")||"VERDE"],datasets:[{data:[ro,am,ve],backgroundColor:[rdC,ywC,gnC],borderColor:[rdC,ywC,gnC],borderWidth:2,hoverOffset:8}]},options:{cutout:"68%",plugins:{legend:{position:"bottom",labels:{color:textC,font:{size:10.5},boxWidth:12,padding:14}}},animation:{animateRotate:true,duration:600}}};
   }else if(_chartType==="type"){
     const tipos=["adulto","adulto_mayor","nino","adolescente","embarazada","movilidad"];
-    const lbs=["Adulto","Mayor","Nino","Adol.","Embar.","Movil."];
+    const lbs=[t("tAdulto"),t("tMayor"),t("tNino"),t("tAdol"),t("tEmbar"),t("tMovil")];
     const vals=tipos.map(tp=>filtered.filter(d=>d.tipo===tp).length);
-    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:"rgba(0,200,240,.7)",borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+    const clrs2=["#00c8f0","#a855f7","#00e07a","#ffb830","#ff7043","#94a3b8"];
+    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs2.map(c=>c+"bb"),borderColor:clrs2,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
   }else if(_chartType==="motivo"){
     const mots=["dolor_pecho","disnea","trauma","abdominal","neuro","fiebre","otro"];
-    const lbs=["Pecho","Disnea","Trauma","Abdomen","Neuro","Fiebre","Otro"];
+    const lbs=[t("mPecho"),t("mDisnea"),t("mTrauma"),t("mAbdominal"),t("mNeuro"),t("mFiebre"),t("mOtro")];
     const clrs=["#ff3a5c","#00c8f0","#ffb830","#a855f7","#00e07a","#ff7043","#94a3b8"];
     const vals=mots.map(m=>filtered.filter(d=>d.motivo===m).length);
-    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs,borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs.map(c=>c+"cc"),borderColor:clrs,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:9}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
   }else{
-    const days={};for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const k=d.toLocaleDateString("es-CO",{day:"2-digit",month:"short"});days[k]=0;}
-    filtered.forEach(d=>{const k=d.createdAt.toDate().toLocaleDateString("es-CO",{day:"2-digit",month:"short"});if(k in days)days[k]++;});
-    cfg={type:"line",data:{labels:Object.keys(days),datasets:[{data:Object.values(days),borderColor:"var(--cy)",backgroundColor:"rgba(0,200,240,.12)",tension:.4,fill:true,pointBackgroundColor:"var(--cy)",pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+    const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
+    const days={};for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const k=d.toLocaleDateString(loc,{day:"2-digit",month:"short"});days[k]=0;}
+    filtered.forEach(d=>{const k=d.createdAt.toDate().toLocaleDateString(loc,{day:"2-digit",month:"short"});if(k in days)days[k]++;});
+    cfg={type:"line",data:{labels:Object.keys(days),datasets:[{data:Object.values(days),borderColor:"#00c8f0",backgroundColor:"rgba(0,200,240,.10)",tension:.4,fill:true,pointBackgroundColor:"#00c8f0",pointBorderColor:"#fff",pointBorderWidth:2,pointRadius:5}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
   }
   _chartInst=new Chart(canvas,cfg);
 }
@@ -2223,7 +2319,7 @@ function searchNearby(){
     const eps=(document.getElementById("nearbyEpsInput")?.value||"").trim();
     const radius=5000;
     const query=`[out:json][timeout:15];(node["amenity"~"hospital|clinic|pharmacy|health_post|doctors"](around:${radius},${lat},${lon});way["amenity"~"hospital|clinic|pharmacy|health_post|doctors"](around:${radius},${lat},${lon}););out center 15;`;
-    status.textContent="Buscando centros...";
+    status.textContent=t("nearbySearching")||"Buscando...";
     try{
       const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:query});
       const data=await r.json();
@@ -2238,7 +2334,7 @@ function renderNearby(lat,lon,elements){
   const status=document.getElementById("nearbyStatus");
   const list=document.getElementById("nearbyList");
   if(!elements.length){status.textContent=t("nearbyNone")||"Sin resultados cercanos.";list.innerHTML="";return;}
-  status.textContent=`${elements.length} centros encontrados`;
+  status.textContent=`${elements.length} ${t("nearbyFoundN")||"centros encontrados"}`;
   if(_nearbyMap){_nearbyMap.remove();_nearbyMap=null;}
   _nearbyMap=L.map("nearbyMap").setView([lat,lon],14);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OSM"}).addTo(_nearbyMap);
@@ -2270,17 +2366,18 @@ async function loadDash(){
     const am=snap.docs.filter(d=>d.data().clasificacion==="AMARILLO").length;
     const ve=snap.docs.filter(d=>d.data().clasificacion==="VERDE").length;
     document.getElementById("statGrid").innerHTML=`
-      <div class="stat-card"><div class="stat-num">${snap.size}</div><div class="stat-lbl">Total</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--rd)">${ro}</div><div class="stat-lbl">🔴 Criticos</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--yw)">${am}</div><div class="stat-lbl">🟡 Urgentes</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--gn)">${ve}</div><div class="stat-lbl">🟢 Estables</div></div>`;
+      <div class="stat-card"><div class="stat-num">${snap.size}</div><div class="stat-lbl">${t("statTotal")||"Total"}</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--rd)">${ro}</div><div class="stat-lbl">🔴 ${t("statCritical")||"Criticos"}</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--yw)">${am}</div><div class="stat-lbl">🟡 ${t("statUrgent")||"Urgentes"}</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--gn)">${ve}</div><div class="stat-lbl">🟢 ${t("statStable")||"Estables"}</div></div>`;
+    const loc3={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
+    const mMD={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
     const rows=snap.docs.slice(0,5).map(d=>{
       const dt=d.data();const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
-      const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(CL==="es"?"es-CO":CL==="pt"?"pt-BR":CL==="fr"?"fr-FR":CL==="de"?"de-DE":"en-US",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
-      const mM={dolor_pecho:"Dolor pecho",disnea:"Dif. respirar",trauma:"Trauma",abdominal:"Abdominal",neuro:"Neurologico",fiebre:"Fiebre",otro:"Otro"};
-      return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-size:.82rem;font-weight:600">${mM[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}</div></div></div>`;
+      const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc3,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
+      return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-size:.82rem;font-weight:600">${mMD[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}</div></div></div>`;
     }).join("");
-    document.getElementById("recentT").innerHTML=rows||`<div class="empty"><div class="etx">Sin triages aun.</div></div>`;
+    document.getElementById("recentT").innerHTML=rows||`<div class="empty"><div class="etx">${t("noData")||"Sin triages aun."}</div></div>`;
     _chartData=snap.docs.map(d=>d.data());
     buildChart();
     if(CR==="admin"||CR==="medico"||CR==="admin_hosp"){
@@ -2306,6 +2403,32 @@ async function loadDash(){
 
 async function changeRole(uid,role){await FB.updateDoc(FB.doc(FB.db,"users",uid),{role});toast("Rol actualizado");}
 
+// HISTORY LEGEND
+let _histLegendOpen=false;
+function toggleHistLegend(){
+  const panel=document.getElementById("histLegendPanel");
+  if(!panel)return;
+  _histLegendOpen=!_histLegendOpen;
+  if(_histLegendOpen){
+    panel.style.display="block";
+    panel.innerHTML=`
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--cy);font-weight:700;letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase">${t("histLegend")||"Leyenda"}</div>
+      <div class="hlg-row"><span class="hlg-ic">🔴</span><span class="hlg-lbl">ROJO</span><span class="hlg-desc">${t("legendCritical")||"Atencion inmediata"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">🟡</span><span class="hlg-lbl">AMARILLO</span><span class="hlg-desc">${t("legendUrgent")||"Atencion urgente"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">🟢</span><span class="hlg-lbl">VERDE</span><span class="hlg-desc">${t("legendStable")||"Puede esperar"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">📝</span><span class="hlg-lbl"></span><span class="hlg-desc">${t("legendNotes")||"Anotaciones clinicas"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">👤</span><span class="hlg-lbl"></span><span class="hlg-desc">${t("legendPerformedBy")||"Realizado por"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">💔</span><span class="hlg-lbl"></span><span class="hlg-desc">${t("mPecho")||"Dolor pecho"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">🫁</span><span class="hlg-lbl"></span><span class="hlg-desc">${t("mDisnea")||"Dif. respirar"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">🤕</span><span class="hlg-lbl"></span><span class="hlg-desc">${t("mTrauma")||"Trauma"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">🤢</span><span class="hlg-lbl"></span><span class="hlg-desc">${t("mAbdominal")||"Dolor abdominal"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">🧠</span><span class="hlg-lbl"></span><span class="hlg-desc">${t("mNeuro")||"Neurologico"}</span></div>
+      <div class="hlg-row"><span class="hlg-ic">🌡️</span><span class="hlg-lbl"></span><span class="hlg-desc">${t("mFiebre")||"Fiebre"}</span></div>`;
+  }else{
+    panel.style.display="none";
+  }
+}
+
 // HISTORY FILTERS
 let _histFilter="all";
 let _histDocs=[];
@@ -2319,7 +2442,7 @@ function setHistFilter(f,btn){
 
 function renderHist(){
   const el=document.getElementById("histList");
-  const mM={dolor_pecho:"Dolor pecho",disnea:"Dif. respirar",trauma:"Trauma",abdominal:"Dolor abdominal",neuro:"Neurologico",fiebre:"Fiebre",otro:"Otro"};
+  const mM={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
   const filtered=_histDocs.filter(d=>{
     if(_histFilter==="all")return true;
     if(["ROJO","AMARILLO","VERDE"].includes(_histFilter))return d.clasificacion===_histFilter;
@@ -2329,7 +2452,8 @@ function renderHist(){
   const rolePrefix={admin:"Admin",admin_hosp:"Adm.",medico:"Dr.",paciente:""};
   el.innerHTML=filtered.map(dt=>{
     const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
-    const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString("es-CO",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+    const loc2={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
+    const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc2,{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
     const notasBadge=dt.notas?`<span style="font-size:.65rem;background:var(--gn-a);color:var(--gn);padding:1px 6px;border-radius:8px;margin-left:4px">📝</span>`:"";
     const pfx=rolePrefix[dt.userRole]||"";
     const quien=dt.userName||(dt.userEmail?.split("@")[0])||"";
@@ -2763,25 +2887,33 @@ async function buscarDrug(){
 }
 
 // MEDICATIONS
+function toggleMedForm(){
+  const form=document.getElementById("medAddForm");
+  const ic=document.getElementById("medAddToggle");
+  const on=form.classList.toggle("on");
+  if(ic)ic.style.transform=on?"rotate(45deg)":"rotate(0deg)";
+}
 function addMed(){
-  const name=document.getElementById("nn").value.trim();if(!name){toast("Escribe el nombre");return;}
+  const name=document.getElementById("nn").value.trim();if(!name){toast("Escribe el nombre del medicamento");return;}
   const m={id:Date.now(),name,dose:document.getElementById("nd").value.trim(),freq:document.getElementById("nf").value,time:document.getElementById("nh").value,notes:document.getElementById("no2").value.trim(),active:true,color:["#00c8f0","#00e07a","#a855f7","#ffb830","#ff3a5c"][MEDS.length%5]};
-  MEDS.push(m);saveMeds();rML();sAlarm(m);toast("Medicamento agregado");
+  MEDS.push(m);saveMeds();rML();sAlarm(m);toast(t("medAdded")||"Medicamento agregado");
   document.getElementById("nn").value="";document.getElementById("nd").value="";document.getElementById("no2").value="";
+  const form=document.getElementById("medAddForm");const ic=document.getElementById("medAddToggle");
+  form.classList.remove("on");if(ic)ic.style.transform="rotate(0deg)";
 }
 function saveMeds(){localStorage.setItem("ms_meds",JSON.stringify(MEDS));}
-function delMed(id){MEDS=MEDS.filter(m=>m.id!==id);if(ALM[id]){clearInterval(ALM[id]);delete ALM[id];}saveMeds();rML();rRL();toast("Eliminado");}
+function delMed(id){MEDS=MEDS.filter(m=>m.id!==id);if(ALM[id]){clearInterval(ALM[id]);delete ALM[id];}saveMeds();rML();rRL();toast(t("medDeleted")||"Eliminado");}
 function rML(){
   const el=document.getElementById("ml");
-  if(!MEDS.length){el.innerHTML=`<div class="empty"><div class="eic">💊</div><div class="etx">Sin medicamentos registrados.</div></div>`;return;}
-  el.innerHTML=MEDS.map(m=>`<div class="mi"><div class="md" style="background:${m.color}18"><span style="font-size:.9rem;color:${m.color}">💊</span></div><div style="flex:1"><div class="mn">${m.name}</div><div class="mdt">${m.dose?m.dose+" · ":""}${m.freq} · ${m.time}</div>${m.notes?`<div class="mdt" style="font-style:italic">${m.notes}</div>`:""}</div><button class="bsm" onclick="delMed(${m.id})">🗑</button></div>`).join("");
+  if(!MEDS.length){el.innerHTML=`<div class="empty"><div class="eic">💊</div><div class="etx">${t("noMeds")||"Sin medicamentos registrados."}</div></div>`;return;}
+  el.innerHTML=MEDS.map(m=>`<div class="mi2"><div class="mi2-bar" style="background:${m.color}"></div><div class="mi2-body"><div class="mi2-name">💊 ${m.name}</div><div class="mi2-info">${m.dose?m.dose+" · ":""}${m.freq} · ${m.time}</div>${m.notes?`<div class="mi2-note">${m.notes}</div>`:""}</div><div class="mi2-actions"><button class="tgl ${m.active?"on":""}" onclick="togR(${m.id},this)"></button><button class="mi2-del" onclick="delMed(${m.id})">🗑</button></div></div>`).join("");
 }
 function rRL(){
   const el=document.getElementById("rl");
-  if(!MEDS.length){el.innerHTML=`<div class="empty"><div class="eic">⏰</div><div class="etx">Agrega medicamentos para ver recordatorios.</div></div>`;return;}
-  el.innerHTML=[...MEDS].sort((a,b)=>a.time.localeCompare(b.time)).map(m=>`<div class="ri"><div class="rtm">${m.time}</div><div style="flex:1"><div style="font-weight:700;font-size:.84rem">${m.name}</div><div style="font-size:.69rem;color:var(--mu)">${m.dose?m.dose+" · ":""}${m.freq}</div></div><button class="tgl ${m.active?"on":""}" onclick="togR(${m.id},this)"></button></div>`).join("");
+  if(!MEDS.length){el.innerHTML=`<div class="empty"><div class="eic">⏰</div><div class="etx">${t("noReminders")||"Agrega medicamentos para ver recordatorios."}</div></div>`;return;}
+  el.innerHTML=[...MEDS].sort((a,b)=>a.time.localeCompare(b.time)).map(m=>`<div class="ri2"><div class="ri2-time">${m.time}</div><div class="ri2-dot" style="background:${m.color}"></div><div class="ri2-body"><div class="ri2-name">${m.name}</div><div class="ri2-dose">${m.dose?m.dose+" · ":""}${m.freq}</div></div><button class="tgl ${m.active?"on":""}" onclick="togR(${m.id},this)"></button></div>`).join("");
 }
-function togR(id,btn){const m=MEDS.find(x=>x.id===id);if(!m)return;m.active=!m.active;btn.classList.toggle("on",m.active);saveMeds();if(m.active)sAlarm(m);else if(ALM[id]){clearInterval(ALM[id]);delete ALM[id];}toast(m.active?"Activado":"Desactivado");}
+function togR(id,btn){const m=MEDS.find(x=>x.id===id);if(!m)return;m.active=!m.active;btn.classList.toggle("on",m.active);saveMeds();if(m.active)sAlarm(m);else if(ALM[id]){clearInterval(ALM[id]);delete ALM[id];}toast(m.active?t("medActivated")||"Activado":t("medDeactivated")||"Desactivado");}
 function sAlarm(m){if(ALM[m.id])clearInterval(ALM[m.id]);ALM[m.id]=setInterval(()=>{if(!m.active)return;const n=new Date();const[h,min]=m.time.split(":").map(Number);if(n.getHours()===h&&n.getMinutes()===min&&n.getSeconds()<5)showAlarm(m);},4000);}
 function showAlarm(m){document.getElementById("at").textContent="💊 "+m.name;document.getElementById("as").textContent=`${m.dose?m.dose+" · ":""}${m.freq}${m.notes?" · "+m.notes:""}`;document.getElementById("ab").style.display="block";try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.8);o.start();o.stop(ctx.currentTime+.8);}catch(e){}}
 function dA(){document.getElementById("ab").style.display="none";}
