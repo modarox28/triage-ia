@@ -264,7 +264,8 @@ select option{background:var(--bg3);}
 .tagx{cursor:pointer;color:var(--mu);font-size:.7rem;}
 .tagx:hover{color:var(--rd);}
 .twrap{min-height:30px;margin-bottom:9px;flex-wrap:wrap;display:flex;}
-.srow{display:flex;gap:7px;margin-bottom:8px;}
+.srow{display:flex;gap:7px;margin-bottom:8px;min-width:0;}
+.srow>.fi,.srow>input,.srow>select{width:0;flex:1;min-width:0;}
 .bv{width:40px;height:40px;border-radius:9px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;background:var(--cy);color:#000;transition:all .2s;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 .bv.rec{background:var(--rd);}
 .chip{display:inline-flex;align-items:center;background:var(--cy-a);color:var(--cy);border:1px solid rgba(0,200,240,.2);border-radius:20px;padding:2px 8px;font-size:.64rem;font-family:"JetBrains Mono",monospace;margin:2px;}
@@ -1688,11 +1689,13 @@ async function onEmailBlur(){
   if(!FB)return;
   hint.textContent="Verificando...";hint.className="email-hint mu";
   try{
-    const methods=await FB.fetchSignInMethodsForEmail(FB.auth,email);
-    if(methods&&methods.length>0){
+    // fetchSignInMethodsForEmail está deprecado — verificamos directamente en Firestore
+    const snap=await FB.getDocs(FB.collection(FB.db,"users"));
+    const exists=snap.docs.some(d=>(d.data().email||"").toLowerCase()===email.toLowerCase());
+    if(exists){
       hint.textContent="Este correo ya tiene una cuenta registrada";hint.className="email-hint er";
     }else{
-      hint.textContent="Correo disponible";hint.className="email-hint ok";
+      hint.textContent="Correo disponible ✓";hint.className="email-hint ok";
     }
   }catch(e){hint.textContent="";hint.className="email-hint";}
 }
@@ -2279,14 +2282,18 @@ async function loadDash(){
     document.getElementById("recentT").innerHTML=rows||`<div class="empty"><div class="etx">Sin triages aun.</div></div>`;
     _chartData=snap.docs.map(d=>d.data());
     buildChart();
-    if(CR==="admin"){
+    if(CR==="admin"||CR==="medico"||CR==="admin_hosp"){
       const users=await FB.getDocs(FB.collection(FB.db,"users"));
       const RL={admin:"Admin",admin_hosp:"Adm.Hosp",medico:"Medico",paciente:"Paciente"};
       const cols=["#00c8f0","#00e07a","#a855f7","#ffb830","#ff3a5c"];
       document.getElementById("userList").innerHTML=users.docs.map(u=>{
         const ud=u.data();const av=(ud.name||ud.email||"?")[0].toUpperCase();const col=cols[ud.email?.charCodeAt(0)%cols.length]||"#00c8f0";
         const photoSrc=localStorage.getItem("ms_photo_"+u.id);
-        return`<div class="user-row"><div class="uav" style="background:${col};overflow:hidden">${photoSrc?`<img src="${photoSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:av}</div><div style="flex:1"><div style="font-size:.83rem;font-weight:600">${ud.name||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${ud.email||""}</div></div><select onchange="changeRole('${u.id}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${["admin","medico","admin_hosp","paciente"].map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select></div>`;
+        const avEl=`<div class="uav" style="background:${col};overflow:hidden">${photoSrc?`<img src="${photoSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:av}</div>`;
+        const roleCtrl=CR==="admin"?
+          `<select onchange="changeRole('${u.id}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${["admin","medico","admin_hosp","paciente"].map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select>`:
+          `<span style="font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--mu);padding:3px 8px;background:var(--bg3);border-radius:6px">${RL[ud.role]||ud.role||""}</span>`;
+        return`<div class="user-row">${avEl}<div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ud.name||"—"}</div><div style="font-size:.69rem;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ud.email||""}</div></div>${roleCtrl}</div>`;
       }).join("");
     }else{document.getElementById("userMgmtCard").style.display="none";}
     if(CR==="medico"||CR==="admin"||CR==="admin_hosp"){
@@ -2318,11 +2325,15 @@ function renderHist(){
     return d.motivo===_histFilter;
   });
   if(!filtered.length){el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos."}</div></div>`;return;}
+  const rolePrefix={admin:"Admin",admin_hosp:"Adm.",medico:"Dr.",paciente:""};
   el.innerHTML=filtered.map(dt=>{
     const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
     const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString("es-CO",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
     const notasBadge=dt.notas?`<span style="font-size:.65rem;background:var(--gn-a);color:var(--gn);padding:1px 6px;border-radius:8px;margin-left:4px">📝</span>`:"";
-    return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">${mM[dt.motivo]||dt.motivo||"—"}${notasBadge}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · D:${dt.dolor??"-"}/10 · ${date}</div>${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px">${dt.justificacion.slice(0,70)}...</div>`:""}</div></div>`;
+    const pfx=rolePrefix[dt.userRole]||"";
+    const quien=dt.userName||(dt.userEmail?.split("@")[0])||"";
+    const performer=quien?`<span style="font-size:.65rem;color:var(--mu);opacity:.8">👤 ${pfx}${pfx?" ":""}${quien}</span> · `:"";
+    return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.82rem">${mM[dt.motivo]||dt.motivo||"—"}${notasBadge}</div><div style="font-size:.69rem;color:var(--mu)">${performer}${dt.tipo||""} · D:${dt.dolor??"-"}/10 · ${date}</div>${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dt.justificacion.slice(0,80)}...</div>`:""}</div></div>`;
   }).join("");
 }
 
@@ -2689,7 +2700,7 @@ SOLO JSON sin backticks:
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const res=JSON.parse(txt);
     if(FB&&CU&&CR!=="paciente"){
-      try{await FB.addDoc(FB.collection(FB.db,"triages"),{...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userEmail:CU?.email||"",userId:CU?.uid||"",createdAt:FB.serverTimestamp()});}catch(e){}
+      try{await FB.addDoc(FB.collection(FB.db,"triages"),{...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userName:uName(),userRole:CR||"",userEmail:CU?.email||"",userId:CU?.uid||"",createdAt:FB.serverTimestamp()});}catch(e){}
     }
     rResult(res);
   }catch(e){
