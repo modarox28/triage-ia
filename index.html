@@ -131,7 +131,7 @@ html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(-
 .sc.on{display:block;}
 
 /* BOTTOM NAV */
-.bottom-nav{display:flex;background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0;position:relative;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
+.bottom-nav{display:flex;background:var(--bg2);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:2px solid var(--bd);box-shadow:0 -6px 24px rgba(0,0,0,.32),0 -1px 0 rgba(0,200,240,.12);flex-shrink:0;position:relative;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
 .nb{flex:1;min-width:44px;display:flex;flex-direction:column;align-items:center;padding:9px 4px 11px;gap:2px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;}
 .nb .ni{font-size:1.25rem;transition:transform .2s cubic-bezier(.34,1.4,.64,1);}
 .nb.on .ni{transform:scale(1.18);}
@@ -658,10 +658,10 @@ const L={
     immAttn:"ATENCION INMEDIATA",
     urgent:"URGENTE",
     canWait:"PUEDE ESPERAR",
-    adultLbl:"Adulto",
-    elderLbl:"Adulto mayor",
+    adultLbl:"Adulto (18-59)",
+    elderLbl:"Tercera edad (60+)",
     pregLbl:"Embarazada",
-    childLbl:"Pediatrico",
+    childLbl:"Pediatrico (0-12)",
     f0:"Sin dolor",
     f2:"Muy leve",
     f4:"Leve",
@@ -710,6 +710,11 @@ const L={
     newPatient:"Nuevo paciente",resetSent:"Correo enviado. Revisa tu bandeja.",resetErr:"No se pudo enviar.",
     interDesc:"Agrega 2 o mas medicamentos para verificar.",
     step:"Paso",of:"de",back:"Atras",continueBtn:"Continuar",analyze:"Analizar",analyzingLabel:"EVALUANDO RIESGO CLINICO",
+    selectProfile:"Seleccione el perfil del paciente.",selectSymptom:"Seleccione el sintoma dominante.",evalAlert:"Evalua el estado de alerta.",enterVitals:"Ingrese los valores disponibles.",selectApply:"Selecciona las que apliquen.",markApply:"Marque todos los que apliquen.",
+    teenLbl:"Adolescente (13-17)",pedNote:"Paciente pediatrico / adolescente",pedNoteSub:"Completar con padre, madre o tutor.",
+    chestPainL:"Dolor en el pecho",breathingL:"Dificultad para respirar",traumaL:"Trauma / golpe / herida",abdominalL:"Dolor abdominal / vomito",neuroL:"Convulsion / perdida de consciencia",feverL:"Fiebre alta",otherL:"Otro / sintomas generales",
+    consc1:"Alerta — responde normalmente",consc2:"Responde solo a voz",consc3:"Responde solo al dolor",consc4:"No responde (inconsciente)",
+    sym1:"Sangrado activo",sym2:"Palidez / sudoracion fria",sym3:"Mareo / perdida de equilibrio",sym4:"Cianosis (labios o unas azulados)",sym5:"Temperatura >39C",sym6:"Debilidad muscular intensa",sym7:"Ninguno de los anteriores",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -730,10 +735,10 @@ const L={
     immAttn:"IMMEDIATE ATTENTION",
     urgent:"URGENT",
     canWait:"CAN WAIT",
-    adultLbl:"Adult",
-    elderLbl:"Elderly",
+    adultLbl:"Adult (18-59)",
+    elderLbl:"Elderly (60+)",
     pregLbl:"Pregnant",
-    childLbl:"Pediatric",
+    childLbl:"Pediatric (0-12)",
     f0:"No pain",
     f2:"Very mild",
     f4:"Mild",
@@ -782,6 +787,11 @@ const L={
     newPatient:"New patient",resetSent:"Recovery email sent.",resetErr:"Could not send.",
     interDesc:"Add 2 or more medications to verify.",
     step:"Step",of:"of",back:"Back",continueBtn:"Continue",analyze:"Analyze",analyzingLabel:"EVALUATING CLINICAL RISK",
+    selectProfile:"Select patient profile.",selectSymptom:"Select the main symptom.",evalAlert:"Assess level of consciousness.",enterVitals:"Enter available values.",selectApply:"Select all that apply.",markApply:"Check all that apply.",
+    teenLbl:"Adolescent (13-17)",pedNote:"Pediatric / adolescent patient",pedNoteSub:"Complete with parent or guardian.",
+    chestPainL:"Chest pain",breathingL:"Difficulty breathing",traumaL:"Trauma / injury",abdominalL:"Abdominal pain / vomiting",neuroL:"Seizure / loss of consciousness",feverL:"High fever",otherL:"Other / general symptoms",
+    consc1:"Alert — responds normally",consc2:"Responds only to voice",consc3:"Responds only to pain",consc4:"Unresponsive (unconscious)",
+    sym1:"Active bleeding",sym2:"Pallor / cold sweating",sym3:"Dizziness / loss of balance",sym4:"Cyanosis (blue lips or nails)",sym5:"Temperature >39C",sym6:"Severe muscle weakness",sym7:"None of the above",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -802,10 +812,10 @@ const L={
     immAttn:"ATENCAO IMEDIATA",
     urgent:"URGENTE",
     canWait:"PODE ESPERAR",
-    adultLbl:"Adulto",
-    elderLbl:"Idoso",
+    adultLbl:"Adulto (18-59)",
+    elderLbl:"Terceira idade (60+)",
     pregLbl:"Gestante",
-    childLbl:"Pediatrico",
+    childLbl:"Pediatrico (0-12)",
     f0:"Sem dor",
     f2:"Muito leve",
     f4:"Leve",
@@ -854,6 +864,11 @@ const L={
     newPatient:"Novo paciente",resetSent:"Email enviado.",resetErr:"Nao foi possivel enviar.",
     interDesc:"Adicione 2 ou mais medicamentos para verificar.",
     step:"Passo",of:"de",back:"Voltar",continueBtn:"Continuar",analyze:"Analisar",analyzingLabel:"AVALIANDO RISCO CLINICO",
+    selectProfile:"Selecione o perfil do paciente.",selectSymptom:"Selecione o sintoma dominante.",evalAlert:"Avalie o nivel de consciencia.",enterVitals:"Insira os valores disponiveis.",selectApply:"Selecione as que se aplicam.",markApply:"Marque todas as que se aplicam.",
+    teenLbl:"Adolescente (13-17)",pedNote:"Paciente pediatrico / adolescente",pedNoteSub:"Preencher com pai, mae ou responsavel.",
+    chestPainL:"Dor no peito",breathingL:"Dificuldade para respirar",traumaL:"Trauma / golpe / ferida",abdominalL:"Dor abdominal / vomito",neuroL:"Convulsao / perda de consciencia",feverL:"Febre alta",otherL:"Outro / sintomas gerais",
+    consc1:"Alerta — responde normalmente",consc2:"Responde apenas a voz",consc3:"Responde apenas a dor",consc4:"Nao responde (inconsciente)",
+    sym1:"Sangramento ativo",sym2:"Palidez / sudoracao fria",sym3:"Tontura / perda de equilibrio",sym4:"Cianose (labios ou unhas azulados)",sym5:"Temperatura >39C",sym6:"Fraqueza muscular intensa",sym7:"Nenhum dos anteriores",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -874,10 +889,10 @@ const L={
     immAttn:"ATTENTION IMMEDIATE",
     urgent:"URGENT",
     canWait:"PEUT ATTENDRE",
-    adultLbl:"Adulte",
-    elderLbl:"Personne agee",
+    adultLbl:"Adulte (18-59)",
+    elderLbl:"Personne agee (60+)",
     pregLbl:"Enceinte",
-    childLbl:"Pediatrique",
+    childLbl:"Pediatrique (0-12)",
     f0:"Sans douleur",
     f2:"Tres leger",
     f4:"Leger",
@@ -926,6 +941,11 @@ const L={
     newPatient:"Nouveau patient",resetSent:"Email envoye.",resetErr:"Impossible envoyer.",
     interDesc:"Ajoutez 2 medicaments ou plus pour verifier.",
     step:"Etape",of:"sur",back:"Retour",continueBtn:"Continuer",analyze:"Analyser",analyzingLabel:"EVALUATION RISQUE CLINIQUE",
+    selectProfile:"Selectionnez le profil patient.",selectSymptom:"Selectionnez le symptome dominant.",evalAlert:"Evaluez le niveau de conscience.",enterVitals:"Saisissez les valeurs disponibles.",selectApply:"Selectionnez ce qui s'applique.",markApply:"Cochez tout ce qui s'applique.",
+    teenLbl:"Adolescent (13-17)",pedNote:"Patient pediatrique / adolescent",pedNoteSub:"Remplir avec parent ou tuteur.",
+    chestPainL:"Douleur thoracique",breathingL:"Difficulte respiratoire",traumaL:"Traumatisme / blessure",abdominalL:"Douleur abdominale / vomissement",neuroL:"Convulsion / perte de conscience",feverL:"Forte fievre",otherL:"Autre / symptomes generaux",
+    consc1:"Alerte — repond normalement",consc2:"Repond uniquement a la voix",consc3:"Repond uniquement a la douleur",consc4:"Ne repond pas (inconscient)",
+    sym1:"Saignement actif",sym2:"Paleur / sudation froide",sym3:"Vertige / perte d equilibre",sym4:"Cyanose (levres ou ongles bleus)",sym5:"Temperature >39C",sym6:"Faiblesse musculaire intense",sym7:"Aucun des precedents",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -946,10 +966,10 @@ const L={
     immAttn:"SOFORTIGE AUFMERKSAMKEIT",
     urgent:"DRINGEND",
     canWait:"KANN WARTEN",
-    adultLbl:"Erwachsener",
-    elderLbl:"Alterer",
+    adultLbl:"Erwachsener (18-59)",
+    elderLbl:"Senioren (60+)",
     pregLbl:"Schwangere",
-    childLbl:"Padiatrisch",
+    childLbl:"Padiatrisch (0-12)",
     f0:"Kein Schmerz",
     f2:"Sehr leicht",
     f4:"Leicht",
@@ -998,6 +1018,11 @@ const L={
     newPatient:"Neuer Patient",resetSent:"Email gesendet.",resetErr:"Email fehlgeschlagen.",
     interDesc:"Fugen Sie 2 oder mehr Medikamente hinzu.",
     step:"Schritt",of:"von",back:"Zuruck",continueBtn:"Weiter",analyze:"Analysieren",analyzingLabel:"KLINISCHES RISIKO BEWERTEN",
+    selectProfile:"Patientenprofil auswahlen.",selectSymptom:"Hauptsymptom auswahlen.",evalAlert:"Bewusstseinslevel einschatzen.",enterVitals:"Verfugbare Werte eingeben.",selectApply:"Alle Zutreffenden auswahlen.",markApply:"Alle Zutreffenden ankreuzen.",
+    teenLbl:"Jugendlicher (13-17)",pedNote:"Padiatrischer / jugendlicher Patient",pedNoteSub:"Mit Elternteil oder Vormund ausfullen.",
+    chestPainL:"Brustschmerzen",breathingL:"Atembeschwerden",traumaL:"Trauma / Verletzung",abdominalL:"Bauchschmerzen / Erbrechen",neuroL:"Krampf / Bewusstlosigkeit",feverL:"Hohes Fieber",otherL:"Sonstiges / allgemeine Symptome",
+    consc1:"Wach — reagiert normal",consc2:"Reagiert nur auf Sprache",consc3:"Reagiert nur auf Schmerz",consc4:"Reagiert nicht (bewusstlos)",
+    sym1:"Aktive Blutung",sym2:"Blasse / kalter Schweiss",sym3:"Schwindel / Gleichgewichtsverlust",sym4:"Zyanose (blaue Lippen oder Nagel)",sym5:"Temperatur >39C",sym6:"Starke Muskelschwache",sym7:"Keines der oben genannten",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE"};
@@ -1067,15 +1092,27 @@ function applyTrans(){
 }
 
 function translateTriageStep(tx){
-  // Translate currently visible triage card
+  if(!document.getElementById("sc-triage")?.classList.contains("on"))return;
+  const steps=aSteps();
+  if(TS>=steps.length)return;
+  const s=steps[TS];
+  const stag=document.querySelector("#trc .stag");
   const qtitle=document.querySelector("#trc .qtitle");
   const qsub=document.querySelector("#trc .qsub");
-  const stag=document.querySelector("#trc .stag");
-  // These are dynamically generated so we retrigger renderTriage
-  // but only if triage screen is active and we're mid-flow
-  if(document.getElementById("sc-triage")?.classList.contains("on")&&TS>0&&TS<aSteps().length){
-    rTriage();
+  if(stag)stag.textContent=`${t("step")} ${TS+1} ${t("of")} ${steps.length}`;
+  if(qtitle)qtitle.textContent=s.title;
+  if(qsub)qsub.textContent=s.sub;
+  if(s.opts){
+    document.querySelectorAll("#trc .opt").forEach((btn,i)=>{
+      if(s.opts[i])btn.innerHTML=`<span class="opic">${s.opts[i].ic}</span>${s.opts[i].l}`;
+    });
   }
+  const bbk=document.querySelector("#trc .bbk");
+  const bnxt=document.querySelector("#trc .bnxt");
+  if(bbk)bbk.textContent=`← ${t("back")}`;
+  if(bnxt)bnxt.textContent=(TS===steps.length-1?t("analyze"):t("continueBtn"))+" →";
+  if(CU)buildNav();
+  document.documentElement.lang=CL;
 }
 
 // AUTH VIEWS
@@ -1397,27 +1434,38 @@ function ss(n){
 function getSteps(){
   const tx=L[CL]||L.es;
   return [
-    {id:"tipo",title:tx.patientType||"Tipo de paciente",sub:"Seleccione el perfil.",t:"opts",opts:[
-      {ic:"🧑",l:"Adulto (18-59)",v:"adulto"},{ic:"👴",l:"Adulto mayor (60+)",v:"adulto_mayor"},
-      {ic:"🤰",l:"Embarazada",v:"embarazada"},{ic:"👶",l:"Nino / Pediatrico (0-17)",v:"nino"}]},
-    {id:"motivo",title:tx.mainReason||"Motivo de consulta",sub:"Seleccione el sintoma dominante.",t:"opts",opts:[
-      {ic:"💔",l:"Dolor en el pecho",v:"dolor_pecho"},{ic:"🫁",l:"Dificultad para respirar",v:"disnea"},
-      {ic:"🤕",l:"Trauma / golpe / herida",v:"trauma"},{ic:"🤢",l:"Dolor abdominal / vomito",v:"abdominal"},
-      {ic:"🧠",l:"Perdida de consciencia / convulsion",v:"neuro"},{ic:"🌡️",l:"Fiebre alta",v:"fiebre"},
-      {ic:"😰",l:"Otro / sintomas generales",v:"otro"}]},
-    {id:"consc",title:tx.consciousness||"Nivel de consciencia",sub:"Evalua el estado de alerta.",t:"opts",opts:[
-      {ic:"👁️",l:"Alerta — responde normalmente",v:"alerta"},{ic:"🗣️",l:"Responde solo a voz",v:"voz"},
-      {ic:"✊",l:"Responde solo al dolor",v:"dolor_e"},{ic:"❌",l:"No responde (inconsciente)",v:"inconsc"}]},
-    {id:"vit",title:tx.vitals||"Signos vitales",sub:"Ingrese los valores disponibles.",t:"vitals"},
+    {id:"tipo",title:tx.patientType||"Tipo de paciente",sub:tx.selectProfile||"Seleccione el perfil.",t:"opts",opts:[
+      {ic:"👶",l:tx.childLbl||"Pediatrico (0-12)",v:"nino"},
+      {ic:"🧒",l:tx.teenLbl||"Adolescente (13-17)",v:"adolescente"},
+      {ic:"🧑",l:tx.adultLbl||"Adulto (18-59)",v:"adulto"},
+      {ic:"👴",l:tx.elderLbl||"Tercera edad (60+)",v:"adulto_mayor"},
+      {ic:"🤰",l:tx.pregLbl||"Embarazada",v:"embarazada"}]},
+    {id:"motivo",title:tx.mainReason||"Motivo de consulta",sub:tx.selectSymptom||"Seleccione el sintoma dominante.",t:"opts",opts:[
+      {ic:"💔",l:tx.chestPainL||"Dolor en el pecho",v:"dolor_pecho"},
+      {ic:"🫁",l:tx.breathingL||"Dificultad para respirar",v:"disnea"},
+      {ic:"🤕",l:tx.traumaL||"Trauma / golpe / herida",v:"trauma"},
+      {ic:"🤢",l:tx.abdominalL||"Dolor abdominal / vomito",v:"abdominal"},
+      {ic:"🧠",l:tx.neuroL||"Convulsion / perdida de consciencia",v:"neuro"},
+      {ic:"🌡️",l:tx.feverL||"Fiebre alta",v:"fiebre"},
+      {ic:"😰",l:tx.otherL||"Otro / sintomas generales",v:"otro"}]},
+    {id:"consc",title:tx.consciousness||"Nivel de consciencia",sub:tx.evalAlert||"Evalua el estado de alerta.",t:"opts",opts:[
+      {ic:"👁️",l:tx.consc1||"Alerta — responde normalmente",v:"alerta"},
+      {ic:"🗣️",l:tx.consc2||"Responde solo a voz",v:"voz"},
+      {ic:"✊",l:tx.consc3||"Responde solo al dolor",v:"dolor_e"},
+      {ic:"❌",l:tx.consc4||"No responde (inconsciente)",v:"inconsc"}]},
+    {id:"vit",title:tx.vitals||"Signos vitales",sub:tx.enterVitals||"Ingrese los valores disponibles.",t:"vitals"},
     {id:"dolor",title:tx.painScale||"Escala de dolor",sub:tx.painNumeric||"Nivel 0 a 10.",t:"scale_enhanced"},
-    {id:"sintoma_detalle",title:tx.symptomDetail||"Caracteristicas del sintoma",sub:"Selecciona las que apliquen.",t:"symptom_detail"},
-    {id:"sint",title:tx.additionalSymptoms||"Sintomas adicionales",sub:"Marque todos los que apliquen.",t:"multi",opts:[
-      {ic:"🩸",l:"Sangrado activo",v:"sangrado"},{ic:"💧",l:"Palidez o sudoracion fria",v:"palido"},
-      {ic:"🌀",l:"Mareo / perdida de equilibrio",v:"mareo"},{ic:"👄",l:"Cianosis (labios / unas azulados)",v:"cianosis"},
-      {ic:"🔥",l:"Temperatura >39C",v:"temp_alta"},{ic:"📉",l:"Debilidad muscular intensa",v:"debilidad"},
-      {ic:"❌",l:"Ninguno de los anteriores",v:"ninguno"}]},
-    {id:"enino",title:tx.childAge||"Edad del nino",sub:"Ingrese la edad en anos (0-17).",t:"num",unit:"anos",min:0,max:17,skip:d=>d.tipo!=="nino"},
-    {id:"semanas",title:tx.gestWeeks||"Semanas de gestacion",sub:"Semanas aproximadas.",t:"num",unit:"semanas",min:1,max:42,skip:d=>d.tipo!=="embarazada"},
+    {id:"sintoma_detalle",title:tx.symptomDetail||"Caracteristicas del sintoma",sub:tx.selectApply||"Selecciona las que apliquen.",t:"symptom_detail"},
+    {id:"sint",title:tx.additionalSymptoms||"Sintomas adicionales",sub:tx.markApply||"Marque todos los que apliquen.",t:"multi",opts:[
+      {ic:"🩸",l:tx.sym1||"Sangrado activo",v:"sangrado"},
+      {ic:"💧",l:tx.sym2||"Palidez o sudoracion fria",v:"palido"},
+      {ic:"🌀",l:tx.sym3||"Mareo / perdida de equilibrio",v:"mareo"},
+      {ic:"👄",l:tx.sym4||"Cianosis (labios o unas azulados)",v:"cianosis"},
+      {ic:"🔥",l:tx.sym5||"Temperatura >39C",v:"temp_alta"},
+      {ic:"📉",l:tx.sym6||"Debilidad muscular intensa",v:"debilidad"},
+      {ic:"❌",l:tx.sym7||"Ninguno de los anteriores",v:"ninguno"}]},
+    {id:"enino",title:tx.childAge||"Edad",sub:tx.selectApply||"Ingrese la edad en anos.",t:"num",unit:"años",min:0,max:17,skip:d=>d.tipo!=="nino"&&d.tipo!=="adolescente"},
+    {id:"semanas",title:tx.gestWeeks||"Semanas de gestacion",sub:tx.selectApply||"Semanas aproximadas.",t:"num",unit:"semanas",min:1,max:42,skip:d=>d.tipo!=="embarazada"},
   ];
 }
 const STEPS=getSteps();
@@ -1429,7 +1477,7 @@ function rTriage(){
   if(TS>=tot){rAnalyzing();return;}
   const s=steps[TS];const c=document.getElementById("trc");c.innerHTML="";
   const st=document.createElement("div");st.className="stag";st.textContent=`${t("step")||"Paso"} ${TS+1} ${t("of")||"de"} ${tot}`;c.appendChild(st);
-  if(TD.tipo==="nino"){const n=document.createElement("div");n.className="cnote";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">👨‍👩‍👦</span><span><strong>Paciente pediatrico</strong> — Completar con padre/madre o tutor.</span>`;c.appendChild(n);}
+  if(TD.tipo==="nino"||TD.tipo==="adolescente"){const n=document.createElement("div");n.className="cnote";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">👨‍👩‍👦</span><span><strong>${t("pedNote")||"Paciente pediatrico / adolescente"}</strong> — ${t("pedNoteSub")||"Completar con padre, madre o tutor."}</span>`;c.appendChild(n);}
   const card=document.createElement("div");card.className="card";
   card.innerHTML=`<div class="qtitle">${s.title}</div><div class="qsub">${s.sub}</div>`;
   if(s.t==="opts"){
@@ -1577,11 +1625,11 @@ function rResult(r){
   const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[r.clasificacion]||"ve";
   const ic={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢"}[r.clasificacion];
   const pm={ROJO:t("immAttn")||"ATENCION INMEDIATA",AMARILLO:t("urgent")||"URGENTE",VERDE:t("canWait")||"PUEDE ESPERAR"}[r.clasificacion];
-  const tM2={adulto:t("adultLbl")||"Adulto",adulto_mayor:t("elderLbl")||"Adulto mayor",embarazada:t("pregLbl")||"Embarazada",nino:t("childLbl")||"Pediatrico"};
+  const tM2={adulto:t("adultLbl")||"Adulto",adulto_mayor:t("elderLbl")||"Tercera edad",embarazada:t("pregLbl")||"Embarazada",nino:t("childLbl")||"Pediatrico",adolescente:t("teenLbl")||"Adolescente"};
   const vt=TD.vit||{};const dc={normal:"var(--gn)",warning:"var(--yw)",critical:"var(--rd)"};
   const vcs=[vt.ps?{l:"PA",v:`${vt.ps}/${vt.pd}`,s:chkPA(vt.ps)}:null,vt.fc?{l:"FC",v:`${vt.fc}lpm`,s:chkFC(vt.fc)}:null,vt.sat?{l:"SatO2",v:`${vt.sat}%`,s:chkSat(vt.sat)}:null,vt.tem?{l:"Temp",v:`${vt.tem}C`,s:chkT(vt.tem)}:null,vt.fr?{l:"FR",v:`${vt.fr}rpm`,s:chkFR(vt.fr)}:null].filter(Boolean);
   const alH=r.alertas_criticas&&r.alertas_criticas.length?`<div style="background:var(--rd-a);border:1px solid rgba(255,58,92,.25);border-radius:8px;padding:9px;margin-top:8px"><div style="font-family:JetBrains Mono,monospace;font-size:.55rem;color:var(--rd);margin-bottom:4px;letter-spacing:1px">ALERTAS CRITICAS</div>${r.alertas_criticas.map(a=>`<div style="font-size:.78rem;color:#ff8fa3;margin-bottom:2px">• ${a}</div>`).join("")}</div>`:"";
-  const pedH=TD.tipo==="nino"?`<div class="cnote"><span style="font-size:.9rem;flex-shrink:0">👨‍👩‍👦</span><span>Paciente pediatrico${TD.enino?` — ${TD.enino} anos`:""}. Confirmar con pediatra.</span></div>`:"";
+  const pedH=(TD.tipo==="nino"||TD.tipo==="adolescente")?`<div class="cnote"><span style="font-size:.9rem;flex-shrink:0">👨‍👩‍👦</span><span>${t("pedNote")||"Paciente pediatrico / adolescente"}${TD.enino?` — ${TD.enino} años`:""}. ${t("pedNoteSub")||"Confirmar con pediatra."}</span></div>`:"";
   document.getElementById("trc").innerHTML=`
     ${pedH}
     <div class="rcard ${cc}"><span class="ric">${ic}</span><div class="rlbl">${r.clasificacion}</div>
