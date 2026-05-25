@@ -13,13 +13,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
 const auth=getAuth(fbapp);const db=getFirestore(fbapp);const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
-window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc};
+window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc};
 window.dispatchEvent(new Event("fbready"));
 </script>
 <style>
@@ -342,6 +342,12 @@ select option{background:var(--bg3);}
 .prof-photo-av img{width:100%;height:100%;object-fit:cover;}
 .prof-photo-badge{position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--cy);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#000;border:2px solid var(--bg2);}
 
+/* EMAIL VALIDATION HINT */
+.email-hint{font-size:.68rem;margin-top:3px;min-height:14px;transition:color .2s;font-family:"JetBrains Mono",monospace;}
+.email-hint.er{color:var(--rd);}
+.email-hint.ok{color:var(--gn);}
+.email-hint.mu{color:var(--mu);}
+
 /* PASSWORD CHANGE */
 .pass-form{margin-top:12px;display:none;}
 .pass-form.open{display:block;}
@@ -459,7 +465,8 @@ select option{background:var(--bg3);}
       </div>
       <div class="auth-fg">
         <label class="auth-fl" id="lbEmail">Correo</label>
-        <input class="auth-fi" id="aEmail" type="email" placeholder="correo@ejemplo.com">
+        <input class="auth-fi" id="aEmail" type="email" placeholder="correo@ejemplo.com" oninput="onEmailInput()" onblur="onEmailBlur()">
+        <div class="email-hint" id="emailHint"></div>
       </div>
       <div class="auth-fg">
         <label class="auth-fl" id="lbPass">Contrasena</label>
@@ -1255,6 +1262,11 @@ function authTab(m){
   document.getElementById("nameField").style.display=isIn?"none":"block";
   document.getElementById("authErr").textContent="";
   document.getElementById("authErr").className="auth-err";
+  // Re-run email check for the new mode if email already typed
+  const hint=document.getElementById("emailHint");
+  if(hint)hint.textContent="";
+  const email=document.getElementById("aEmail").value.trim();
+  if(email&&EMAIL_RE.test(email)&&!isIn)onEmailBlur();
 }
 
 // FIREBASE
@@ -1285,6 +1297,7 @@ async function doAuth(){
   const err=document.getElementById("authErr");
   err.textContent="";err.className="auth-err";
   if(!email||!pass){err.className="auth-err er";err.textContent="Completa todos los campos";return;}
+  if(!EMAIL_RE.test(email)){err.className="auth-err er";err.textContent="El correo no tiene un formato valido";return;}
   const isIn=document.getElementById("atab-in").classList.contains("on");
   try{
     if(isIn){await FB.signInWithEmailAndPassword(FB.auth,email,pass);}
@@ -1329,6 +1342,37 @@ async function doForgot(){
     await FB.sendPasswordResetEmail(FB.auth,email);
     err.className="auth-err ok";err.textContent=t("resetSent");
   }catch(e){err.className="auth-err er";err.textContent=t("resetErr");}
+}
+
+// EMAIL VALIDATION
+const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+let _emailCheckTimer=null;
+
+function onEmailInput(){
+  clearTimeout(_emailCheckTimer);
+  const email=document.getElementById("aEmail").value.trim();
+  const hint=document.getElementById("emailHint");
+  if(!email){hint.textContent="";hint.className="email-hint";return;}
+  if(!EMAIL_RE.test(email)){hint.textContent="Formato de correo invalido";hint.className="email-hint er";return;}
+  hint.textContent="";hint.className="email-hint";
+}
+
+async function onEmailBlur(){
+  const email=document.getElementById("aEmail").value.trim();
+  const hint=document.getElementById("emailHint");
+  const isRegister=!document.getElementById("atab-in").classList.contains("on");
+  if(!email||!EMAIL_RE.test(email))return;
+  if(!isRegister){hint.textContent="";hint.className="email-hint";return;}
+  if(!FB)return;
+  hint.textContent="Verificando...";hint.className="email-hint mu";
+  try{
+    const methods=await FB.fetchSignInMethodsForEmail(FB.auth,email);
+    if(methods&&methods.length>0){
+      hint.textContent="Este correo ya tiene una cuenta registrada";hint.className="email-hint er";
+    }else{
+      hint.textContent="Correo disponible";hint.className="email-hint ok";
+    }
+  }catch(e){hint.textContent="";hint.className="email-hint";}
 }
 
 async function doSignOut(){
@@ -1753,7 +1797,17 @@ function rTriage(){
     for(let i=0;i<=10;i++){const b=document.createElement("button");const hi=i>=7;b.className="sb"+(TD[s.id]==i?(hi?" selh":" sel"):"");b.textContent=i;b.onclick=()=>{TD[s.id]=i;rTriage();};sg.appendChild(b);}
     const lb=document.createElement("div");lb.className="slabs";lb.innerHTML=`<span>${t("noPain")||"Sin dolor"}</span><span>${t("unbearable")||"Insoportable"}</span>`;card.appendChild(sg);card.appendChild(lb);
   }else if(s.t==="num"){
-    const i=document.createElement("input");i.type="number";i.placeholder=`${s.unit}`;i.min=s.min;i.max=s.max;i.value=TD[s.id]||"";i.oninput=()=>{TD[s.id]=i.value;};card.appendChild(i);
+    const i=document.createElement("input");i.className="fi";i.type="number";i.placeholder=s.unit;i.min=s.min;i.max=s.max;
+    i.value=(TD[s.id]!==undefined&&TD[s.id]!=="")?""+TD[s.id]:"";
+    i.style.cssText="font-size:1.1rem;text-align:center;letter-spacing:1px;";
+    i.oninput=()=>{
+      TD[s.id]=i.value;
+      const nx=document.querySelector("#trc .bnxt");
+      if(nx)nx.disabled=(i.value===""||isNaN(+i.value));
+    };
+    card.appendChild(i);
+    // Auto-focus so user can type immediately
+    requestAnimationFrame(()=>i.focus());
   }
   const nav=document.createElement("div");nav.className="bnav-row";
   if(TS>0){const b=document.createElement("button");b.className="bbk";b.textContent="← "+(t("back")||"Atras");b.onclick=()=>{TS--;TM=[];rTriage();};nav.appendChild(b);}
@@ -1767,7 +1821,7 @@ function canAdv(s){
   if(s.t==="scale_enhanced")return TD[s.id]!==undefined;
   if(s.t==="symptom_detail")return true;
   if(s.t==="multi")return TM.length>0||(TD[s.id]&&TD[s.id].length>0);
-  if(s.t==="num")return!!TD[s.id];
+  if(s.t==="num")return TD[s.id]!==undefined&&TD[s.id]!==""&&!isNaN(+TD[s.id]);
   if(s.t==="scale")return TD[s.id]!==undefined;
   return!!TD[s.id];
 }
