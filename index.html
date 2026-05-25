@@ -25,7 +25,7 @@ window.dispatchEvent(new Event("fbready"));
 <style>
 :root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);}
 .light{--bg:#f0f4f8;--bg2:#fff;--bg3:#e8edf5;--bd:#d0dae8;--tx:#0f1923;--mu:#6b7fa3;--mu2:#9aabc4;--cy:#0099bb;--gn:#00a855;--rd:#d42042;--yw:#c97a00;--cy-a:rgba(0,153,187,.08);--gn-a:rgba(0,168,85,.08);--rd-a:rgba(212,32,66,.08);--yw-a:rgba(201,122,0,.08);--shadow:0 4px 24px rgba(0,0,0,.08);}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;touch-action:manipulation;}
 html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(--bg);color:var(--tx);font-family:"Familjen Grotesk",sans-serif;transition:background .3s,color .3s;}
 
 /* ANIMATIONS */
@@ -131,12 +131,14 @@ html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(-
 .sc.on{display:block;}
 
 /* BOTTOM NAV */
-.bottom-nav{display:flex;background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0;position:relative;z-index:50;overflow:hidden;}
-.nb{flex:1;min-width:0;max-width:25%;display:flex;flex-direction:column;align-items:center;padding:7px 1px 9px;gap:2px;background:none;border:none;cursor:pointer;transition:all .2s;overflow:hidden;}
-.nb .ni{font-size:1.1rem;}
-.nb .nl{font-size:.46rem;font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--mu);letter-spacing:0;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 2px;}
+.bottom-nav{display:flex;background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0;position:relative;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
+.nb{flex:1;min-width:44px;display:flex;flex-direction:column;align-items:center;padding:9px 4px 11px;gap:2px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;}
+.nb .ni{font-size:1.25rem;transition:transform .2s cubic-bezier(.34,1.4,.64,1);}
+.nb.on .ni{transform:scale(1.18);}
+.nb .nl{font-size:.54rem;font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--mu);letter-spacing:0;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 2px;}
 .nb.on .nl{color:var(--cy);}
-.nind{position:absolute;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cy),var(--gn));transition:all .32s cubic-bezier(.4,0,.2,1);}
+.nb:active{opacity:.65;}
+.nind{position:absolute;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cy),var(--gn));transition:all .32s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px var(--cy);}
 
 /* CARDS */
 .card{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);transition:box-shadow .3s,transform .3s;}
@@ -159,7 +161,7 @@ html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(-
 .qtitle{font-size:1.05rem;font-weight:700;line-height:1.35;margin-bottom:4px;}
 .qsub{font-size:.78rem;color:var(--mu);margin-bottom:14px;line-height:1.5;}
 .opts{display:grid;gap:6px;}
-.opt{background:var(--bg3);border:1.5px solid var(--bd);border-radius:10px;padding:11px 13px;text-align:left;cursor:pointer;font-size:.86rem;color:var(--tx);font-family:"Familjen Grotesk",sans-serif;display:flex;align-items:center;gap:9px;transition:all .18s;animation:optIn .28s cubic-bezier(.4,0,.2,1) both;}
+.opt{background:var(--bg3);border:1.5px solid var(--bd);border-radius:10px;padding:11px 13px;text-align:left;cursor:pointer;font-size:.86rem;color:var(--tx);font-family:"Familjen Grotesk",sans-serif;display:flex;align-items:center;gap:9px;transition:all .18s;animation:optIn .28s cubic-bezier(.4,0,.2,1) both;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 .opt:nth-child(1){animation-delay:.03s}.opt:nth-child(2){animation-delay:.07s}.opt:nth-child(3){animation-delay:.11s}.opt:nth-child(4){animation-delay:.15s}.opt:nth-child(5){animation-delay:.19s}.opt:nth-child(6){animation-delay:.23s}.opt:nth-child(7){animation-delay:.27s}
 @media(hover:hover){.opt:hover{border-color:var(--cy);background:var(--cy-a);box-shadow:0 0 0 1px var(--cy),0 4px 14px rgba(0,200,240,.1);}}
 .opt.sel{border-color:var(--cy);background:var(--cy-a);color:var(--cy);box-shadow:0 0 0 2px var(--cy);}
@@ -181,16 +183,16 @@ select option{background:var(--bg3);}
 
 /* BUTTONS */
 .bnav-row{display:flex;gap:8px;margin-top:14px;}
-.bbk{flex:0 0 auto;padding:10px 14px;background:transparent;border:1px solid var(--bd);border-radius:9px;color:var(--mu);cursor:pointer;font-family:"Familjen Grotesk",sans-serif;font-size:.83rem;transition:all .2s;}
-.bnxt{flex:1;padding:10px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.88rem;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:all .22s;}
+.bbk{flex:0 0 auto;padding:10px 14px;background:transparent;border:1px solid var(--bd);border-radius:9px;color:var(--mu);cursor:pointer;font-family:"Familjen Grotesk",sans-serif;font-size:.83rem;transition:all .2s;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+.bnxt{flex:1;padding:10px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.88rem;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:all .22s;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 .bnxt:hover{background:#22d4f5;transform:translateY(-1px);}
 .bnxt:active{transform:scale(.97);}
 .bnxt:disabled{opacity:.3;cursor:not-allowed;transform:none;}
-.bpri{width:100%;padding:11px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.88rem;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:all .22s;}
+.bpri{width:100%;padding:11px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.88rem;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:all .22s;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 .bpri:hover{background:#22d4f5;transform:translateY(-1px);}
 .bpri:active{transform:scale(.97);}
 .bpri:disabled{opacity:.35;cursor:not-allowed;transform:none;}
-.bsec{width:100%;padding:10px;background:transparent;border:1.5px solid var(--bd);border-radius:9px;color:var(--mu);font-family:"Familjen Grotesk",sans-serif;font-size:.85rem;cursor:pointer;transition:all .2s;margin-top:7px;}
+.bsec{width:100%;padding:10px;background:transparent;border:1.5px solid var(--bd);border-radius:9px;color:var(--mu);font-family:"Familjen Grotesk",sans-serif;font-size:.85rem;cursor:pointer;transition:all .2s;margin-top:7px;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 .bsec:hover{border-color:var(--cy);color:var(--cy);}
 .brd{background:var(--rd)!important;color:#fff!important;}
 .brd:hover{background:#ff6680!important;}
@@ -243,14 +245,14 @@ select option{background:var(--bg3);}
 .tagx:hover{color:var(--rd);}
 .twrap{min-height:30px;margin-bottom:9px;flex-wrap:wrap;display:flex;}
 .srow{display:flex;gap:7px;margin-bottom:8px;}
-.bv{width:40px;height:40px;border-radius:9px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;background:var(--cy);color:#000;transition:all .2s;}
+.bv{width:40px;height:40px;border-radius:9px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;background:var(--cy);color:#000;transition:all .2s;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 .bv.rec{background:var(--rd);}
 .chip{display:inline-flex;align-items:center;background:var(--cy-a);color:var(--cy);border:1px solid rgba(0,200,240,.2);border-radius:20px;padding:2px 8px;font-size:.64rem;font-family:"JetBrains Mono",monospace;margin:2px;}
 .cnote{background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:.76rem;color:#c084fc;display:flex;align-items:flex-start;gap:8px;line-height:1.5;}
 .wnote{padding:8px 12px;background:var(--yw-a);border:1px solid rgba(255,184,48,.2);border-radius:7px;font-size:.7rem;color:var(--yw);text-align:center;line-height:1.5;margin-top:9px;}
 .snav2{display:flex;gap:5px;padding:10px 14px 0;overflow-x:auto;flex-shrink:0;}
 .snav2::-webkit-scrollbar{display:none;}
-.htab{padding:5px 11px;border-radius:20px;font-size:.68rem;font-weight:700;font-family:"JetBrains Mono",monospace;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer;transition:all .2s;letter-spacing:.3px;white-space:nowrap;}
+.htab{padding:5px 11px;border-radius:20px;font-size:.68rem;font-weight:700;font-family:"JetBrains Mono",monospace;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer;transition:all .2s;letter-spacing:.3px;white-space:nowrap;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 .htab.on{background:var(--cy);color:#000;border-color:var(--cy);}
 .hist-row{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--bd);font-size:.8rem;}
 .hist-row:last-child{border-bottom:none;}
@@ -707,6 +709,7 @@ const L={
     checkInter:"Verificar interacciones",disclaimer:"Herramienta de apoyo. Decision final corresponde al personal medico.",
     newPatient:"Nuevo paciente",resetSent:"Correo enviado. Revisa tu bandeja.",resetErr:"No se pudo enviar.",
     interDesc:"Agrega 2 o mas medicamentos para verificar.",
+    step:"Paso",of:"de",back:"Atras",continueBtn:"Continuar",analyze:"Analizar",analyzingLabel:"EVALUANDO RIESGO CLINICO",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -778,6 +781,7 @@ const L={
     checkInter:"Check interactions",disclaimer:"Support tool. Final decision belongs to medical staff.",
     newPatient:"New patient",resetSent:"Recovery email sent.",resetErr:"Could not send.",
     interDesc:"Add 2 or more medications to verify.",
+    step:"Step",of:"of",back:"Back",continueBtn:"Continue",analyze:"Analyze",analyzingLabel:"EVALUATING CLINICAL RISK",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -849,6 +853,7 @@ const L={
     checkInter:"Verificar interacoes",disclaimer:"Ferramenta de apoio. Decisao final equipe medica.",
     newPatient:"Novo paciente",resetSent:"Email enviado.",resetErr:"Nao foi possivel enviar.",
     interDesc:"Adicione 2 ou mais medicamentos para verificar.",
+    step:"Passo",of:"de",back:"Voltar",continueBtn:"Continuar",analyze:"Analisar",analyzingLabel:"AVALIANDO RISCO CLINICO",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -920,6 +925,7 @@ const L={
     checkInter:"Verifier interactions",disclaimer:"Outil aide. Decision finale personnel medical.",
     newPatient:"Nouveau patient",resetSent:"Email envoye.",resetErr:"Impossible envoyer.",
     interDesc:"Ajoutez 2 medicaments ou plus pour verifier.",
+    step:"Etape",of:"sur",back:"Retour",continueBtn:"Continuer",analyze:"Analyser",analyzingLabel:"EVALUATION RISQUE CLINIQUE",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -991,6 +997,7 @@ const L={
     checkInter:"Wechselwirkungen prufen",disclaimer:"Hilfswerkzeug. Endentscheidung Medizinpersonal.",
     newPatient:"Neuer Patient",resetSent:"Email gesendet.",resetErr:"Email fehlgeschlagen.",
     interDesc:"Fugen Sie 2 oder mehr Medikamente hinzu.",
+    step:"Schritt",of:"von",back:"Zuruck",continueBtn:"Weiter",analyze:"Analysieren",analyzingLabel:"KLINISCHES RISIKO BEWERTEN",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE"};
@@ -1486,12 +1493,14 @@ function rAnalyzing(){
 .ant-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(168,85,247,.1);color:#c084fc;border:1px solid rgba(168,85,247,.25);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:3px;}
 .ant-chip .ax{margin-left:3px;opacity:.6;cursor:pointer;font-size:.7rem;}
 .ant-chip .ax:hover{opacity:1;color:var(--rd);}
-.symptom-q{background:var(--bg3);border:1px solid var(--bd);border-radius:11px;padding:11px 13px;margin-bottom:8px;animation:fadeUp .3s ease;}
-.symptom-q-title{font-size:.72rem;font-family:"JetBrains Mono",monospace;color:var(--cy);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:9px;}
-.symptom-opts{display:flex;flex-wrap:wrap;gap:5px;}
-.symptom-opt{padding:6px 11px;border-radius:20px;border:1px solid var(--bd);background:transparent;font-size:.77rem;color:var(--mu);cursor:pointer;transition:all .18s;font-family:"Familjen Grotesk",sans-serif;}
-.symptom-opt:hover{border-color:var(--cy);color:var(--cy);}
-.symptom-opt.sel{background:var(--cy);border-color:var(--cy);color:#000;font-weight:700;}
+.symptom-q{background:var(--bg3);border:1px solid var(--bd);border-left:3px solid var(--cy);border-radius:11px;padding:12px 14px;margin-bottom:9px;animation:fadeUp .35s cubic-bezier(.4,0,.2,1) both;}
+.symptom-q:nth-child(1){animation-delay:.04s}.symptom-q:nth-child(2){animation-delay:.11s}.symptom-q:nth-child(3){animation-delay:.18s}
+.symptom-q-title{font-size:.72rem;font-family:"JetBrains Mono",monospace;color:var(--cy);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
+.symptom-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.symptom-opt{padding:10px 11px;border-radius:9px;border:1.5px solid var(--bd);background:var(--bg2);font-size:.8rem;color:var(--tx);cursor:pointer;transition:all .18s;font-family:"Familjen Grotesk",sans-serif;text-align:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+.symptom-opt:hover{border-color:var(--cy);color:var(--cy);background:var(--cy-a);}
+.symptom-opt:active{transform:scale(.95);}
+.symptom-opt.sel{background:linear-gradient(135deg,var(--cy-a),rgba(0,200,240,.15));border-color:var(--cy);color:var(--cy);font-weight:700;box-shadow:0 0 0 1px var(--cy),0 2px 8px rgba(0,200,240,.15);}
 /* ── FACIAL PAIN ── */
 .pain-face-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;}
 @media(min-width:360px){.pain-face-grid{grid-template-columns:repeat(6,1fr);gap:6px;}}
@@ -1730,37 +1739,148 @@ function renderScaleEnhanced(card, stepId){
 // ══════════════════════════════════════
 // PREGUNTAS ESPECIFICAS POR SINTOMA
 // ══════════════════════════════════════
-const SYMPTOM_QUESTIONS = {
-  dolor_pecho:[
-    {k:'tipo_dolor', q:'Tipo de dolor', opts:['Opresivo / apretante','Quemante / ardor','Punzante / agudo','Sordo / presion constante']},
-    {k:'irradia', q:'El dolor se extiende hacia', opts:['Brazo izquierdo','Mandibula / cuello','Espalda','No se extiende']},
-    {k:'inicio', q:'Cuando comenzo', opts:['Al hacer esfuerzo','En reposo','Con la respiracion','Despues de comer']},
-  ],
-  disnea:[
-    {k:'dif_tipo', q:'La dificultad para respirar es', opts:['Al caminar','En reposo','Al acostarse','Constante']},
-    {k:'dif_inicio', q:'Comenzo', opts:['De repente','Gradualmente','Con esfuerzo','Hace dias']},
-  ],
-  abdominal:[
-    {k:'ab_zona', q:'Ubicacion del dolor', opts:['Parte alta (estomago)','Parte baja','Lado derecho','Lado izquierdo','Todo el abdomen']},
-    {k:'ab_tipo', q:'Tipo de dolor', opts:['Tipo calambre / colico','Constante','Mejora al comer','Empeora al comer']},
-  ],
-  trauma:[
-    {k:'trauma_tipo', q:'Tipo de trauma', opts:['Caida','Accidente de transito','Golpe directo','Herida cortante']},
-    {k:'trauma_zona', q:'Zona afectada', opts:['Cabeza / craneo','Torax / costillas','Abdomen','Extremidades']},
-  ],
-  neuro:[
-    {k:'neuro_tipo', q:'El episodio fue', opts:['Convulsions / sacudidas','Desmayo / sincope','Confusion / desorientacion','ACV / paralisis']},
-    {k:'neuro_dur', q:'Duracion', opts:['Menos de 1 minuto','1-5 minutos','Mas de 5 minutos','Continua']},
-  ],
-  fiebre:[
-    {k:'fiebre_tiempo', q:'Cuanto tiempo lleva con fiebre', opts:['Menos de 24 horas','1-3 dias','Mas de 3 dias']},
-    {k:'fiebre_otros', q:'Acompanado de', opts:['Escalofrios','Sudoracion','Dolor de cabeza','Erupcion en la piel']},
-  ],
+const SYM_QS = {
+  es:{
+    dolor_pecho:[
+      {k:'tipo_dolor', q:'Tipo de dolor', opts:['Opresivo / apretante','Quemante / ardor','Punzante / agudo','Sordo / presion constante']},
+      {k:'irradia', q:'El dolor se extiende hacia', opts:['Brazo izquierdo','Mandibula / cuello','Espalda','No se extiende']},
+      {k:'inicio', q:'Cuando comenzo', opts:['Al hacer esfuerzo','En reposo','Con la respiracion','Despues de comer']},
+    ],
+    disnea:[
+      {k:'dif_tipo', q:'La dificultad para respirar es', opts:['Al caminar','En reposo','Al acostarse','Constante']},
+      {k:'dif_inicio', q:'Comenzo', opts:['De repente','Gradualmente','Con esfuerzo','Hace dias']},
+    ],
+    abdominal:[
+      {k:'ab_zona', q:'Ubicacion del dolor', opts:['Parte alta (estomago)','Parte baja','Lado derecho','Lado izquierdo','Todo el abdomen']},
+      {k:'ab_tipo', q:'Tipo de dolor', opts:['Tipo calambre / colico','Constante','Mejora al comer','Empeora al comer']},
+    ],
+    trauma:[
+      {k:'trauma_tipo', q:'Tipo de trauma', opts:['Caida','Accidente de transito','Golpe directo','Herida cortante']},
+      {k:'trauma_zona', q:'Zona afectada', opts:['Cabeza / craneo','Torax / costillas','Abdomen','Extremidades']},
+    ],
+    neuro:[
+      {k:'neuro_tipo', q:'El episodio fue', opts:['Convulsiones / sacudidas','Desmayo / sincope','Confusion / desorientacion','ACV / paralisis']},
+      {k:'neuro_dur', q:'Duracion', opts:['Menos de 1 minuto','1-5 minutos','Mas de 5 minutos','Continua']},
+    ],
+    fiebre:[
+      {k:'fiebre_tiempo', q:'Cuanto tiempo lleva con fiebre', opts:['Menos de 24 horas','1-3 dias','Mas de 3 dias']},
+      {k:'fiebre_otros', q:'Acompanado de', opts:['Escalofrios','Sudoracion','Dolor de cabeza','Erupcion en la piel']},
+    ],
+  },
+  en:{
+    dolor_pecho:[
+      {k:'tipo_dolor', q:'Type of pain', opts:['Pressure / tightness','Burning / heartburn','Sharp / stabbing','Dull / constant pressure']},
+      {k:'irradia', q:'Pain radiates to', opts:['Left arm','Jaw / neck','Back','Does not radiate']},
+      {k:'inicio', q:'When it started', opts:['During exertion','At rest','With breathing','After eating']},
+    ],
+    disnea:[
+      {k:'dif_tipo', q:'Difficulty breathing occurs', opts:['While walking','At rest','When lying down','Constantly']},
+      {k:'dif_inicio', q:'It started', opts:['Suddenly','Gradually','With exertion','Days ago']},
+    ],
+    abdominal:[
+      {k:'ab_zona', q:'Pain location', opts:['Upper abdomen','Lower abdomen','Right side','Left side','Entire abdomen']},
+      {k:'ab_tipo', q:'Type of pain', opts:['Cramps / colic','Constant','Better after eating','Worse after eating']},
+    ],
+    trauma:[
+      {k:'trauma_tipo', q:'Type of trauma', opts:['Fall','Traffic accident','Direct blow','Cutting wound']},
+      {k:'trauma_zona', q:'Affected area', opts:['Head / skull','Chest / ribs','Abdomen','Extremities']},
+    ],
+    neuro:[
+      {k:'neuro_tipo', q:'The episode was', opts:['Seizures / convulsions','Fainting / syncope','Confusion / disorientation','Stroke / paralysis']},
+      {k:'neuro_dur', q:'Duration', opts:['Less than 1 minute','1-5 minutes','More than 5 minutes','Ongoing']},
+    ],
+    fiebre:[
+      {k:'fiebre_tiempo', q:'How long with fever', opts:['Less than 24 hours','1-3 days','More than 3 days']},
+      {k:'fiebre_otros', q:'Accompanied by', opts:['Chills','Sweating','Headache','Skin rash']},
+    ],
+  },
+  pt:{
+    dolor_pecho:[
+      {k:'tipo_dolor', q:'Tipo de dor', opts:['Pressao / aperto','Queimacao / azia','Pontada / aguda','Surda / pressao constante']},
+      {k:'irradia', q:'A dor se estende para', opts:['Braco esquerdo','Mandibula / pescoco','Costas','Nao se estende']},
+      {k:'inicio', q:'Quando comecou', opts:['Ao fazer esforca','Em repouso','Com a respiracao','Apos comer']},
+    ],
+    disnea:[
+      {k:'dif_tipo', q:'A dificuldade para respirar e', opts:['Ao caminhar','Em repouso','Ao deitar','Constante']},
+      {k:'dif_inicio', q:'Comecou', opts:['De repente','Gradualmente','Com esforca','Ha dias']},
+    ],
+    abdominal:[
+      {k:'ab_zona', q:'Localizacao da dor', opts:['Parte alta (estomago)','Parte baixa','Lado direito','Lado esquerdo','Todo o abdome']},
+      {k:'ab_tipo', q:'Tipo de dor', opts:['Tipo caimbra / colica','Constante','Melhora ao comer','Piora ao comer']},
+    ],
+    trauma:[
+      {k:'trauma_tipo', q:'Tipo de trauma', opts:['Queda','Acidente de transito','Golpe direto','Ferida cortante']},
+      {k:'trauma_zona', q:'Zona afetada', opts:['Cabeca / cranio','Torax / costelas','Abdome','Extremidades']},
+    ],
+    neuro:[
+      {k:'neuro_tipo', q:'O episodio foi', opts:['Convulsoes / tremores','Desmaio / sincope','Confusao / desorientacao','AVC / paralisia']},
+      {k:'neuro_dur', q:'Duracao', opts:['Menos de 1 minuto','1-5 minutos','Mais de 5 minutos','Continua']},
+    ],
+    fiebre:[
+      {k:'fiebre_tiempo', q:'Ha quanto tempo tem febre', opts:['Menos de 24 horas','1-3 dias','Mais de 3 dias']},
+      {k:'fiebre_otros', q:'Acompanhado de', opts:['Calafrios','Sudoracao','Dor de cabeca','Erupocao na pele']},
+    ],
+  },
+  fr:{
+    dolor_pecho:[
+      {k:'tipo_dolor', q:'Type de douleur', opts:['Oppression / serrement','Brulement / aigreurs','Poignardant / aigu','Sourd / pression constante']},
+      {k:'irradia', q:'La douleur irradie vers', opts:['Bras gauche','Machoire / cou','Dos','Ne rayonne pas']},
+      {k:'inicio', q:'Quand cela a commence', opts:["A l'effort",'Au repos','Avec la respiration','Apres manger']},
+    ],
+    disnea:[
+      {k:'dif_tipo', q:'La difficulte a respirer survient', opts:['En marchant','Au repos','En position allongee','Constamment']},
+      {k:'dif_inicio', q:'Cela a commence', opts:['Soudainement','Progressivement',"A l'effort",'Il y a quelques jours']},
+    ],
+    abdominal:[
+      {k:'ab_zona', q:'Localisation de la douleur', opts:['Partie haute (estomac)','Partie basse','Cote droit','Cote gauche','Tout l abdomen']},
+      {k:'ab_tipo', q:'Type de douleur', opts:['Type crampe / colique','Constante','Meilleure apres manger','Pire apres manger']},
+    ],
+    trauma:[
+      {k:'trauma_tipo', q:'Type de traumatisme', opts:['Chute','Accident de la route','Coup direct','Blessure coupante']},
+      {k:'trauma_zona', q:'Zone atteinte', opts:['Tete / crane','Thorax / cotes','Abdomen','Membres']},
+    ],
+    neuro:[
+      {k:'neuro_tipo', q:"L episode etait", opts:['Convulsions / secousses','Evanouissement / syncope','Confusion / desorientation','AVC / paralysie']},
+      {k:'neuro_dur', q:'Duree', opts:['Moins de 1 minute','1-5 minutes','Plus de 5 minutes','Continue']},
+    ],
+    fiebre:[
+      {k:'fiebre_tiempo', q:'Depuis combien de temps avec fievre', opts:['Moins de 24 heures','1-3 jours','Plus de 3 jours']},
+      {k:'fiebre_otros', q:'Accompagne de', opts:['Frissons','Transpiration','Mal de tete','Eruption cutanee']},
+    ],
+  },
+  de:{
+    dolor_pecho:[
+      {k:'tipo_dolor', q:'Art des Schmerzes', opts:['Druck / Enge','Brennen / Sodbrennen','Stechend / scharf','Dumpf / konstanter Druck']},
+      {k:'irradia', q:'Schmerz strahlt aus in', opts:['Linken Arm','Kiefer / Hals','Rucken','Strahlt nicht aus']},
+      {k:'inicio', q:'Wann begann es', opts:['Bei Anstrengung','In Ruhe','Mit der Atmung','Nach dem Essen']},
+    ],
+    disnea:[
+      {k:'dif_tipo', q:'Atemnot tritt auf', opts:['Beim Gehen','In Ruhe','Im Liegen','Standig']},
+      {k:'dif_inicio', q:'Es begann', opts:['Plotzlich','Allmahlich','Bei Anstrengung','Vor einigen Tagen']},
+    ],
+    abdominal:[
+      {k:'ab_zona', q:'Schmerzort', opts:['Oberbauch (Magen)','Unterbauch','Rechte Seite','Linke Seite','Ganzer Bauch']},
+      {k:'ab_tipo', q:'Art des Schmerzes', opts:['Krampfartig / Kolik','Konstant','Besser nach Essen','Schlimmer nach Essen']},
+    ],
+    trauma:[
+      {k:'trauma_tipo', q:'Art des Traumas', opts:['Sturz','Verkehrsunfall','Direkter Schlag','Schnittwunde']},
+      {k:'trauma_zona', q:'Betroffene Zone', opts:['Kopf / Schadel','Brustkorb / Rippen','Bauch','Extremitaten']},
+    ],
+    neuro:[
+      {k:'neuro_tipo', q:'Die Episode war', opts:['Krampfe / Zuckungen','Ohnmacht / Synkope','Verwirrung / Desorientierung','Schlaganfall / Lahmung']},
+      {k:'neuro_dur', q:'Dauer', opts:['Weniger als 1 Minute','1-5 Minuten','Mehr als 5 Minuten','Andauernd']},
+    ],
+    fiebre:[
+      {k:'fiebre_tiempo', q:'Wie lange mit Fieber', opts:['Weniger als 24 Stunden','1-3 Tage','Mehr als 3 Tage']},
+      {k:'fiebre_otros', q:'Begleitet von', opts:['Schuttelfrost','Schwitzen','Kopfschmerzen','Hautausschlag']},
+    ],
+  },
 };
+function getSymptomQs(){return SYM_QS[CL]||SYM_QS.es;}
 
 function renderSymptomDetail(card){
   const motivo = TD.motivo;
-  const questions = SYMPTOM_QUESTIONS[motivo] || [];
+  const questions = getSymptomQs()[motivo] || [];
   if(!questions.length){
     // No specific questions, skip
     TD.sintoma_detalle = {};

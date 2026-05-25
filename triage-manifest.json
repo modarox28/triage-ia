@@ -1,0 +1,14 @@
+{
+  "name": "TriageIA — Clasificación de Emergencias",
+  "short_name": "TriageIA",
+  "description": "Sistema inteligente de triage hospitalario",
+  "start_url": "./triage-ia.html",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#00d4ff",
+  "orientation": "portrait",
+  "icons": [
+    {"src": "triage-icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "triage-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
