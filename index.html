@@ -25,9 +25,19 @@ window.dispatchEvent(new Event("fbready"));
 <style>
 :root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);--zoom:1;}
 .light{--bg:#f0f4f8;--bg2:#fff;--bg3:#e8edf5;--bd:#d0dae8;--tx:#0f1923;--mu:#6b7fa3;--mu2:#9aabc4;--cy:#0099bb;--gn:#00a855;--rd:#d42042;--yw:#c97a00;--cy-a:rgba(0,153,187,.08);--gn-a:rgba(0,168,85,.08);--rd-a:rgba(212,32,66,.08);--yw-a:rgba(201,122,0,.08);--shadow:0 4px 24px rgba(0,0,0,.08);}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;touch-action:manipulation;}
-html{font-size:calc(16px * var(--zoom));height:100%;height:100dvh;}
-body{height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;background:var(--bg);color:var(--tx);font-family:"Familjen Grotesk",sans-serif;transition:background .3s,color .3s;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;touch-action:manipulation;}
+html{font-size:calc(16px * var(--zoom));height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(--bg);color:var(--tx);font-family:"Familjen Grotesk",sans-serif;transition:background .3s,color .3s;overscroll-behavior:none;-webkit-overflow-scrolling:touch;}
+
+/* iOS Safari height fix — position:fixed + inset fills the viewport automatically */
+/* dvh kept as progressive enhancement for browsers that support it */
+@supports (height:100dvh){html,body{height:100dvh;}}
+
+/* iOS — prevent auto zoom on input focus (font-size must be ≥ 16px rendered) */
+input,select,textarea{font-size:max(16px,1em)!important;}
+/* Reset iOS native styling */
+input,button,select,textarea{-webkit-appearance:none;appearance:none;}
+button{border-radius:0;}
 
 /* ANIMATIONS */
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -82,7 +92,7 @@ body{height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;backgro
 .score-ring.crit{border-color:var(--rd);color:var(--rd);background:var(--rd-a);}
 
 /* AUTH */
-.auth-screen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}
+.auth-screen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .auth-box{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--bd);border-radius:22px;padding:28px 24px;box-shadow:var(--shadow);animation:fadeUp .45s cubic-bezier(.34,1.4,.64,1);}
 .auth-logo{font-family:"JetBrains Mono",monospace;font-size:1.4rem;font-weight:700;text-align:center;margin-bottom:4px;}
 .auth-logo b{background:linear-gradient(90deg,var(--cy),#fff,var(--cy));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;}
@@ -128,8 +138,8 @@ body{height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;backgro
 .auth-staff-link{display:block;text-align:center;font-size:.74rem;color:var(--mu);margin-top:12px;cursor:pointer;transition:color .2s;}
 .auth-staff-link:hover{color:var(--cy);}
 
-/* APP SHELL */
-.app{display:none;height:100vh;height:100dvh;width:100%;overflow:hidden;position:fixed;inset:0;inset:0 0 0 0;padding-top:env(safe-area-inset-top,0px);}
+/* APP SHELL — position:fixed fills viewport; height set by JS on iOS via --vh */
+.app{display:none;width:100%;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;}
 .app.on{display:flex;flex-direction:column;width:100%;}
 @media(min-width:768px){
   .app.on{flex-direction:row;}
@@ -151,8 +161,8 @@ body{height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;backgro
 }
 @media(max-width:767px){.sidebar{display:none;}}
 
-/* TOP BAR */
-.top-bar{padding:11px 16px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;}
+/* TOP BAR — padding-top absorbs status bar when in standalone PWA mode */
+.top-bar{padding:11px 16px;padding-top:calc(11px + env(safe-area-inset-top,0px));background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;}
 .top-logo{font-family:"JetBrains Mono",monospace;font-size:.95rem;font-weight:700;flex-shrink:0;}
 .top-logo b{background:linear-gradient(90deg,var(--cy),#fff,var(--cy));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;}
 .top-logo s{color:var(--mu);text-decoration:none;font-style:normal;-webkit-text-fill-color:var(--mu);}
@@ -167,7 +177,7 @@ body{height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;backgro
 
 /* BODY + SCREENS */
 .main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
-.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:70px;-webkit-overflow-scrolling:touch;width:100%;}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
 .body::-webkit-scrollbar{width:3px;}
 .body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
 .sc{display:none;padding:14px;width:100%;box-sizing:border-box;}
@@ -221,11 +231,16 @@ body{height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;backgro
 .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .vf label{display:block;font-size:.62rem;font-family:"JetBrains Mono",monospace;color:var(--mu);margin-bottom:4px;letter-spacing:.5px;}
 
-/* INPUTS */
-input,select,.fi{width:100%;background:var(--bg3);border:1.5px solid var(--bd);border-radius:9px;padding:10px 12px;font-size:.86rem;color:var(--tx);font-family:"Familjen Grotesk",sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;}
-input:focus,select:focus,.fi:focus{border-color:var(--cy);box-shadow:0 0 0 3px rgba(0,200,240,.1);}
-input::placeholder{color:var(--mu2);}
+/* INPUTS — font-size 16px on iOS to prevent auto-zoom, visual size uses padding */
+input,select,textarea,.fi{width:100%;background:var(--bg3);border:1.5px solid var(--bd);border-radius:9px;padding:10px 12px;font-size:16px;color:var(--tx);font-family:"Familjen Grotesk",sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus,textarea:focus,.fi:focus{border-color:var(--cy);box-shadow:0 0 0 3px rgba(0,200,240,.1);}
+input::placeholder,textarea::placeholder{color:var(--mu2);}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7299' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
 select option{background:var(--bg3);}
+input[type=time]{-webkit-appearance:none;color-scheme:dark;}
+.light input[type=time]{color-scheme:light;}
+/* iOS date/time picker button color fix */
+input[type=time]::-webkit-date-and-time-value{text-align:left;}
 
 /* BUTTONS */
 .bnav-row{display:flex;gap:8px;margin-top:14px;}
@@ -330,7 +345,7 @@ select option{background:var(--bg3);}
 .etx{font-size:.8rem;line-height:1.5;}
 
 /* MODAL */
-.modal{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:18px;}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:18px;padding-top:calc(18px + env(safe-area-inset-top,0px));padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));}
 .modal.on{display:flex;}
 .modal-box{background:var(--bg2);border:1px solid var(--bd);border-radius:18px;padding:24px;max-width:340px;width:100%;text-align:center;animation:scaleIn .35s cubic-bezier(.34,1.4,.64,1);}
 .modal-title{font-family:"JetBrains Mono",monospace;font-size:.95rem;font-weight:700;margin-bottom:5px;}
@@ -401,7 +416,7 @@ select option{background:var(--bg3);}
 /* WELCOME OVERLAY */
 @keyframes welcomeIn{from{opacity:0;transform:scale(.92) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes welcomeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.04)}}
-.welcome-overlay{position:fixed;inset:0;z-index:3000;background:rgba(11,17,32,.92);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.welcome-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3000;background:rgba(11,17,32,.92);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 .welcome-box{text-align:center;animation:welcomeIn .55s cubic-bezier(.34,1.4,.64,1);}
 .welcome-box.out{animation:welcomeOut .4s cubic-bezier(.4,0,.6,1) forwards;}
 .welcome-av{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;margin:0 auto 16px;box-shadow:0 0 0 3px rgba(255,255,255,.12),0 0 32px rgba(0,200,240,.3);}
@@ -438,7 +453,7 @@ select option{background:var(--bg3);}
 
 /* CONFIRM DIALOG */
 @keyframes dialogIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.confirm-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.confirm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9000;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
 .confirm-overlay.on{display:flex;}
 .confirm-box{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:24px 20px 32px;width:100%;max-width:430px;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
 .confirm-icon{font-size:2rem;text-align:center;margin-bottom:10px;}
@@ -447,9 +462,9 @@ select option{background:var(--bg3);}
 .confirm-actions{display:flex;flex-direction:column;gap:8px;}
 
 /* RECONOCIMIENTO IMAGEN VITALES */
-.vitcam-overlay{position:fixed;inset:0;z-index:3900;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.vitcam-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3900;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .vitcam-overlay.on{display:flex;}
-.vitcam-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:20px 16px 36px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.vitcam-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:20px 16px calc(36px + env(safe-area-inset-bottom,0px));width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
 .vitcam-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;margin-bottom:2px;}
 .vitcam-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
 .vitcam-preview{width:100%;height:180px;border-radius:12px;object-fit:contain;background:var(--bg3);border:1px solid var(--bd);display:none;margin-bottom:12px;}
@@ -467,9 +482,9 @@ select option{background:var(--bg3);}
 .offline-bar.on{display:flex;}
 .offline-bar .ob-dot{width:8px;height:8px;border-radius:50%;background:#ffb830;}
 /* NOTIFICACION PRE-HOSPITALARIA */
-.preh-overlay{position:fixed;inset:0;z-index:3800;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.preh-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3800;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .preh-overlay.on{display:flex;}
-.preh-sheet{background:var(--bg2);border:1px solid rgba(255,140,0,.3);border-radius:22px 22px 0 0;padding:20px 16px 36px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.preh-sheet{background:var(--bg2);border:1px solid rgba(255,140,0,.3);border-radius:22px 22px 0 0;padding:20px 16px calc(36px + env(safe-area-inset-bottom,0px));width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
 .preh-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;color:#ffa040;}
 .preh-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
 .preh-field{margin-bottom:10px;}
@@ -483,9 +498,9 @@ select option{background:var(--bg3);}
 .preh-eta-btn.sel{background:rgba(255,140,0,.15);border-color:rgba(255,140,0,.5);color:#ffa040;}
 .preh-send{background:linear-gradient(135deg,rgba(255,120,0,.8),rgba(255,60,0,.8));border:none;border-radius:12px;color:#fff;padding:13px;font-size:.85rem;font-weight:700;font-family:"JetBrains Mono",monospace;width:100%;cursor:pointer;margin-top:4px;touch-action:manipulation;}
 /* RESUMEN DE TURNO / HANDOFF */
-.handoff-overlay{position:fixed;inset:0;z-index:3700;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.handoff-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3700;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .handoff-overlay.on{display:flex;}
-.handoff-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:20px 16px 36px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.handoff-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:20px 16px calc(36px + env(safe-area-inset-bottom,0px));width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
 .handoff-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;margin-bottom:2px;}
 .handoff-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
 .handoff-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
@@ -503,9 +518,9 @@ select option{background:var(--bg3);}
 .handoff-entry-sub{font-size:.66rem;color:var(--mu);}
 .handoff-entry-time{font-family:"JetBrains Mono",monospace;font-size:.64rem;color:var(--mu);flex-shrink:0;}
 /* CALCULADORA DOSIS PEDIÁTRICA */
-.dosp-overlay{position:fixed;inset:0;z-index:3600;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.dosp-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3600;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .dosp-overlay.on{display:flex;}
-.dosp-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:18px 16px 36px;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.dosp-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:18px 16px calc(36px + env(safe-area-inset-bottom,0px));width:100%;max-width:500px;max-height:92vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
 .dosp-drug-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;}
 .dosp-drug{background:var(--bg3);border:1.5px solid var(--bd);border-radius:10px;padding:8px 10px;font-size:.73rem;cursor:pointer;text-align:left;transition:all .15s;touch-action:manipulation;}
 .dosp-drug:active{transform:scale(.95);}
@@ -551,15 +566,15 @@ select option{background:var(--bg3);}
 .mci-stat.am .mci-stat-n{color:#ffc832;}
 .mci-stat.ve .mci-stat-n{color:#00e07a;}
 .mci-stat.ng .mci-stat-n{color:#aaa;}
-.mci-setup-overlay{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.mci-setup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:4000;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .mci-setup-overlay.on{display:flex;}
 .mci-setup-sheet{background:var(--bg2);border:1px solid rgba(255,60,60,.3);border-radius:22px 22px 0 0;padding:22px 18px 36px;width:100%;max-width:480px;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
 .mci-setup-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;color:#ff6060;margin-bottom:4px;}
 .mci-setup-sub{font-size:.73rem;color:var(--mu);margin-bottom:16px;}
 /* GLASGOW COMA SCALE */
-.gcs-overlay{position:fixed;inset:0;z-index:3500;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.gcs-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3500;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .gcs-overlay.on{display:flex;}
-.gcs-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:18px 16px 32px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.gcs-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:18px 16px calc(32px + env(safe-area-inset-bottom,0px));width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
 .gcs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
 .gcs-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;}
 .gcs-sub{font-size:.72rem;color:var(--mu);margin-bottom:14px;}
@@ -671,7 +686,7 @@ select option{background:var(--bg3);}
 .cola-refresh{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:8px;padding:5px 10px;font-size:.75rem;cursor:pointer;touch-action:manipulation;transition:all .2s;}
 .cola-refresh:hover{border-color:var(--cy);color:var(--cy);}
 /* SPLASH SCREEN */
-#splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;transition:opacity .5s ease,visibility .5s ease;visibility:visible;}
+#splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;transition:opacity .5s ease,visibility .5s ease;visibility:visible;}
 #splash.out{opacity:0;visibility:hidden;pointer-events:none;}
 .splash-logo{display:flex;flex-direction:column;align-items:center;gap:10px;animation:splashLogoIn .55s cubic-bezier(.34,1.4,.64,1) both;}
 @keyframes splashLogoIn{from{opacity:0;transform:scale(.82) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -682,6 +697,37 @@ select option{background:var(--bg3);}
 .splash-bar{width:110px;height:2px;background:var(--bd);border-radius:1px;overflow:hidden;animation:fadeUp .45s .35s ease both;}
 .splash-progress{height:100%;width:35%;background:linear-gradient(90deg,transparent,var(--cy),var(--gn),transparent);border-radius:1px;animation:splashScan 1.4s ease-in-out infinite;}
 @keyframes splashScan{0%{transform:translateX(-200%)}100%{transform:translateX(400%)}}
+
+/* ── iOS SAFARI SPECIFIC FIXES ───────────────────────────────────────────── */
+/* Prevent callout on long-press */
+*{-webkit-touch-callout:none;}
+a,input,button,select,textarea{-webkit-touch-callout:default;}
+/* Prevent selection on UI elements */
+.nb,.opt,.bpri,.bnxt,.bbk,.bsec,.htab,.icon-btn,.hist-flt{-webkit-user-select:none;user-select:none;}
+/* Fix for iOS Safari gap between bottom-nav and screen edge */
+.bottom-nav{padding-bottom:max(env(safe-area-inset-bottom,0px),13px);}
+/* Momentum scrolling on all scrollable containers */
+.body,.auth-screen,.preh-sheet,.handoff-sheet,.dosp-sheet,.gcs-sheet,.sidebar-nav{-webkit-overflow-scrolling:touch;}
+/* Prevent double-tap zoom on buttons */
+.nb,.opt,.bpri,.bnxt,.bbk,.bsec,.htab,.icon-btn,.hist-flt,.auth-btn,.auth-goo{touch-action:manipulation;}
+/* Fix iOS flex height bug — body can sometimes grow */
+body{position:fixed;width:100%;}
+/* Bottom sheet handle bar (visual cue for iOS users) */
+.preh-sheet::before,.handoff-sheet::before,.dosp-sheet::before,.gcs-sheet::before,.vitcam-sheet::before,.mci-setup-sheet::before{content:"";display:block;width:36px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px;}
+/* Fix iOS input type=number arrows */
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+/* Fix iOS Safari tap delay */
+html{touch-action:manipulation;}
+/* Smooth font on iOS */
+*{-webkit-font-smoothing:antialiased;}
+/* iOS Safari: select arrow custom */
+select{padding-right:32px;}
+/* Fix backdrop-filter iOS rendering */
+.bottom-nav{-webkit-backdrop-filter:saturate(180%) blur(28px);}
+/* Auth screen iOS keyboard push-up fix */
+@supports (-webkit-touch-callout: none){
+  .auth-screen{justify-content:flex-start;padding-top:max(calc(env(safe-area-inset-top,0px) + 20px), 40px);}
+}
 </style>
 </head>
 <body>
@@ -1379,6 +1425,27 @@ function toggleTheme(){
 
 // TOAST
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2400);}
+
+// iOS SAFARI HEIGHT FIX — uses visualViewport API to avoid the 100vh address-bar bug
+(()=>{
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(/macintosh/i.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+  if(!isIOS)return;
+  function _setVH(){
+    const h=(window.visualViewport?window.visualViewport.height:window.innerHeight);
+    document.documentElement.style.setProperty("--vh",h+"px");
+    const app=document.querySelector(".app");
+    if(app){app.style.height=h+"px";}
+    // Keep body locked
+    document.body.style.height=h+"px";
+  }
+  _setVH();
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",_setVH,{passive:true});
+    window.visualViewport.addEventListener("scroll",_setVH,{passive:true});
+  }
+  window.addEventListener("resize",_setVH,{passive:true});
+  window.addEventListener("orientationchange",()=>setTimeout(_setVH,120),{passive:true});
+})();
 
 // ZOOM ACCESSIBILITY
 let _zoomLevel=parseFloat(localStorage.getItem("ms_zoom")||"1");
