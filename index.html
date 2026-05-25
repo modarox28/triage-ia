@@ -1067,7 +1067,7 @@ function translateTriageStep(tx){
   // These are dynamically generated so we retrigger renderTriage
   // but only if triage screen is active and we're mid-flow
   if(document.getElementById("sc-triage")?.classList.contains("on")&&TS>0&&TS<aSteps().length){
-    renderTriage();
+    rTriage();
   }
 }
 
@@ -1684,7 +1684,7 @@ function renderScaleEnhanced(card, stepId){
   for(let i=0;i<=10;i++){
     const b=document.createElement('button'); const hi=i>=7;
     b.className='sb'+(TD[stepId]==i?(hi?' selh':' sel'):'');
-    b.textContent=i; b.onclick=()=>{TD[stepId]=i; renderTriage();};
+    b.textContent=i; b.onclick=()=>{TD[stepId]=i; rTriage();};
     sg.appendChild(b);
   }
   const lb=document.createElement('div'); lb.className='slabs';
@@ -1721,7 +1721,7 @@ function renderScaleEnhanced(card, stepId){
       <circle cx="24" cy="24" r="20" fill="${f.color}" opacity=".85"/>
       ${f.svg}
     </svg><div class="pain-face-label">${f.score}<br>${f.label}</div>`;
-    btn.onclick=()=>{TD[stepId]=f.score; renderTriage();};
+    btn.onclick=()=>{TD[stepId]=f.score; rTriage();};
     faceGrid.appendChild(btn);
   });
   card.appendChild(faceGrid);
@@ -1764,7 +1764,7 @@ function renderSymptomDetail(card){
   if(!questions.length){
     // No specific questions, skip
     TD.sintoma_detalle = {};
-    TS++;TM=[];renderTriage();
+    TS++;TM=[];rTriage();
     return true; // signal to skip rendering
   }
   if(!TD.sintoma_detalle) TD.sintoma_detalle={};
@@ -1776,7 +1776,7 @@ function renderSymptomDetail(card){
       const b = document.createElement('button');
       b.className='symptom-opt'+(TD.sintoma_detalle[q.k]===opt?' sel':'');
       b.textContent=opt;
-      b.onclick=()=>{TD.sintoma_detalle[q.k]=opt; renderTriage();};
+      b.onclick=()=>{TD.sintoma_detalle[q.k]=opt; rTriage();};
       opts.appendChild(b);
     });
     wrap.appendChild(opts);
@@ -1895,7 +1895,7 @@ async function loadHC(){
           ${dt.photo?`<img src="${dt.photo}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div class="hc-avatar" style="background:${col}">${av}</div>`}
           <div style="flex:1;min-width:0">
             <div class="hc-name">${dt.name||'—'}</div>
-            <div class="hc-detail">${dt.age?dt.age+' anos · ':''}{${dt.sex==='M'?'Masculino':dt.sex==='F'?'Femenino':'Otro'}}</div>
+            <div class="hc-detail">${dt.age?dt.age+' anos · ':''}${dt.sex==='M'?'Masculino':dt.sex==='F'?'Femenino':'Otro'}</div>
             <div class="hc-detail" style="margin-top:3px">${ants}</div>
             ${alers?`<div class="hc-badge" style="background:var(--rd-a);color:var(--rd)">${alers}</div>`:''}
           </div>
