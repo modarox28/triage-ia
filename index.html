@@ -292,6 +292,9 @@ select option{background:var(--bg3);}
 .modal-title{font-family:"JetBrains Mono",monospace;font-size:.95rem;font-weight:700;margin-bottom:5px;}
 .modal-sub{font-size:.78rem;color:var(--mu);margin-bottom:16px;}
 
+/* HISTORY FILTERS */
+.hist-flt{padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);font-size:.78rem;cursor:pointer;transition:all .2s;touch-action:manipulation;}
+.hist-flt.on{background:var(--cy);color:#000;border-color:var(--cy);font-weight:700;}
 /* QR SCAN */
 .qr-video-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:12px;}
 #qrVideo{width:100%;display:block;border-radius:12px;}
@@ -606,6 +609,35 @@ select option{background:var(--bg3);}
       <div class="sc" id="sc-dash">
         <div class="stat-grid" id="statGrid"></div>
         <div class="card"><div class="clabel" id="lbRecentT">Ultimos triages</div><div id="recentT"></div></div>
+        <div class="card" id="chartCard" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div class="clabel" style="margin:0" id="lbChartTitle">Estadisticas</div>
+            <div style="display:flex;gap:6px">
+              <button class="hist-flt on" id="chartPer-day" onclick="setChartPeriod('day',this)">Hoy</button>
+              <button class="hist-flt" id="chartPer-week" onclick="setChartPeriod('week',this)">Sem.</button>
+              <button class="hist-flt" id="chartPer-month" onclick="setChartPeriod('month',this)">Mes</button>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:8px;margin-bottom:12px">
+            <button class="hist-flt on" id="chartType-color" onclick="setChartType('color',this)">🎨</button>
+            <button class="hist-flt" id="chartType-type" onclick="setChartType('type',this)">👤</button>
+            <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)">🔬</button>
+            <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)">📈</button>
+          </div>
+          <div style="position:relative;height:220px">
+            <canvas id="mainChart"></canvas>
+          </div>
+        </div>
+        <div class="card" id="nearbyCard" style="display:none">
+          <div class="clabel" id="lbNearbyTitle">Centros de salud cercanos</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input class="fi" id="nearbyEpsInput" type="text" placeholder="EPS / aseguradora..." style="flex:1;height:38px">
+            <button class="bpri" style="flex:0 0 auto;padding:0 16px;height:38px" onclick="searchNearby()">Buscar</button>
+          </div>
+          <div id="nearbyStatus" style="font-size:.75rem;color:var(--mu);margin-bottom:8px"></div>
+          <div id="nearbyMap" style="height:220px;border-radius:12px;overflow:hidden;background:var(--bg3)"></div>
+          <div id="nearbyList" style="margin-top:10px"></div>
+        </div>
         <div class="card" id="userMgmtCard"><div class="clabel" id="lbUserMgmt">Gestion de usuarios</div><div id="userList"></div></div>
       </div>
       <!-- TRIAGE -->
@@ -751,6 +783,18 @@ select option{background:var(--bg3);}
 </div>
 
 <div class="sc" id="sc-hist">
+        <div style="padding:10px 0 4px;display:flex;gap:6px;flex-wrap:wrap" id="histFilters">
+          <button class="hist-flt on" data-f="all" onclick="setHistFilter('all',this)">Todos</button>
+          <button class="hist-flt" data-f="ROJO" onclick="setHistFilter('ROJO',this)" style="color:var(--rd)">🔴</button>
+          <button class="hist-flt" data-f="AMARILLO" onclick="setHistFilter('AMARILLO',this)" style="color:var(--yw)">🟡</button>
+          <button class="hist-flt" data-f="VERDE" onclick="setHistFilter('VERDE',this)" style="color:var(--gn)">🟢</button>
+          <button class="hist-flt" data-f="dolor_pecho" onclick="setHistFilter('dolor_pecho',this)">💔</button>
+          <button class="hist-flt" data-f="disnea" onclick="setHistFilter('disnea',this)">🫁</button>
+          <button class="hist-flt" data-f="trauma" onclick="setHistFilter('trauma',this)">🤕</button>
+          <button class="hist-flt" data-f="abdominal" onclick="setHistFilter('abdominal',this)">🤢</button>
+          <button class="hist-flt" data-f="neuro" onclick="setHistFilter('neuro',this)">🧠</button>
+          <button class="hist-flt" data-f="fiebre" onclick="setHistFilter('fiebre',this)">🌡️</button>
+        </div>
         <div class="card"><div class="clabel" id="lbHistTitle">Historial de triages</div><div id="histList"></div></div>
       </div>
       <!-- CONFIGURACION -->
@@ -763,6 +807,18 @@ select option{background:var(--bg3);}
             <button class="opt" id="lng-pt" onclick="setLang('pt')">🇧🇷 Português</button>
             <button class="opt" id="lng-fr" onclick="setLang('fr')">🇫🇷 Français</button>
             <button class="opt" id="lng-de" onclick="setLang('de')">🇩🇪 Deutsch</button>
+            <button class="opt" id="lng-ja" onclick="setLang('ja')">🇯🇵 日本語</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="clabel" id="lbCountryLabel">Pais / Country</div>
+          <div style="font-size:.72rem;color:var(--mu);margin-bottom:10px" id="lbCountrySub">Adapta terminologia y sistema de triage.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="opt" id="ctr-CO" onclick="setCountry('CO')">🇨🇴 Colombia</button>
+            <button class="opt" id="ctr-AR" onclick="setCountry('AR')">🇦🇷 Argentina</button>
+            <button class="opt" id="ctr-US" onclick="setCountry('US')">🇺🇸 Estados Unidos</button>
+            <button class="opt" id="ctr-DE" onclick="setCountry('DE')">🇩🇪 Alemania</button>
+            <button class="opt" id="ctr-JP" onclick="setCountry('JP')">🇯🇵 Japon</button>
           </div>
         </div>
         <div class="card">
@@ -840,6 +896,9 @@ select option{background:var(--bg3);}
   </div>
 </div>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const DS_KEY="REVOCADA";
@@ -849,6 +908,9 @@ const QR_SECRET=btoa("media-patient-2025");
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
 let CU=null,CR=null,CUName=null,isDark=true,FB=null;
+let CC=localStorage.getItem("ms_country")||"CO";
+function setCountry(cc){CC=cc;localStorage.setItem("ms_country",cc);loadConfig();}
+function getInsLabel(){const m={CO:"EPS afiliada",AR:"Obra social / prepaga",US:"Insurance provider",DE:"Krankenkasse",JP:"健康保険組合"};return m[CC]||t("insLabel");}
 function uName(fallback="Usuario"){return CUName||CU?.displayName||CU?.email?.split("@")[0]||fallback;}
 
 // THEME
@@ -949,6 +1011,12 @@ const L={
     inactWarn:"Tu sesion se cerrara pronto por inactividad.",stayActive:"Seguir activo",sessionOut:"Sesion cerrada por inactividad.",
     voiceMode:"Modo Voz",voiceListening:"Escuchando...",voiceHeard:"Entendido:",voiceNotUnderstood:"No entendi, repite por favor.",voiceNotSupported:"Tu navegador no soporta comandos de voz.",voiceSayNumber:"Di el numero de tu opcion.",voiceSayScale:"Di un numero del cero al diez.",voiceSelectMulti:"Di el numero de otra opcion o di siguiente para continuar.",voiceConfirmed:"Seleccionado:",voiceNext:"Siguiente.",
     notesFabTitle:"Anotaciones",notesPh:"Escribe observaciones clinicas relevantes (antecedentes, alergias, medicacion actual, contexto especial)...",notesSave:"Guardar notas",notesIncluded:"Notas incluidas en el analisis",notesLabel:"ANOTACIONES CLINICAS",notesChars:"caracteres",
+    noData:"Sin datos.",
+    countryLabel:"Pais / Country",countrySub:"Adapta terminologia y sistema de triage.",
+    insLabel:"Aseguradora / EPS",
+    nearbyTitle:"Centros de salud cercanos",nearbyEpsLbl:"Tu aseguradora / EPS",nearbyBtn:"Buscar centros",nearbyLocating:"Obteniendo ubicacion...",nearbyNone:"Sin resultados cercanos.",nearbyError:"No se pudo obtener la ubicacion.",
+    chartTitle:"Estadisticas",chartDay:"Hoy",chartWeek:"Semana",chartMonth:"Mes",chartYear:"Ano",chartByColor:"Por clasificacion",chartByType:"Por tipo de paciente",chartByMotivo:"Por motivo",chartNoData:"Sin datos suficientes",
+    filterAll:"Todos",filterByMotivo:"Por motivo",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -1034,6 +1102,12 @@ const L={
     inactWarn:"Your session will close soon due to inactivity.",stayActive:"Stay active",sessionOut:"Session closed due to inactivity.",
     voiceMode:"Voice Mode",voiceListening:"Listening...",voiceHeard:"Got it:",voiceNotUnderstood:"Didn't catch that, please repeat.",voiceNotSupported:"Your browser does not support voice commands.",voiceSayNumber:"Say the number of your option.",voiceSayScale:"Say a number from zero to ten.",voiceSelectMulti:"Say another option number or say next to continue.",voiceConfirmed:"Selected:",voiceNext:"Next.",
     notesFabTitle:"Notes",notesPh:"Write relevant clinical observations (history, allergies, current medication, special context)...",notesSave:"Save notes",notesIncluded:"Notes included in analysis",notesLabel:"CLINICAL NOTES",notesChars:"chars",
+    noData:"No data.",
+    countryLabel:"Country",countrySub:"Adapts terminology and triage system.",
+    insLabel:"Insurance provider",
+    nearbyTitle:"Nearby health centers",nearbyEpsLbl:"Your insurance",nearbyBtn:"Search centers",nearbyLocating:"Getting location...",nearbyNone:"No nearby results.",nearbyError:"Could not get location.",
+    chartTitle:"Statistics",chartDay:"Today",chartWeek:"Week",chartMonth:"Month",chartYear:"Year",chartByColor:"By classification",chartByType:"By patient type",chartByMotivo:"By reason",chartNoData:"Not enough data",
+    filterAll:"All",filterByMotivo:"By reason",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -1119,6 +1193,12 @@ const L={
     inactWarn:"Sua sessao sera encerrada em breve por inatividade.",stayActive:"Continuar ativo",sessionOut:"Sessao encerrada por inatividade.",
     voiceMode:"Modo Voz",voiceListening:"Ouvindo...",voiceHeard:"Entendido:",voiceNotUnderstood:"Nao entendi, repita por favor.",voiceNotSupported:"Seu navegador nao suporta comandos de voz.",voiceSayNumber:"Diga o numero da sua opcao.",voiceSayScale:"Diga um numero de zero a dez.",voiceSelectMulti:"Diga o numero de outra opcao ou diga proximo para continuar.",voiceConfirmed:"Selecionado:",voiceNext:"Proximo.",
     notesFabTitle:"Anotacoes",notesPh:"Escreva observacoes clinicas relevantes (historico, alergias, medicacao atual, contexto especial)...",notesSave:"Salvar notas",notesIncluded:"Notas incluidas na analise",notesLabel:"ANOTACOES CLINICAS",notesChars:"caracteres",
+    noData:"Sem dados.",
+    countryLabel:"Pais",countrySub:"Adapta terminologia e sistema de triagem.",
+    insLabel:"Convenio / Plano de saude",
+    nearbyTitle:"Centros de saude proximos",nearbyEpsLbl:"Seu convenio",nearbyBtn:"Buscar centros",nearbyLocating:"Obtendo localizacao...",nearbyNone:"Sem resultados proximos.",nearbyError:"Nao foi possivel obter a localizacao.",
+    chartTitle:"Estatisticas",chartDay:"Hoje",chartWeek:"Semana",chartMonth:"Mes",chartYear:"Ano",chartByColor:"Por classificacao",chartByType:"Por tipo de paciente",chartByMotivo:"Por motivo",chartNoData:"Dados insuficientes",
+    filterAll:"Todos",filterByMotivo:"Por motivo",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -1204,6 +1284,12 @@ const L={
     inactWarn:"Votre session se fermera bientot par inactivite.",stayActive:"Rester actif",sessionOut:"Session fermee par inactivite.",
     voiceMode:"Mode Vocal",voiceListening:"J ecoute...",voiceHeard:"Compris:",voiceNotUnderstood:"Je n ai pas compris, repetez.",voiceNotSupported:"Votre navigateur ne supporte pas les commandes vocales.",voiceSayNumber:"Dites le numero de votre option.",voiceSayScale:"Dites un nombre de zero a dix.",voiceSelectMulti:"Dites un autre numero ou dites suivant pour continuer.",voiceConfirmed:"Selectionne:",voiceNext:"Suivant.",
     notesFabTitle:"Annotations",notesPh:"Ecrivez les observations cliniques pertinentes (antecedents, allergies, medicaments actuels, contexte special)...",notesSave:"Enregistrer",notesIncluded:"Notes incluses dans l analyse",notesLabel:"NOTES CLINIQUES",notesChars:"caracteres",
+    noData:"Aucune donnee.",
+    countryLabel:"Pays",countrySub:"Adapte la terminologie et le systeme de triage.",
+    insLabel:"Assurance maladie",
+    nearbyTitle:"Centres de sante proches",nearbyEpsLbl:"Votre assurance",nearbyBtn:"Rechercher centres",nearbyLocating:"Localisation en cours...",nearbyNone:"Aucun resultat proche.",nearbyError:"Impossible d obtenir la localisation.",
+    chartTitle:"Statistiques",chartDay:"Aujourd hui",chartWeek:"Semaine",chartMonth:"Mois",chartYear:"Annee",chartByColor:"Par classification",chartByType:"Par type de patient",chartByMotivo:"Par motif",chartNoData:"Donnees insuffisantes",
+    filterAll:"Tous",filterByMotivo:"Par motif",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -1289,9 +1375,105 @@ const L={
     inactWarn:"Ihre Sitzung wird bald wegen Inaktivitat geschlossen.",stayActive:"Aktiv bleiben",sessionOut:"Sitzung wegen Inaktivitat beendet.",
     voiceMode:"Sprachmodus",voiceListening:"Ich hore...",voiceHeard:"Verstanden:",voiceNotUnderstood:"Nicht verstanden, bitte wiederholen.",voiceNotSupported:"Ihr Browser unterstutzt keine Sprachbefehle.",voiceSayNumber:"Sagen Sie die Nummer Ihrer Option.",voiceSayScale:"Sagen Sie eine Zahl von null bis zehn.",voiceSelectMulti:"Sagen Sie eine weitere Nummer oder weiter um fortzufahren.",voiceConfirmed:"Ausgewahlt:",voiceNext:"Weiter.",
     notesFabTitle:"Anmerkungen",notesPh:"Klinische Beobachtungen (Vorgeschichte, Allergien, aktuelle Medikation, besonderer Kontext)...",notesSave:"Speichern",notesIncluded:"Notizen in der Analyse enthalten",notesLabel:"KLINISCHE ANMERKUNGEN",notesChars:"Zeichen",
+    noData:"Keine Daten.",
+    countryLabel:"Land",countrySub:"Passt Terminologie und Triage-System an.",
+    insLabel:"Krankenkasse",
+    nearbyTitle:"Nahegelegene Gesundheitszentren",nearbyEpsLbl:"Ihre Krankenkasse",nearbyBtn:"Zentren suchen",nearbyLocating:"Standort wird ermittelt...",nearbyNone:"Keine nahegelegenen Ergebnisse.",nearbyError:"Standort konnte nicht ermittelt werden.",
+    chartTitle:"Statistiken",chartDay:"Heute",chartWeek:"Woche",chartMonth:"Monat",chartYear:"Jahr",chartByColor:"Nach Klassifikation",chartByType:"Nach Patientenart",chartByMotivo:"Nach Grund",chartNoData:"Nicht genug Daten",
+    filterAll:"Alle",filterByMotivo:"Nach Grund",
+  },
+  ja:{sub:"インテリジェント医療システム",login:"ログイン",register:"登録",cont:"続ける",forgot:"パスワードを忘れた",google:"Googleで続ける",
+    ptnTitle:"患者アクセス",ptnSub:"クリニックのQRコードをスキャン",staffLink:"医療スタッフ / 管理者",
+    dash:"ダッシュボード",triage:"トリアージ",meds:"薬",hist:"履歴",config:"設定",prof:"プロフィール",
+    search:"検索",myMeds:"マイ薬",alerts:"アラート",inter:"相互作用",
+    searchDrug:"薬を検索",consultAI:"AIに相談",
+    newMed:"新しい薬",dose:"用量",freq:"頻度",hour:"時間",notes:"メモ",addMed:"+ 追加",
+    addList:"リストに追加",verify:"AIで確認",
+    recentT:"最近のトリアージ",userMgmt:"ユーザー管理",histTitle:"トリアージ履歴",
+    appearance:"外観",darkMode:"ダークモード",darkSub:"暗い背景のインターフェース",account:"アカウント",
+    reminders:"今日のリマインダー",alarmsNote:"アプリが開いている間、アラームが鳴ります。",
+    hc:"カルテ",
+    signOut:"サインアウト",
+    loading:"読み込み中...",
+    painFacialOr:"または表情スケールを使用",
+    analyzing:"データを分析中...",
+    analyzingSub:"AIがバイタルサインと症状を評価します。",
+    immAttn:"即時対応が必要",
+    urgent:"緊急",
+    canWait:"待機可能",
+    adultLbl:"成人 (18-59)",
+    elderLbl:"高齢者 (60+)",
+    pregLbl:"妊婦",
+    childLbl:"小児 (0-12)",
+    f0:"痛みなし",
+    f2:"非常に軽い",
+    f4:"軽い",
+    f6:"中程度",
+    f8:"強い",
+    f10:"耐えられない",
+    newHC:"新しいカルテ",
+    patientData:"患者データ",
+    medHistory:"病歴",
+    allergies:"既知のアレルギー",
+    currentMeds:"現在の薬",
+    additionalNotes:"追加メモ",
+    saveHC:"カルテを保存",
+    painScale:"痛みスケール",
+    painNumeric:"数値スケール (0-10)",
+    painFacial:"表情スケール",
+    painFacialSub:"子供または表現困難者向け",
+    noPain:"痛みなし",
+    unbearable:"耐えられない",
+    patientType:"患者タイプ",
+    mainReason:"主な受診理由",
+    consciousness:"意識レベル",
+    vitals:"バイタルサイン",
+    additionalSymptoms:"追加症状",
+    childAge:"子供の年齢",
+    gestWeeks:"妊娠週数",
+    symptomDetail:"症状の特徴",
+    clinicalAnalysis:"臨床分析",
+    priorityActions:"優先対応",
+    criticalAlerts:"重大アラート",
+    interDetail:"薬ごとの詳細",
+    whySimple:"なぜ？わかりやすい説明",
+    sameFamily:"同じ効果 — 重複の可能性",
+    seeDoctor:"これらを一緒に服用する前に医師に相談してください",
+    extractedByAI:"AIが抽出したデータ",
+    photoSub:"AIが医療文書から病歴を抽出できます",
+    tapPhoto:"タップして写真を撮るか画像をアップロード",
+    analyzingDoc:"AIでドキュメントを分析中...",
+    noMedicalInfo:"医療情報が見つかりません。手動で入力してください。",
+    noHC:"カルテはまだありません。",
+    male:"男性",
+    female:"女性",
+    other:"その他",
+    checkInter:"相互作用を確認",disclaimer:"補助ツールです。最終判断は医療スタッフが行います。",
+    newPatient:"新しい患者",resetSent:"回復メールを送信しました。",resetErr:"送信できませんでした。",
+    interDesc:"確認するために2つ以上の薬を追加してください。",
+    step:"ステップ",of:"/",back:"戻る",continueBtn:"続ける",analyze:"分析",analyzingLabel:"臨床リスクを評価中",
+    selectProfile:"患者プロフィールを選択してください。",selectSymptom:"主な症状を選択してください。",evalAlert:"意識レベルを評価してください。",enterVitals:"利用可能な値を入力してください。",selectApply:"該当するものをすべて選択してください。",markApply:"該当するものすべてにチェックを入れてください。",
+    teenLbl:"青少年 (13-17)",pedNote:"小児科 / 青少年患者",pedNoteSub:"保護者または後見人と一緒に記入してください。",
+    chestPainL:"胸痛",breathingL:"呼吸困難",traumaL:"外傷 / 怪我",abdominalL:"腹痛 / 嘔吐",neuroL:"けいれん / 意識消失",feverL:"高熱",otherL:"その他 / 一般的な症状",
+    consc1:"覚醒 — 正常に反応",consc2:"声にのみ反応",consc3:"痛みにのみ反応",consc4:"反応なし（意識不明）",
+    sym1:"活動性出血",sym2:"蒼白 / 冷汗",sym3:"めまい / バランス消失",sym4:"チアノーゼ（唇や爪が青い）",sym5:"体温 >39C",sym6:"重度の筋力低下",sym7:"上記なし",
+    vSysBP:"収縮期血圧 (mmHg)",vDiaBP:"拡張期血圧 (mmHg)",vHR:"心拍数 (bpm)",vSpO2:"O2飽和度 (%)",vTemp:"体温 (C)",vRR:"呼吸数 (rpm)",
+    welcomeHello:"ようこそ",changePass:"パスワード変更",curPass:"現在のパスワード",newPass:"新しいパスワード",confirmPass:"パスワード確認",savePass:"保存",passChanged:"パスワードが更新されました。",passError:"パスワード変更エラー。",passMatch:"パスワードが一致しません。",passShort:"最低6文字必要です。",reauth:"現在のパスワードが間違っています。",photoUpdated:"写真が更新されました。",
+    mobilityLbl:"移動能力 / 機能低下",mobilityNote:"看護師または後見人の立会いが必要",mobilityNoteSub:"この患者は評価中に支援が必要です。続行前に必要なサポートがあることを確認してください。",
+    ageErrorPed:"小児患者の年齢が無効です。有効範囲：0〜12歳。",ageErrorTeen:"青少年の年齢が無効です。有効範囲：13〜17歳。",
+    rememberMe:"このデバイスで記憶する",rememberWarn:"このデバイスに認証情報が保存されます。共有または公共のデバイスでは使用しないでください。",rememberConfirm:"了解、保存する",rememberCancel:"キャンセル",
+    inactWarn:"非アクティブのためセッションが間もなく終了します。",stayActive:"アクティブを維持",sessionOut:"非アクティブのためセッションが終了しました。",
+    voiceMode:"音声モード",voiceListening:"聞いています...",voiceHeard:"了解：",voiceNotUnderstood:"聞き取れませんでした。もう一度言ってください。",voiceNotSupported:"お使いのブラウザは音声コマンドをサポートしていません。",voiceSayNumber:"オプションの番号を言ってください。",voiceSayScale:"0から10の数字を言ってください。",voiceSelectMulti:"別のオプション番号を言うか、「次へ」と言って続けてください。",voiceConfirmed:"選択済み：",voiceNext:"次へ。",
+    notesFabTitle:"メモ",notesPh:"臨床観察メモを記入してください（病歴、アレルギー、現在の薬、特殊な状況）...",notesSave:"メモを保存",notesIncluded:"分析にメモが含まれています",notesLabel:"臨床メモ",notesChars:"文字",
+    noData:"データなし。",
+    countryLabel:"国",countrySub:"用語とトリアージシステムを調整します。",
+    insLabel:"健康保険組合",
+    nearbyTitle:"近くの医療施設",nearbyEpsLbl:"あなたの健康保険",nearbyBtn:"施設を検索",nearbyLocating:"位置情報を取得中...",nearbyNone:"近くに結果がありません。",nearbyError:"位置情報を取得できませんでした。",
+    chartTitle:"統計",chartDay:"今日",chartWeek:"週",chartMonth:"月",chartYear:"年",chartByColor:"分類別",chartByType:"患者タイプ別",chartByMotivo:"理由別",chartNoData:"データが不十分です",
+    filterAll:"すべて",filterByMotivo:"理由別",
   }
 };
-const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE"};
+const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE",ja:"JA"};
 let CL=localStorage.getItem("ms_lang")||"es";
 function t(k){return(L[CL]||L.es)[k]||k;}
 
@@ -1301,7 +1483,7 @@ function setLang(lang){
   document.querySelectorAll(".lang-item").forEach(el=>{const o=el.getAttribute("onclick")||"";el.classList.toggle("cur",o.includes("'"+lang+"'"));});
   document.querySelectorAll(".lang-menu").forEach(m=>m.classList.remove("open"));
   // Config screen lang buttons
-  ["es","en","pt","fr","de"].forEach(l=>{const b=document.getElementById("lng-"+l);if(b)b.classList.toggle("sel",l===lang);});
+  ["es","en","pt","fr","de","ja"].forEach(l=>{const b=document.getElementById("lng-"+l);if(b)b.classList.toggle("sel",l===lang);});
   applyTrans();
 }
 
@@ -1965,6 +2147,116 @@ function updateUI(){
   document.getElementById("qrCard").style.display=(CR==="admin"||CR==="medico")?"block":"none";
 }
 
+// CHART
+let _chartInst=null,_chartPer="day",_chartType="color",_chartData=[];
+
+function setChartPeriod(p,btn){
+  _chartPer=p;
+  document.querySelectorAll('[id^="chartPer-"]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  buildChart();
+}
+
+function setChartType(tp,btn){
+  _chartType=tp;
+  document.querySelectorAll('[id^="chartType-"]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  buildChart();
+}
+
+function buildChart(){
+  const card=document.getElementById('chartCard');
+  if(!card||!window.Chart)return;
+  card.style.display="block";
+  const now=new Date();
+  const cutoff=new Date(now);
+  if(_chartPer==="day")cutoff.setHours(0,0,0,0);
+  else if(_chartPer==="week")cutoff.setDate(now.getDate()-7);
+  else cutoff.setMonth(now.getMonth()-1);
+  const filtered=_chartData.filter(d=>d.createdAt?.toDate&&d.createdAt.toDate()>=cutoff);
+  const canvas=document.getElementById("mainChart");
+  const isDarkMode=document.body.classList.contains("dark")||!document.body.classList.contains("light");
+  const textC=isDarkMode?"rgba(255,255,255,.65)":"rgba(0,0,0,.55)";
+  const gridC=isDarkMode?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)";
+  if(_chartInst){_chartInst.destroy();_chartInst=null;}
+  let cfg={};
+  if(_chartType==="color"){
+    const ro=filtered.filter(d=>d.clasificacion==="ROJO").length;
+    const am=filtered.filter(d=>d.clasificacion==="AMARILLO").length;
+    const ve=filtered.filter(d=>d.clasificacion==="VERDE").length;
+    cfg={type:"doughnut",data:{labels:["ROJO","AMARILLO","VERDE"],datasets:[{data:[ro,am,ve],backgroundColor:["#ff3a5c","#ffb830","#00e07a"],borderWidth:0,hoverOffset:6}]},options:{cutout:"65%",plugins:{legend:{labels:{color:textC,font:{size:11}}}}}};
+  }else if(_chartType==="type"){
+    const tipos=["adulto","adulto_mayor","nino","adolescente","embarazada","movilidad"];
+    const lbs=["Adulto","Mayor","Nino","Adol.","Embar.","Movil."];
+    const vals=tipos.map(tp=>filtered.filter(d=>d.tipo===tp).length);
+    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:"rgba(0,200,240,.7)",borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+  }else if(_chartType==="motivo"){
+    const mots=["dolor_pecho","disnea","trauma","abdominal","neuro","fiebre","otro"];
+    const lbs=["Pecho","Disnea","Trauma","Abdomen","Neuro","Fiebre","Otro"];
+    const clrs=["#ff3a5c","#00c8f0","#ffb830","#a855f7","#00e07a","#ff7043","#94a3b8"];
+    const vals=mots.map(m=>filtered.filter(d=>d.motivo===m).length);
+    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs,borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+  }else{
+    const days={};for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const k=d.toLocaleDateString("es-CO",{day:"2-digit",month:"short"});days[k]=0;}
+    filtered.forEach(d=>{const k=d.createdAt.toDate().toLocaleDateString("es-CO",{day:"2-digit",month:"short"});if(k in days)days[k]++;});
+    cfg={type:"line",data:{labels:Object.keys(days),datasets:[{data:Object.values(days),borderColor:"var(--cy)",backgroundColor:"rgba(0,200,240,.12)",tension:.4,fill:true,pointBackgroundColor:"var(--cy)",pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+  }
+  _chartInst=new Chart(canvas,cfg);
+}
+
+// NEARBY
+let _nearbyMap=null;
+
+function searchNearby(){
+  const card=document.getElementById("nearbyCard");
+  const status=document.getElementById("nearbyStatus");
+  if(!card||!window.L)return;
+  card.style.display="block";
+  status.textContent=t("nearbyLocating")||"Obteniendo ubicacion...";
+  if(!navigator.geolocation){status.textContent=t("nearbyError")||"No se pudo obtener la ubicacion.";return;}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const {latitude:lat,longitude:lon}=pos.coords;
+    const eps=(document.getElementById("nearbyEpsInput")?.value||"").trim();
+    const radius=5000;
+    const query=`[out:json][timeout:15];(node["amenity"~"hospital|clinic|pharmacy|health_post|doctors"](around:${radius},${lat},${lon});way["amenity"~"hospital|clinic|pharmacy|health_post|doctors"](around:${radius},${lat},${lon}););out center 15;`;
+    status.textContent="Buscando centros...";
+    try{
+      const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:query});
+      const data=await r.json();
+      const elements=data.elements||[];
+      const filtered=eps?elements.filter(e=>{const n=(e.tags?.name||"").toLowerCase();return n.includes(eps.toLowerCase());}):elements;
+      renderNearby(lat,lon,filtered.length?filtered:elements);
+    }catch(e){status.textContent=t("nearbyError")||"Error al buscar.";}
+  },()=>{status.textContent=t("nearbyError")||"No se pudo obtener la ubicacion.";});
+}
+
+function renderNearby(lat,lon,elements){
+  const status=document.getElementById("nearbyStatus");
+  const list=document.getElementById("nearbyList");
+  if(!elements.length){status.textContent=t("nearbyNone")||"Sin resultados cercanos.";list.innerHTML="";return;}
+  status.textContent=`${elements.length} centros encontrados`;
+  if(_nearbyMap){_nearbyMap.remove();_nearbyMap=null;}
+  _nearbyMap=L.map("nearbyMap").setView([lat,lon],14);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OSM"}).addTo(_nearbyMap);
+  L.marker([lat,lon]).addTo(_nearbyMap).bindPopup("Tu ubicacion").openPopup();
+  const amenityIcon={"hospital":"🏥","clinic":"🏨","pharmacy":"💊","health_post":"🏥","doctors":"👨‍⚕️"};
+  elements.slice(0,10).forEach(e=>{
+    const elat=e.lat||e.center?.lat;const elon=e.lon||e.center?.lon;
+    if(!elat||!elon)return;
+    const name=e.tags?.name||e.tags?.["name:es"]||"Centro de salud";
+    const am=e.tags?.amenity||"hospital";
+    const ic=amenityIcon[am]||"🏥";
+    L.marker([elat,elon]).addTo(_nearbyMap).bindPopup(`<b>${ic} ${name}</b>`);
+  });
+  list.innerHTML=elements.slice(0,8).map(e=>{
+    const name=e.tags?.name||"Centro de salud";
+    const addr=e.tags?.["addr:street"]?`${e.tags["addr:street"]} ${e.tags["addr:housenumber"]||""}`.trim():"";
+    const am=e.tags?.amenity||"hospital";
+    const ic=amenityIcon[am]||"🏥";
+    return`<div class="hist-row"><span style="font-size:1.3rem">${ic}</span><div style="flex:1"><div style="font-size:.83rem;font-weight:600">${name}</div>${addr?`<div style="font-size:.69rem;color:var(--mu)">${addr}</div>`:""}</div></div>`;
+  }).join("");
+}
+
 // DASHBOARD
 async function loadDash(){
   if(!FB||!CU||CR==="paciente")return;
@@ -1985,33 +2277,64 @@ async function loadDash(){
       return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-size:.82rem;font-weight:600">${mM[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}</div></div></div>`;
     }).join("");
     document.getElementById("recentT").innerHTML=rows||`<div class="empty"><div class="etx">Sin triages aun.</div></div>`;
+    _chartData=snap.docs.map(d=>d.data());
+    buildChart();
     if(CR==="admin"){
       const users=await FB.getDocs(FB.collection(FB.db,"users"));
       const RL={admin:"Admin",admin_hosp:"Adm.Hosp",medico:"Medico",paciente:"Paciente"};
       const cols=["#00c8f0","#00e07a","#a855f7","#ffb830","#ff3a5c"];
       document.getElementById("userList").innerHTML=users.docs.map(u=>{
         const ud=u.data();const av=(ud.name||ud.email||"?")[0].toUpperCase();const col=cols[ud.email?.charCodeAt(0)%cols.length]||"#00c8f0";
-        return`<div class="user-row"><div class="uav" style="background:${col}">${av}</div><div style="flex:1"><div style="font-size:.83rem;font-weight:600">${ud.name||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${ud.email||""}</div></div><select onchange="changeRole('${u.id}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${["admin","medico","admin_hosp","paciente"].map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select></div>`;
+        const photoSrc=localStorage.getItem("ms_photo_"+u.id);
+        return`<div class="user-row"><div class="uav" style="background:${col};overflow:hidden">${photoSrc?`<img src="${photoSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:av}</div><div style="flex:1"><div style="font-size:.83rem;font-weight:600">${ud.name||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${ud.email||""}</div></div><select onchange="changeRole('${u.id}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${["admin","medico","admin_hosp","paciente"].map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select></div>`;
       }).join("");
     }else{document.getElementById("userMgmtCard").style.display="none";}
+    if(CR==="medico"||CR==="admin"||CR==="admin_hosp"){
+      const nc=document.getElementById("nearbyCard");if(nc)nc.style.display="block";
+      const ni=document.getElementById("nearbyEpsInput");if(ni)ni.placeholder=getInsLabel();
+    }
   }catch(e){console.error(e);}
 }
 
 async function changeRole(uid,role){await FB.updateDoc(FB.doc(FB.db,"users",uid),{role});toast("Rol actualizado");}
+
+// HISTORY FILTERS
+let _histFilter="all";
+let _histDocs=[];
+
+function setHistFilter(f,btn){
+  _histFilter=f;
+  document.querySelectorAll('.hist-flt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderHist();
+}
+
+function renderHist(){
+  const el=document.getElementById("histList");
+  const mM={dolor_pecho:"Dolor pecho",disnea:"Dif. respirar",trauma:"Trauma",abdominal:"Dolor abdominal",neuro:"Neurologico",fiebre:"Fiebre",otro:"Otro"};
+  const filtered=_histDocs.filter(d=>{
+    if(_histFilter==="all")return true;
+    if(["ROJO","AMARILLO","VERDE"].includes(_histFilter))return d.clasificacion===_histFilter;
+    return d.motivo===_histFilter;
+  });
+  if(!filtered.length){el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos."}</div></div>`;return;}
+  el.innerHTML=filtered.map(dt=>{
+    const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
+    const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString("es-CO",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+    const notasBadge=dt.notas?`<span style="font-size:.65rem;background:var(--gn-a);color:var(--gn);padding:1px 6px;border-radius:8px;margin-left:4px">📝</span>`:"";
+    return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">${mM[dt.motivo]||dt.motivo||"—"}${notasBadge}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · D:${dt.dolor??"-"}/10 · ${date}</div>${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px">${dt.justificacion.slice(0,70)}...</div>`:""}</div></div>`;
+  }).join("");
+}
 
 // HISTORY
 async function loadHist(){
   if(!FB||!CU)return;
   const el=document.getElementById("histList");el.innerHTML=`<div class="ldg"><div class="sp"></div>${t('loading')||'Cargando...'}</div>`;
   try{
-    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(30)));
-    if(snap.empty){el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos aun."}</div></div>`;return;}
-    const mM={dolor_pecho:"Dolor pecho",disnea:"Dif. respirar",trauma:"Trauma",abdominal:"Dolor abdominal",neuro:"Neurologico",fiebre:"Fiebre",otro:"Otro"};
-    el.innerHTML=snap.docs.map(d=>{
-      const dt=d.data();const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
-      const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString("es-CO",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
-      return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">${mM[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · D:${dt.dolor??"-"}/10 · ${date}</div>${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px">${dt.justificacion.slice(0,70)}...</div>`:""}</div></div>`;
-    }).join("");
+    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(100)));
+    if(snap.empty){_histDocs=[];el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos aun."}</div></div>`;return;}
+    _histDocs=snap.docs.map(d=>d.data());
+    renderHist();
   }catch(e){el.innerHTML=`<div class="empty"><div class="etx">Error cargando historial.</div></div>`;}
 }
 
@@ -2023,7 +2346,10 @@ function loadConfig(){
   const RL={admin:"ADMIN",admin_hosp:"ADM. HOSP",medico:"MEDICO",paciente:"PACIENTE"};
   const RC={admin:"admin",admin_hosp:"admin_hosp",medico:"medico",paciente:"paciente"};
   const pr=document.getElementById("profRole");if(pr){pr.textContent=RL[CR]||CR;pr.className="role-badge "+(RC[CR]||"medico");}
-  ["es","en","pt","fr","de"].forEach(l=>{const b=document.getElementById("lng-"+l);if(b)b.classList.toggle("sel",l===CL);});
+  ["es","en","pt","fr","de","ja"].forEach(l=>{const b=document.getElementById("lng-"+l);if(b)b.classList.toggle("sel",l===CL);});
+  ["CO","AR","US","DE","JP"].forEach(c=>{const b=document.getElementById("ctr-"+c);if(b)b.classList.toggle("sel",c===CC);});
+  document.getElementById("lbCountryLabel")?.setAttribute("data-i18n","countryLabel");
+  document.getElementById("lbCountrySub")?.setAttribute("data-i18n","countrySub");
   // Photo
   const av=name[0].toUpperCase();const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];const col=cols[av.charCodeAt(0)%cols.length];
   const photoEl=document.getElementById("configPhotoAv");
