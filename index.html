@@ -655,8 +655,8 @@ select option{background:var(--bg3);}
             <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)">🔬</button>
             <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)">📈</button>
           </div>
-          <div style="position:relative;height:220px">
-            <canvas id="mainChart"></canvas>
+          <div style="position:relative;height:240px;display:flex;align-items:center;justify-content:center">
+            <canvas id="mainChart" style="max-width:100%;max-height:240px"></canvas>
           </div>
         </div>
         <div class="card" id="nearbyCard" style="display:none">
@@ -797,8 +797,8 @@ select option{background:var(--bg3);}
       <button class="symptom-opt" onclick="addAnt('Obesidad')">Obesidad</button>
     </div>
     <div style="display:flex;gap:7px">
-      <input class="fi" id="antCustom" type="text" placeholder="Otro antecedente..." style="flex:1">
-      <button class="bpri" style="flex:0 0 auto;padding:0 14px" onclick="addAntCustom()">+</button>
+      <input class="fi" id="antCustom" type="text" placeholder="Otro antecedente..." style="flex:1;min-width:0">
+      <button class="bpri" style="flex:0 0 auto;width:auto;padding:0 18px;white-space:nowrap" onclick="addAntCustom()">+</button>
     </div>
   </div>
 
@@ -806,8 +806,8 @@ select option{background:var(--bg3);}
     <div class="clabel">Alergias conocidas</div>
     <div id="alerChips" style="min-height:32px;margin-bottom:10px;display:flex;flex-wrap:wrap"></div>
     <div style="display:flex;gap:7px">
-      <input class="fi" id="alerInput" type="text" placeholder="ej. Penicilina, Aspirina..." style="flex:1">
-      <button class="bpri" style="flex:0 0 auto;padding:0 14px" onclick="addAler()">+</button>
+      <input class="fi" id="alerInput" type="text" placeholder="ej. Penicilina, Aspirina..." style="flex:1;min-width:0">
+      <button class="bpri" style="flex:0 0 auto;width:auto;padding:0 18px;white-space:nowrap" onclick="addAler()">+</button>
     </div>
   </div>
 
@@ -815,8 +815,8 @@ select option{background:var(--bg3);}
     <div class="clabel">Medicacion actual</div>
     <div id="medActChips" style="min-height:32px;margin-bottom:10px;display:flex;flex-wrap:wrap"></div>
     <div style="display:flex;gap:7px">
-      <input class="fi" id="medActInput" type="text" placeholder="ej. Metformina 500mg..." style="flex:1">
-      <button class="bpri" style="flex:0 0 auto;padding:0 14px" onclick="addMedAct()">+</button>
+      <input class="fi" id="medActInput" type="text" placeholder="ej. Metformina 500mg..." style="flex:1;min-width:0">
+      <button class="bpri" style="flex:0 0 auto;width:auto;padding:0 18px;white-space:nowrap" onclick="addMedAct()">+</button>
     </div>
   </div>
 
@@ -1071,6 +1071,8 @@ const L={
     mPecho:"Dolor pecho",mDisnea:"Dif. respirar",mTrauma:"Trauma",mAbdominal:"Dolor abdominal",mNeuro:"Neurologico",mFiebre:"Fiebre",mOtro:"Otro",
     tAdulto:"Adulto",tMayor:"Mayor",tNino:"Nino",tAdol:"Adol.",tEmbar:"Embar.",tMovil:"Movil.",
     noMeds:"Sin medicamentos registrados.",noReminders:"Agrega medicamentos para ver recordatorios.",medAdded:"Medicamento agregado",medDeleted:"Eliminado",medActivated:"Activado",medDeactivated:"Desactivado",
+    clinicalNotes:"Anotaciones clinicas",clinicalNotesSub:"Revise y complete con informacion relevante del paciente.",notesHint:"Modifique si el paciente refiere alergias, medicacion actual o antecedentes patologicos.",
+    defaultNotes:"El paciente no refiere alergias medicamentosas conocidas ni antecedentes patologicos de relevancia clinica al momento de la evaluacion. No reporta medicacion habitual en curso. Sin historia previa de cirugias, hospitalizaciones recientes ni enfermedades cronicas diagnosticadas. No se dispone de informacion adicional del entorno que modifique el manejo inicial.",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -1168,6 +1170,8 @@ const L={
     mPecho:"Chest pain",mDisnea:"Dyspnea",mTrauma:"Trauma",mAbdominal:"Abdominal pain",mNeuro:"Neurological",mFiebre:"Fever",mOtro:"Other",
     tAdulto:"Adult",tMayor:"Elder",tNino:"Child",tAdol:"Adol.",tEmbar:"Preg.",tMovil:"Mobil.",
     noMeds:"No medications registered.",noReminders:"Add medications to see reminders.",medAdded:"Medication added",medDeleted:"Removed",medActivated:"Activated",medDeactivated:"Deactivated",
+    clinicalNotes:"Clinical annotations",clinicalNotesSub:"Review and complete with relevant patient information.",notesHint:"Modify if patient reports allergies, current medication or relevant medical history.",
+    defaultNotes:"Patient denies known drug allergies and no clinically relevant pathological history at time of evaluation. No current regular medication reported. No prior surgeries, recent hospitalizations or diagnosed chronic conditions. No additional contextual information available that would modify initial management.",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -1265,6 +1269,8 @@ const L={
     mPecho:"Dor no peito",mDisnea:"Dispneia",mTrauma:"Trauma",mAbdominal:"Dor abdominal",mNeuro:"Neurologico",mFiebre:"Febre",mOtro:"Outro",
     tAdulto:"Adulto",tMayor:"Idoso",tNino:"Crianca",tAdol:"Adol.",tEmbar:"Gest.",tMovil:"Movil.",
     noMeds:"Sem medicamentos.",noReminders:"Adicione medicamentos para ver lembretes.",medAdded:"Medicamento adicionado",medDeleted:"Removido",medActivated:"Ativado",medDeactivated:"Desativado",
+    clinicalNotes:"Anotacoes clinicas",clinicalNotesSub:"Revise e complete com informacoes relevantes do paciente.",notesHint:"Modifique se o paciente relatar alergias, medicacao atual ou antecedentes relevantes.",
+    defaultNotes:"Paciente nega alergias medicamentosas conhecidas e nao apresenta antecedentes patologicos de relevancia clinica no momento da avaliacao. Sem medicacao habitual em uso. Sem historico de cirurgias, hospitalizacoes recentes ou doencas cronicas diagnosticadas. Sem informacoes adicionais disponiveis que alterem o manejo inicial.",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -1362,6 +1368,8 @@ const L={
     mPecho:"Douleur thoracique",mDisnea:"Dyspnee",mTrauma:"Trauma",mAbdominal:"Douleur abdominale",mNeuro:"Neurologique",mFiebre:"Fievre",mOtro:"Autre",
     tAdulto:"Adulte",tMayor:"Age",tNino:"Enfant",tAdol:"Adol.",tEmbar:"Gros.",tMovil:"Mobil.",
     noMeds:"Aucun medicament.",noReminders:"Ajoutez des medicaments pour voir les rappels.",medAdded:"Medicament ajoute",medDeleted:"Supprime",medActivated:"Active",medDeactivated:"Desactive",
+    clinicalNotes:"Annotations cliniques",clinicalNotesSub:"Reviser et completer avec les informations pertinentes du patient.",notesHint:"Modifier si le patient signale des allergies, une medication ou des antecedents pertinents.",
+    defaultNotes:"Le patient ne signale pas d'allergies medicamenteuses connues ni d'antecedents pathologiques cliniquement pertinents au moment de l'evaluation. Aucun traitement medicamenteux habituel en cours. Pas de chirurgies anterieures, d'hospitalisations recentes ni de maladies chroniques diagnostiquees. Aucune information contextuelle supplementaire disponible susceptible de modifier la prise en charge initiale.",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -1459,6 +1467,8 @@ const L={
     mPecho:"Brustschmerz",mDisnea:"Dyspnoe",mTrauma:"Trauma",mAbdominal:"Bauchschmerz",mNeuro:"Neurologisch",mFiebre:"Fieber",mOtro:"Andere",
     tAdulto:"Erwach.",tMayor:"Senior",tNino:"Kind",tAdol:"Jugend.",tEmbar:"Schwan.",tMovil:"Mobil.",
     noMeds:"Keine Medikamente.",noReminders:"Medikamente hinzufugen um Erinnerungen zu sehen.",medAdded:"Medikament hinzugefugt",medDeleted:"Entfernt",medActivated:"Aktiviert",medDeactivated:"Deaktiviert",
+    clinicalNotes:"Klinische Anmerkungen",clinicalNotesSub:"Pruefen und mit relevanten Patienteninformationen erganzen.",notesHint:"Aendern wenn der Patient Allergien, aktuelle Medikation oder relevante Vorerkrankungen berichtet.",
+    defaultNotes:"Der Patient berichtet keine bekannten Medikamentenallergien und keine klinisch relevanten pathologischen Vorerkrankungen zum Zeitpunkt der Beurteilung. Keine regelmaessige Medikation in Einnahme. Keine frueheren Operationen, kuerzliche Krankenhausaufenthalte oder diagnostizierte chronische Erkrankungen. Keine zusaetzlichen Kontextinformationen verfuegbar, die das initiale Management beeinflussen wuerden.",
   },
   ja:{sub:"インテリジェント医療システム",login:"ログイン",register:"登録",cont:"続ける",forgot:"パスワードを忘れた",google:"Googleで続ける",
     ptnTitle:"患者アクセス",ptnSub:"クリニックのQRコードをスキャン",staffLink:"医療スタッフ / 管理者",
@@ -1555,6 +1565,8 @@ const L={
     mPecho:"胸痛",mDisnea:"呼吸困難",mTrauma:"外傷",mAbdominal:"腹痛",mNeuro:"神経",mFiebre:"発熱",mOtro:"その他",
     tAdulto:"成人",tMayor:"高齢",tNino:"小児",tAdol:"青少年",tEmbar:"妊婦",tMovil:"行動障害",
     noMeds:"薬なし。",noReminders:"薬を追加してリマインダーを見てください。",medAdded:"薬が追加されました",medDeleted:"削除されました",medActivated:"有効化",medDeactivated:"無効化",
+    clinicalNotes:"臨床注釈",clinicalNotesSub:"患者の関連情報を確認し記入してください。",notesHint:"患者がアレルギー、現在の薬または既往歴を報告した場合は修正してください。",
+    defaultNotes:"患者は既知の薬物アレルギーを否定し、評価時点で臨床的に関連する病理学的既往歴なし。定期薬の服用なし。過去の手術、最近の入院または診断された慢性疾患なし。初期管理に影響する追加情報なし。",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE",ja:"JA"};
@@ -1601,9 +1613,10 @@ function applyTrans(){
     lbAppearance:"appearance",lbDarkMode:"darkMode",lbDarkSub:"darkSub",lbAccount:"account",
     // Sign out buttons (all of them)
     signOutTxt:"signOut",signOutTxt2:"signOut",signOutTxt3:"signOut",
-    // Chart + nearby
+    // Chart + nearby + country labels
     lbChartTitle:"chartTitle",lbNearbyTitle:"nearbyTitle",
-    chartPer_day:"chartDay",chartPer_week:"chartWeek",chartPer_month:"chartMonth",
+    lbCountryLabel:"countryLabel",lbCountrySub:"countrySub",
+    "chartPer-day":"chartDay","chartPer-week":"chartWeek","chartPer-month":"chartMonth",
     nearbySearchBtn:"nearbyBtn",
   };
   Object.entries(ids).forEach(([id,key])=>{
@@ -2282,24 +2295,24 @@ function buildChart(){
     const am=filtered.filter(d=>d.clasificacion==="AMARILLO").length;
     const ve=filtered.filter(d=>d.clasificacion==="VERDE").length;
     const rdC="#ff3a5c",ywC="#ffb830",gnC="#00e07a";
-    cfg={type:"doughnut",data:{labels:[t("legendCritical")||"ROJO",t("legendUrgent")||"AMARILLO",t("legendStable")||"VERDE"],datasets:[{data:[ro,am,ve],backgroundColor:[rdC,ywC,gnC],borderColor:[rdC,ywC,gnC],borderWidth:2,hoverOffset:8}]},options:{cutout:"68%",plugins:{legend:{position:"bottom",labels:{color:textC,font:{size:10.5},boxWidth:12,padding:14}}},animation:{animateRotate:true,duration:600}}};
+    cfg={type:"doughnut",data:{labels:[t("legendCritical")||"ROJO",t("legendUrgent")||"AMARILLO",t("legendStable")||"VERDE"],datasets:[{data:[ro,am,ve],backgroundColor:[rdC,ywC,gnC],borderColor:[rdC,ywC,gnC],borderWidth:2,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{position:"bottom",labels:{color:textC,font:{size:10.5},boxWidth:12,padding:14}}},animation:{animateRotate:true,duration:600}}};
   }else if(_chartType==="type"){
     const tipos=["adulto","adulto_mayor","nino","adolescente","embarazada","movilidad"];
     const lbs=[t("tAdulto"),t("tMayor"),t("tNino"),t("tAdol"),t("tEmbar"),t("tMovil")];
     const vals=tipos.map(tp=>filtered.filter(d=>d.tipo===tp).length);
     const clrs2=["#00c8f0","#a855f7","#00e07a","#ffb830","#ff7043","#94a3b8"];
-    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs2.map(c=>c+"bb"),borderColor:clrs2,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs2.map(c=>c+"bb"),borderColor:clrs2,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
   }else if(_chartType==="motivo"){
     const mots=["dolor_pecho","disnea","trauma","abdominal","neuro","fiebre","otro"];
     const lbs=[t("mPecho"),t("mDisnea"),t("mTrauma"),t("mAbdominal"),t("mNeuro"),t("mFiebre"),t("mOtro")];
     const clrs=["#ff3a5c","#00c8f0","#ffb830","#a855f7","#00e07a","#ff7043","#94a3b8"];
     const vals=mots.map(m=>filtered.filter(d=>d.motivo===m).length);
-    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs.map(c=>c+"cc"),borderColor:clrs,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:9}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs.map(c=>c+"cc"),borderColor:clrs,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:9}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
   }else{
     const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
     const days={};for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const k=d.toLocaleDateString(loc,{day:"2-digit",month:"short"});days[k]=0;}
     filtered.forEach(d=>{const k=d.createdAt.toDate().toLocaleDateString(loc,{day:"2-digit",month:"short"});if(k in days)days[k]++;});
-    cfg={type:"line",data:{labels:Object.keys(days),datasets:[{data:Object.values(days),borderColor:"#00c8f0",backgroundColor:"rgba(0,200,240,.10)",tension:.4,fill:true,pointBackgroundColor:"#00c8f0",pointBorderColor:"#fff",pointBorderWidth:2,pointRadius:5}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+    cfg={type:"line",data:{labels:Object.keys(days),datasets:[{data:Object.values(days),borderColor:"#00c8f0",backgroundColor:"rgba(0,200,240,.10)",tension:.4,fill:true,pointBackgroundColor:"#00c8f0",pointBorderColor:"#fff",pointBorderWidth:2,pointRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
   }
   _chartInst=new Chart(canvas,cfg);
 }
@@ -2692,6 +2705,9 @@ function getSteps(){
       {ic:"❌",l:tx.sym7||"Ninguno de los anteriores",v:"ninguno"}]},
     {id:"enino",title:tx.childAge||"Edad",sub:tx.selectApply||"Ingrese la edad en anos.",t:"num",unit:"años",min:0,max:17,skip:d=>d.tipo!=="nino"&&d.tipo!=="adolescente"},
     {id:"semanas",title:tx.gestWeeks||"Semanas de gestacion",sub:tx.selectApply||"Semanas aproximadas.",t:"num",unit:"semanas",min:1,max:42,skip:d=>d.tipo!=="embarazada"},
+    {id:"notas",title:tx.clinicalNotes||"Anotaciones clinicas",sub:tx.clinicalNotesSub||"Revise y complete con informacion relevante del paciente.",t:"notes_step",
+      defaultMsg:tx.defaultNotes||"El paciente no refiere alergias medicamentosas conocidas ni antecedentes patologicos de relevancia clinica al momento de la evaluacion. No reporta medicacion habitual en curso. Sin historia previa de cirugias, hospitalizaciones recientes ni enfermedades cronicas diagnosticadas.",
+      hint:tx.notesHint||"Modifique si el paciente refiere alergias, medicacion actual o antecedentes patologicos."},
   ];
 }
 const STEPS=getSteps();
@@ -2729,6 +2745,18 @@ function rTriage(){
       const w=document.createElement("div");w.className="vf";w.innerHTML=`<label>${f.l}</label>`;
       const i=document.createElement("input");i.type="number";i.placeholder=f.ph;i.value=TD.vit[f.id]||"";i.oninput=()=>{TD.vit[f.id]=i.value;};w.appendChild(i);vg.appendChild(w);});
     card.appendChild(vg);
+  }else if(s.t==="notes_step"){
+    if(!TD.notas)TD.notas=s.defaultMsg||"";
+    const ta=document.createElement("textarea");
+    ta.className="fi";ta.style.cssText="resize:vertical;min-height:120px;font-size:.8rem;line-height:1.55;padding:12px;margin-top:4px;font-family:'Familjen Grotesk',sans-serif;";
+    ta.value=TD.notas;
+    ta.oninput=()=>{TD.notas=ta.value;};
+    card.appendChild(ta);
+    const hint=document.createElement("div");
+    hint.style.cssText="font-size:.68rem;color:var(--mu);margin-top:7px;font-family:'JetBrains Mono',monospace;line-height:1.4;border-left:2px solid var(--cy);padding-left:8px;";
+    hint.textContent=s.hint||"";
+    card.appendChild(hint);
+    setTimeout(()=>ta.focus(),80);
   }else if(s.t==="scale"){
     const sg=document.createElement("div");sg.className="sgrid";
     for(let i=0;i<=10;i++){const b=document.createElement("button");const hi=i>=7;b.className="sb"+(TD[s.id]==i?(hi?" selh":" sel"):"");b.textContent=i;b.onclick=()=>{TD[s.id]=i;rTriage();};sg.appendChild(b);}
@@ -2769,6 +2797,7 @@ function rTriage(){
 
 function canAdv(s){
   if(s.t==="vitals")return true;
+  if(s.t==="notes_step")return true;
   if(s.t==="scale_enhanced")return TD[s.id]!==undefined;
   if(s.t==="symptom_detail")return true;
   if(s.t==="multi")return TM.length>0||(TD[s.id]&&TD[s.id].length>0);
