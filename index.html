@@ -13,13 +13,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
 const auth=getAuth(fbapp);const db=getFirestore(fbapp);const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
-window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc};
+window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc};
 window.dispatchEvent(new Event("fbready"));
 </script>
 <style>
@@ -342,6 +342,36 @@ select option{background:var(--bg3);}
 .prof-photo-av img{width:100%;height:100%;object-fit:cover;}
 .prof-photo-badge{position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--cy);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#000;border:2px solid var(--bg2);}
 
+/* INACTIVITY WARNING BANNER */
+@keyframes slideDown{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-100%)}}
+.inact-banner{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:linear-gradient(135deg,var(--yw),#ff9500);color:#000;padding:13px 16px;z-index:8000;display:none;animation:slideDown .4s cubic-bezier(.34,1.4,.64,1);}
+.inact-banner.on{display:flex;align-items:center;gap:10px;}
+.inact-banner.out{animation:slideUp .3s ease forwards;}
+.inact-title{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:.82rem;flex:1;}
+.inact-btn{background:rgba(0,0,0,.18);border:none;color:#000;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;font-size:.76rem;font-weight:700;white-space:nowrap;touch-action:manipulation;}
+
+/* REMEMBER ME TOGGLE */
+.remember-row{display:flex;align-items:center;gap:10px;margin:8px 0 2px;cursor:pointer;user-select:none;}
+.remember-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--bd);background:var(--bg3);display:flex;align-items:center;justify-content:center;transition:all .2s cubic-bezier(.34,1.4,.64,1);flex-shrink:0;}
+.remember-check.on{background:var(--cy);border-color:var(--cy);}
+.remember-check.on::after{content:"✓";font-size:.7rem;color:#000;font-weight:700;}
+.remember-lbl{font-size:.74rem;color:var(--mu);transition:color .2s;}
+.remember-row:hover .remember-lbl{color:var(--tx);}
+
+/* CONFIRM DIALOG */
+@keyframes dialogIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.confirm-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.confirm-overlay.on{display:flex;}
+.confirm-box{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:24px 20px 32px;width:100%;max-width:430px;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.confirm-icon{font-size:2rem;text-align:center;margin-bottom:10px;}
+.confirm-title{font-family:"JetBrains Mono",monospace;font-size:.92rem;font-weight:700;text-align:center;margin-bottom:6px;}
+.confirm-msg{font-size:.8rem;color:var(--mu);text-align:center;line-height:1.6;margin-bottom:20px;}
+.confirm-actions{display:flex;flex-direction:column;gap:8px;}
+
+/* AGE ERROR */
+.num-err{font-size:.72rem;color:var(--rd);font-family:"JetBrains Mono",monospace;margin-top:6px;min-height:16px;animation:fadeUp .2s ease;}
+
 /* EMAIL VALIDATION HINT */
 .email-hint{font-size:.68rem;margin-top:3px;min-height:14px;transition:color .2s;font-family:"JetBrains Mono",monospace;}
 .email-hint.er{color:var(--rd);}
@@ -409,6 +439,25 @@ select option{background:var(--bg3);}
   </div>
 </div>
 
+<!-- INACTIVITY BANNER -->
+<div class="inact-banner" id="inactBanner">
+  <div class="inact-title" id="inactMsg">Tu sesion se cerrara pronto por inactividad.</div>
+  <button class="inact-btn" onclick="resetActivity()">Seguir activo</button>
+</div>
+
+<!-- CONFIRM DIALOG (Remember Me) -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🔐</div>
+    <div class="confirm-title" id="confirmTitle">Recordar credenciales</div>
+    <div class="confirm-msg" id="confirmMsg">Las credenciales se guardaran en este dispositivo. No uses esta opcion en dispositivos compartidos o publicos.</div>
+    <div class="confirm-actions">
+      <button class="bpri" onclick="confirmRemember(true)" id="confirmOkBtn">Entendido, guardar</button>
+      <button class="bsec" onclick="confirmRemember(false)" id="confirmCancelBtn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- WELCOME OVERLAY -->
 <div id="welcomeOverlay" style="display:none" class="welcome-overlay">
   <div class="welcome-box" id="welcomeBox">
@@ -471,6 +520,10 @@ select option{background:var(--bg3);}
       <div class="auth-fg">
         <label class="auth-fl" id="lbPass">Contrasena</label>
         <input class="auth-fi" id="aPass" type="password" placeholder="••••••••">
+      </div>
+      <div class="remember-row" id="rememberRow" onclick="toggleRemember()">
+        <div class="remember-check" id="rememberCheck"></div>
+        <span class="remember-lbl" id="rememberLbl">Recordarme en este dispositivo</span>
       </div>
       <button class="auth-btn" id="authMainBtn" onclick="doAuth()">Continuar</button>
       <span class="forgot-link" id="forgotLink" onclick="doForgot()">Olvide mi contrasena</span>
@@ -838,6 +891,10 @@ const L={
     sym1:"Sangrado activo",sym2:"Palidez / sudoracion fria",sym3:"Mareo / perdida de equilibrio",sym4:"Cianosis (labios o unas azulados)",sym5:"Temperatura >39C",sym6:"Debilidad muscular intensa",sym7:"Ninguno de los anteriores",
     vSysBP:"P. sistolica (mmHg)",vDiaBP:"P. diastolica (mmHg)",vHR:"Frec. cardiaca (lpm)",vSpO2:"Saturacion O2 (%)",vTemp:"Temperatura (C)",vRR:"Frec. respiratoria (rpm)",
     welcomeHello:"Bienvenido",changePass:"Cambiar contrasena",curPass:"Contrasena actual",newPass:"Nueva contrasena",confirmPass:"Confirmar contrasena",savePass:"Guardar",passChanged:"Contrasena actualizada.",passError:"Error al cambiar contrasena.",passMatch:"Las contrasenas no coinciden.",passShort:"Minimo 6 caracteres.",reauth:"Contrasena actual incorrecta.",photoUpdated:"Foto actualizada.",
+    mobilityLbl:"Movilidad / capacidad reducida",mobilityNote:"Se requiere enfermero o tutor presente",mobilityNoteSub:"Este paciente necesita asistencia durante la evaluacion. Asegurese de contar con el apoyo necesario antes de continuar.",
+    ageErrorPed:"Edad invalida para paciente pediatrico. El rango valido es 0 a 12 anos.",ageErrorTeen:"Edad invalida para adolescente. El rango valido es 13 a 17 anos.",
+    rememberMe:"Recordarme en este dispositivo",rememberWarn:"Las credenciales se guardaran en este dispositivo. No uses esta opcion en dispositivos compartidos o publicos.",rememberConfirm:"Entendido, guardar",rememberCancel:"Cancelar",
+    inactWarn:"Tu sesion se cerrara pronto por inactividad.",stayActive:"Seguir activo",sessionOut:"Sesion cerrada por inactividad.",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -917,6 +974,10 @@ const L={
     sym1:"Active bleeding",sym2:"Pallor / cold sweating",sym3:"Dizziness / loss of balance",sym4:"Cyanosis (blue lips or nails)",sym5:"Temperature >39C",sym6:"Severe muscle weakness",sym7:"None of the above",
     vSysBP:"Systolic BP (mmHg)",vDiaBP:"Diastolic BP (mmHg)",vHR:"Heart rate (bpm)",vSpO2:"O2 saturation (%)",vTemp:"Temperature (C)",vRR:"Resp. rate (rpm)",
     welcomeHello:"Welcome",changePass:"Change password",curPass:"Current password",newPass:"New password",confirmPass:"Confirm password",savePass:"Save",passChanged:"Password updated.",passError:"Error changing password.",passMatch:"Passwords do not match.",passShort:"Minimum 6 characters.",reauth:"Current password is incorrect.",photoUpdated:"Photo updated.",
+    mobilityLbl:"Reduced mobility / capacity",mobilityNote:"Nurse or guardian must be present",mobilityNoteSub:"This patient requires assistance during evaluation. Make sure the necessary support is available before continuing.",
+    ageErrorPed:"Invalid age for pediatric patient. Valid range is 0 to 12 years.",ageErrorTeen:"Invalid age for adolescent. Valid range is 13 to 17 years.",
+    rememberMe:"Remember me on this device",rememberWarn:"Credentials will be saved on this device. Do not use this option on shared or public devices.",rememberConfirm:"Got it, save",rememberCancel:"Cancel",
+    inactWarn:"Your session will close soon due to inactivity.",stayActive:"Stay active",sessionOut:"Session closed due to inactivity.",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -996,6 +1057,10 @@ const L={
     sym1:"Sangramento ativo",sym2:"Palidez / sudoracao fria",sym3:"Tontura / perda de equilibrio",sym4:"Cianose (labios ou unhas azulados)",sym5:"Temperatura >39C",sym6:"Fraqueza muscular intensa",sym7:"Nenhum dos anteriores",
     vSysBP:"PA sistolica (mmHg)",vDiaBP:"PA diastolica (mmHg)",vHR:"Frec. cardiaca (bpm)",vSpO2:"Saturacao O2 (%)",vTemp:"Temperatura (C)",vRR:"Frec. respiratoria (rpm)",
     welcomeHello:"Bem-vindo",changePass:"Alterar senha",curPass:"Senha atual",newPass:"Nova senha",confirmPass:"Confirmar senha",savePass:"Salvar",passChanged:"Senha atualizada.",passError:"Erro ao alterar senha.",passMatch:"As senhas nao coincidem.",passShort:"Minimo 6 caracteres.",reauth:"Senha atual incorreta.",photoUpdated:"Foto atualizada.",
+    mobilityLbl:"Mobilidade / capacidade reduzida",mobilityNote:"Enfermeiro ou responsavel deve estar presente",mobilityNoteSub:"Este paciente precisa de assistencia durante a avaliacao. Certifique-se de ter o apoio necessario antes de continuar.",
+    ageErrorPed:"Idade invalida para paciente pediatrico. Faixa valida: 0 a 12 anos.",ageErrorTeen:"Idade invalida para adolescente. Faixa valida: 13 a 17 anos.",
+    rememberMe:"Lembrar neste dispositivo",rememberWarn:"As credenciais serao salvas neste dispositivo. Nao use esta opcao em dispositivos compartilhados.",rememberConfirm:"Entendido, salvar",rememberCancel:"Cancelar",
+    inactWarn:"Sua sessao sera encerrada em breve por inatividade.",stayActive:"Continuar ativo",sessionOut:"Sessao encerrada por inatividade.",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -1075,6 +1140,10 @@ const L={
     sym1:"Saignement actif",sym2:"Paleur / sudation froide",sym3:"Vertige / perte d equilibre",sym4:"Cyanose (levres ou ongles bleus)",sym5:"Temperature >39C",sym6:"Faiblesse musculaire intense",sym7:"Aucun des precedents",
     vSysBP:"PA systolique (mmHg)",vDiaBP:"PA diastolique (mmHg)",vHR:"Freq. cardiaque (bpm)",vSpO2:"Saturation O2 (%)",vTemp:"Temperature (C)",vRR:"Freq. respiratoire (rpm)",
     welcomeHello:"Bienvenue",changePass:"Changer mot de passe",curPass:"Mot de passe actuel",newPass:"Nouveau mot de passe",confirmPass:"Confirmer mot de passe",savePass:"Enregistrer",passChanged:"Mot de passe mis a jour.",passError:"Erreur lors du changement.",passMatch:"Les mots de passe ne correspondent pas.",passShort:"Minimum 6 caracteres.",reauth:"Mot de passe actuel incorrect.",photoUpdated:"Photo mise a jour.",
+    mobilityLbl:"Mobilite / capacite reduite",mobilityNote:"Un infirmier ou tuteur doit etre present",mobilityNoteSub:"Ce patient necessite une assistance lors de l evaluation. Assurez-vous du soutien necessaire avant de continuer.",
+    ageErrorPed:"Age invalide pour patient pediatrique. Plage valide: 0 a 12 ans.",ageErrorTeen:"Age invalide pour adolescent. Plage valide: 13 a 17 ans.",
+    rememberMe:"Se souvenir sur cet appareil",rememberWarn:"Les identifiants seront sauvegardes sur cet appareil. N utilisez pas cette option sur des appareils partages.",rememberConfirm:"Compris, sauvegarder",rememberCancel:"Annuler",
+    inactWarn:"Votre session se fermera bientot par inactivite.",stayActive:"Rester actif",sessionOut:"Session fermee par inactivite.",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -1154,6 +1223,10 @@ const L={
     sym1:"Aktive Blutung",sym2:"Blasse / kalter Schweiss",sym3:"Schwindel / Gleichgewichtsverlust",sym4:"Zyanose (blaue Lippen oder Nagel)",sym5:"Temperatur >39C",sym6:"Starke Muskelschwache",sym7:"Keines der oben genannten",
     vSysBP:"Syst. Blutdruck (mmHg)",vDiaBP:"Diast. Blutdruck (mmHg)",vHR:"Herzfrequenz (bpm)",vSpO2:"O2-Sattigung (%)",vTemp:"Temperatur (C)",vRR:"Atemfrequenz (rpm)",
     welcomeHello:"Willkommen",changePass:"Passwort andern",curPass:"Aktuelles Passwort",newPass:"Neues Passwort",confirmPass:"Passwort bestatigen",savePass:"Speichern",passChanged:"Passwort aktualisiert.",passError:"Fehler beim Andern.",passMatch:"Passworter stimmen nicht uberein.",passShort:"Mindestens 6 Zeichen.",reauth:"Aktuelles Passwort falsch.",photoUpdated:"Foto aktualisiert.",
+    mobilityLbl:"Eingeschrankte Mobilitat",mobilityNote:"Pflegeperson oder Vormund muss anwesend sein",mobilityNoteSub:"Dieser Patient benotigt Assistenz wahrend der Bewertung. Stellen Sie sicher dass die notwendige Unterstutzung vorhanden ist.",
+    ageErrorPed:"Ungultiges Alter fur padiatrischen Patienten. Gultig: 0 bis 12 Jahre.",ageErrorTeen:"Ungultiges Alter fur Jugendlichen. Gultig: 13 bis 17 Jahre.",
+    rememberMe:"Auf diesem Gerat merken",rememberWarn:"Anmeldedaten werden auf diesem Gerat gespeichert. Nicht auf gemeinsam genutzten Geraten verwenden.",rememberConfirm:"Verstanden, speichern",rememberCancel:"Abbrechen",
+    inactWarn:"Ihre Sitzung wird bald wegen Inaktivitat geschlossen.",stayActive:"Aktiv bleiben",sessionOut:"Sitzung wegen Inaktivitat beendet.",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE"};
@@ -1186,7 +1259,7 @@ function applyTrans(){
     // Auth
     authSub:"sub","atab-in":"login","atab-up":"register",authMainBtn:"cont",
     forgotLink:"forgot",googleBtnTxt:"google",ptnBtnTitle:"ptnTitle",
-    ptnBtnSub:"ptnSub",staffLink:"staffLink",
+    ptnBtnSub:"ptnSub",staffLink:"staffLink",rememberLbl:"rememberMe",
     // Meds
     lbSearchDrug:"searchDrug",consultBtn:"consultAI",lbNewMed:"newMed",
     lbDose:"dose",lbFreq:"freq",lbHour:"hour",lbNotes:"notes",addMedBtn:"addMed",
@@ -1300,6 +1373,8 @@ async function doAuth(){
   if(!EMAIL_RE.test(email)){err.className="auth-err er";err.textContent="El correo no tiene un formato valido";return;}
   const isIn=document.getElementById("atab-in").classList.contains("on");
   try{
+    const persistence=_rememberOn?FB.browserLocalPersistence:FB.browserSessionPersistence;
+    await FB.setPersistence(FB.auth,persistence);
     if(isIn){await FB.signInWithEmailAndPassword(FB.auth,email,pass);}
     else{
       const name=document.getElementById("aName").value.trim()||email.split("@")[0];
@@ -1308,6 +1383,7 @@ async function doAuth(){
       const role=all.empty?"admin":"medico";
       await FB.setDoc(FB.doc(FB.db,"users",cred.user.uid),{name,email,role,createdAt:FB.serverTimestamp()});
     }
+    if(_rememberOn){localStorage.setItem("ms_remember_email",email);}else{localStorage.removeItem("ms_remember_email");}
   }catch(e){
     err.className="auth-err er";
     const msgs={"auth/invalid-credential":"Correo o contrasena incorrectos","auth/email-already-in-use":"Este correo ya esta registrado","auth/weak-password":"La contrasena debe tener al menos 6 caracteres","auth/invalid-email":"Correo no valido","auth/user-not-found":"Usuario no encontrado","auth/wrong-password":"Contrasena incorrecta"};
@@ -1376,6 +1452,7 @@ async function onEmailBlur(){
 }
 
 async function doSignOut(){
+  stopInactivityTimer();
   if(CR==="paciente"){showAuthScreen();return;}
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
 }
@@ -1384,7 +1461,92 @@ function showAuthScreen(){
   document.getElementById("authScreen").style.display="flex";
   document.getElementById("mainApp").classList.remove("on");
   showPatientView();CU=null;CR=null;
+  // Pre-fill email if saved
+  const saved=localStorage.getItem("ms_remember_email");
+  if(saved){document.getElementById("aEmail").value=saved;_rememberOn=true;document.getElementById("rememberCheck").classList.add("on");}
 }
+
+// ── REMEMBER ME ──
+let _rememberOn=localStorage.getItem("ms_remember_email")!==null;
+(()=>{
+  // Pre-fill email on page load
+  const saved=localStorage.getItem("ms_remember_email");
+  if(saved){
+    window.addEventListener("DOMContentLoaded",()=>{
+      const el=document.getElementById("aEmail");if(el)el.value=saved;
+    },{once:true});
+    setTimeout(()=>{const el=document.getElementById("aEmail");if(el&&!el.value)el.value=saved;},400);
+  }
+})();
+
+function toggleRemember(){
+  if(!_rememberOn){
+    // Show confirmation dialog before enabling
+    const ov=document.getElementById("confirmOverlay");
+    document.getElementById("confirmTitle").textContent=t("rememberMe")||"Recordarme";
+    document.getElementById("confirmMsg").textContent=t("rememberWarn")||"Las credenciales se guardaran en este dispositivo.";
+    document.getElementById("confirmOkBtn").textContent=t("rememberConfirm")||"Entendido, guardar";
+    document.getElementById("confirmCancelBtn").textContent=t("rememberCancel")||"Cancelar";
+    ov.classList.add("on");
+  } else {
+    _rememberOn=false;
+    document.getElementById("rememberCheck").classList.remove("on");
+    localStorage.removeItem("ms_remember_email");
+  }
+}
+
+function confirmRemember(ok){
+  document.getElementById("confirmOverlay").classList.remove("on");
+  if(ok){
+    _rememberOn=true;
+    document.getElementById("rememberCheck").classList.add("on");
+  }
+}
+
+// ── INACTIVITY TIMEOUT ──
+let _lastActive=Date.now(),_inactTimer=null,_warnShown=false;
+const INACT_MS=20*60*1000;   // 20 min
+const WARN_MS=18*60*1000;    // warn at 18 min
+
+function resetActivity(){
+  _lastActive=Date.now();_warnShown=false;
+  const b=document.getElementById("inactBanner");
+  if(b&&b.classList.contains("on")){
+    b.classList.add("out");
+    setTimeout(()=>{b.classList.remove("on","out");},350);
+  }
+}
+
+function startInactivityTimer(){
+  if(_inactTimer)clearInterval(_inactTimer);
+  _inactTimer=setInterval(()=>{
+    if(!CU||CR==="paciente")return;
+    const elapsed=Date.now()-_lastActive;
+    if(elapsed>=INACT_MS){
+      clearInterval(_inactTimer);_inactTimer=null;
+      toast(t("sessionOut")||"Sesion cerrada por inactividad.");
+      doSignOut();
+    }else if(elapsed>=WARN_MS&&!_warnShown){
+      _warnShown=true;
+      const b=document.getElementById("inactBanner");
+      const msg=document.getElementById("inactMsg");
+      const btn=document.querySelector(".inact-btn");
+      if(msg)msg.textContent=t("inactWarn")||"Tu sesion se cerrara pronto por inactividad.";
+      if(btn)btn.textContent=t("stayActive")||"Seguir activo";
+      if(b){b.classList.remove("out");b.classList.add("on");}
+    }
+  },15000);
+}
+
+function stopInactivityTimer(){
+  if(_inactTimer){clearInterval(_inactTimer);_inactTimer=null;}
+  resetActivity();
+}
+
+// Track user activity
+["touchstart","touchmove","mousedown","keydown"].forEach(ev=>{
+  document.addEventListener(ev,resetActivity,{passive:true});
+});
 
 function showApp(){
   document.getElementById("authScreen").style.display="none";
@@ -1393,6 +1555,7 @@ function showApp(){
   const def={admin:"dash",admin_hosp:"dash",medico:"triage",paciente:"meds"}[CR]||"triage";
   navigateTo(def);
   showWelcome();
+  if(CR!=="paciente")startInactivityTimer();
 }
 
 function showWelcome(){
@@ -1751,7 +1914,8 @@ function getSteps(){
       {ic:"🧒",l:tx.teenLbl||"Adolescente (13-17)",v:"adolescente"},
       {ic:"🧑",l:tx.adultLbl||"Adulto (18-59)",v:"adulto"},
       {ic:"👴",l:tx.elderLbl||"Tercera edad (60+)",v:"adulto_mayor"},
-      {ic:"🤰",l:tx.pregLbl||"Embarazada",v:"embarazada"}]},
+      {ic:"🤰",l:tx.pregLbl||"Embarazada",v:"embarazada"},
+      {ic:"♿",l:tx.mobilityLbl||"Movilidad / capacidad reducida",v:"movilidad"}]},
     {id:"motivo",title:tx.mainReason||"Motivo de consulta",sub:tx.selectSymptom||"Seleccione el sintoma dominante.",t:"opts",opts:[
       {ic:"💔",l:tx.chestPainL||"Dolor en el pecho",v:"dolor_pecho"},
       {ic:"🫁",l:tx.breathingL||"Dificultad para respirar",v:"disnea"},
@@ -1790,6 +1954,7 @@ function rTriage(){
   const s=steps[TS];const c=document.getElementById("trc");c.innerHTML="";
   const st=document.createElement("div");st.className="stag";st.textContent=`${t("step")||"Paso"} ${TS+1} ${t("of")||"de"} ${tot}`;c.appendChild(st);
   if(TD.tipo==="nino"||TD.tipo==="adolescente"){const n=document.createElement("div");n.className="cnote";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">👨‍👩‍👦</span><span><strong>${t("pedNote")||"Paciente pediatrico / adolescente"}</strong> — ${t("pedNoteSub")||"Completar con padre, madre o tutor."}</span>`;c.appendChild(n);}
+  if(TD.tipo==="movilidad"){const n=document.createElement("div");n.className="cnote";n.style.cssText="background:rgba(255,184,48,.08);border:1px solid rgba(255,184,48,.28);color:#ffb830;";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">♿</span><span><strong>${t("mobilityNote")||"Se requiere enfermero o tutor presente"}</strong><br><span style="font-size:.72rem;opacity:.85">${t("mobilityNoteSub")||"Este paciente necesita asistencia durante la evaluacion."}</span></span>`;c.appendChild(n);}
   const card=document.createElement("div");card.className="card";
   card.innerHTML=`<div class="qtitle">${s.title}</div><div class="qsub">${s.sub}</div>`;
   if(s.t==="opts"){
@@ -1819,16 +1984,30 @@ function rTriage(){
     for(let i=0;i<=10;i++){const b=document.createElement("button");const hi=i>=7;b.className="sb"+(TD[s.id]==i?(hi?" selh":" sel"):"");b.textContent=i;b.onclick=()=>{TD[s.id]=i;rTriage();};sg.appendChild(b);}
     const lb=document.createElement("div");lb.className="slabs";lb.innerHTML=`<span>${t("noPain")||"Sin dolor"}</span><span>${t("unbearable")||"Insoportable"}</span>`;card.appendChild(sg);card.appendChild(lb);
   }else if(s.t==="num"){
-    const i=document.createElement("input");i.className="fi";i.type="number";i.placeholder=s.unit;i.min=s.min;i.max=s.max;
+    // Dynamic min/max for child age based on patient type
+    let vMin=s.min,vMax=s.max;
+    if(s.id==="enino"){vMin=TD.tipo==="adolescente"?13:0;vMax=TD.tipo==="adolescente"?17:12;}
+    const i=document.createElement("input");i.className="fi";i.type="number";i.placeholder=s.unit;i.min=vMin;i.max=vMax;
     i.value=(TD[s.id]!==undefined&&TD[s.id]!=="")?""+TD[s.id]:"";
     i.style.cssText="font-size:1.1rem;text-align:center;letter-spacing:1px;";
-    i.oninput=()=>{
-      TD[s.id]=i.value;
+    const errEl=document.createElement("div");errEl.className="num-err";
+    card.appendChild(i);card.appendChild(errEl);
+    const checkNum=()=>{
+      const v=+i.value;const empty=i.value==="";
+      let errMsg="",valid=!empty&&!isNaN(v);
+      if(valid){
+        if(v<vMin||v>vMax){
+          valid=false;
+          if(s.id==="enino"){errMsg=TD.tipo==="adolescente"?t("ageErrorTeen")||"Edad invalida para adolescente (13-17 anos).":t("ageErrorPed")||"Edad invalida para paciente pediatrico (0-12 anos).";}
+          else{errMsg=`Valor debe estar entre ${vMin} y ${vMax} ${s.unit}.`;}
+        }
+      }
+      errEl.textContent=errMsg;
       const nx=document.querySelector("#trc .bnxt");
-      if(nx)nx.disabled=(i.value===""||isNaN(+i.value));
+      if(nx)nx.disabled=!valid;
+      TD[s.id]=valid?i.value:"";
     };
-    card.appendChild(i);
-    // Auto-focus so user can type immediately
+    i.oninput=checkNum;
     requestAnimationFrame(()=>i.focus());
   }
   const nav=document.createElement("div");nav.className="bnav-row";
@@ -1843,7 +2022,13 @@ function canAdv(s){
   if(s.t==="scale_enhanced")return TD[s.id]!==undefined;
   if(s.t==="symptom_detail")return true;
   if(s.t==="multi")return TM.length>0||(TD[s.id]&&TD[s.id].length>0);
-  if(s.t==="num")return TD[s.id]!==undefined&&TD[s.id]!==""&&!isNaN(+TD[s.id]);
+  if(s.t==="num"){
+    if(TD[s.id]===undefined||TD[s.id]==="")return false;
+    const v=+TD[s.id];if(isNaN(v))return false;
+    let mn=s.min,mx=s.max;
+    if(s.id==="enino"){mn=TD.tipo==="adolescente"?13:0;mx=TD.tipo==="adolescente"?17:12;}
+    return v>=mn&&v<=mx;
+  }
   if(s.t==="scale")return TD[s.id]!==undefined;
   return!!TD[s.id];
 }
