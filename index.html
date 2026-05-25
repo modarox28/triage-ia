@@ -1400,7 +1400,29 @@ function showWelcome(){
   const av=name[0].toUpperCase();
   const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];
   const col=cols[av.charCodeAt(0)%cols.length];
-  const RL={admin:"ADMIN",admin_hosp:"ADM. HOSP",medico:"MEDICO",paciente:"PACIENTE"};
+
+  // Role-specific greeting (localized) + display name format
+  const greetings={
+    es:{medico:"Bienvenido,",admin:"Bienvenido,",admin_hosp:"Bienvenido,",paciente:"Hola,"},
+    en:{medico:"Welcome,",admin:"Welcome,",admin_hosp:"Welcome,",paciente:"Hello,"},
+    pt:{medico:"Bem-vindo,",admin:"Bem-vindo,",admin_hosp:"Bem-vindo,",paciente:"Ola,"},
+    fr:{medico:"Bienvenue,",admin:"Bienvenue,",admin_hosp:"Bienvenue,",paciente:"Bonjour,"},
+    de:{medico:"Willkommen,",admin:"Willkommen,",admin_hosp:"Willkommen,",paciente:"Hallo,"},
+  };
+  const prefixes={
+    medico:"Doc.",
+    admin:"Admin",
+    admin_hosp:"Admin",
+    paciente:"",
+  };
+  const roleBadge={
+    medico:"MEDICO",admin:"ADMIN",admin_hosp:"ADM. HOSP",paciente:"PACIENTE"
+  };
+
+  const greeting=(greetings[CL]||greetings.es)[CR]||t("welcomeHello");
+  const prefix=prefixes[CR]||"";
+  const displayName=prefix?`${prefix} ${name}`:name;
+
   const ov=document.getElementById("welcomeOverlay");
   const box=document.getElementById("welcomeBox");
   const avEl=document.getElementById("welcomeAv");
@@ -1408,19 +1430,19 @@ function showWelcome(){
   if(saved){
     avEl.innerHTML=`<img src="${saved}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     avEl.style.background="transparent";
-  } else {
+  }else{
     avEl.innerHTML=av;
     avEl.style.background=col;
   }
-  document.getElementById("welcomeHello").textContent=t("welcomeHello");
-  document.getElementById("welcomeName").textContent=name;
-  document.getElementById("welcomeRole").textContent=RL[CR]||CR;
+  document.getElementById("welcomeHello").textContent=greeting;
+  document.getElementById("welcomeName").textContent=displayName;
+  document.getElementById("welcomeRole").textContent=roleBadge[CR]||CR;
   box.classList.remove("out");
   ov.style.display="flex";
   setTimeout(()=>{
     box.classList.add("out");
     setTimeout(()=>{ov.style.display="none";},420);
-  },2200);
+  },2400);
 }
 
 // NAV
