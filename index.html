@@ -403,6 +403,139 @@ select option{background:var(--bg3);}
 .confirm-msg{font-size:.8rem;color:var(--mu);text-align:center;line-height:1.6;margin-bottom:20px;}
 .confirm-actions{display:flex;flex-direction:column;gap:8px;}
 
+/* RECONOCIMIENTO IMAGEN VITALES */
+.vitcam-overlay{position:fixed;inset:0;z-index:3900;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.vitcam-overlay.on{display:flex;}
+.vitcam-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:20px 16px 36px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.vitcam-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;margin-bottom:2px;}
+.vitcam-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
+.vitcam-preview{width:100%;height:180px;border-radius:12px;object-fit:contain;background:var(--bg3);border:1px solid var(--bd);display:none;margin-bottom:12px;}
+.vitcam-drop{border:2px dashed var(--bd);border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;margin-bottom:12px;transition:border-color .2s;}
+.vitcam-drop:hover{border-color:var(--cy);}
+.vitcam-drop-ic{font-size:2rem;margin-bottom:6px;}
+.vitcam-drop-txt{font-size:.75rem;color:var(--mu);}
+.vitcam-result{background:var(--bg3);border-radius:12px;padding:12px;border:1px solid var(--bd);margin-bottom:12px;display:none;}
+.vitcam-res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.vitcam-res-item{text-align:center;padding:8px 4px;}
+.vitcam-res-val{font-family:"JetBrains Mono",monospace;font-size:1.1rem;font-weight:700;color:var(--cy);}
+.vitcam-res-lbl{font-size:.6rem;color:var(--mu);margin-top:2px;}
+/* OFFLINE BANNER */
+.offline-bar{display:none;align-items:center;justify-content:center;gap:8px;padding:6px 12px;background:rgba(255,170,0,.18);border-bottom:1px solid rgba(255,170,0,.4);font-size:.72rem;font-family:"JetBrains Mono",monospace;color:#ffb830;font-weight:700;flex-shrink:0;z-index:300;animation:fadeUp .3s ease;}
+.offline-bar.on{display:flex;}
+.offline-bar .ob-dot{width:8px;height:8px;border-radius:50%;background:#ffb830;}
+/* NOTIFICACION PRE-HOSPITALARIA */
+.preh-overlay{position:fixed;inset:0;z-index:3800;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.preh-overlay.on{display:flex;}
+.preh-sheet{background:var(--bg2);border:1px solid rgba(255,140,0,.3);border-radius:22px 22px 0 0;padding:20px 16px 36px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.preh-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;color:#ffa040;}
+.preh-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
+.preh-field{margin-bottom:10px;}
+.preh-lbl{font-size:.68rem;font-weight:700;color:var(--mu);font-family:"JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.preh-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.preh-vital{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;}
+.preh-vital-lbl{font-size:.62rem;color:var(--mu);margin-bottom:3px;}
+.preh-vital-in{width:100%;background:none;border:none;outline:none;font-size:.88rem;font-family:"JetBrains Mono",monospace;color:var(--tx);font-weight:700;}
+.preh-eta-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.preh-eta-btn{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:5px 12px;font-size:.74rem;cursor:pointer;transition:all .15s;font-family:"JetBrains Mono",monospace;}
+.preh-eta-btn.sel{background:rgba(255,140,0,.15);border-color:rgba(255,140,0,.5);color:#ffa040;}
+.preh-send{background:linear-gradient(135deg,rgba(255,120,0,.8),rgba(255,60,0,.8));border:none;border-radius:12px;color:#fff;padding:13px;font-size:.85rem;font-weight:700;font-family:"JetBrains Mono",monospace;width:100%;cursor:pointer;margin-top:4px;touch-action:manipulation;}
+/* RESUMEN DE TURNO / HANDOFF */
+.handoff-overlay{position:fixed;inset:0;z-index:3700;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.handoff-overlay.on{display:flex;}
+.handoff-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:20px 16px 36px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.handoff-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;margin-bottom:2px;}
+.handoff-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
+.handoff-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.handoff-stat{background:var(--bg3);border-radius:10px;padding:9px 5px;text-align:center;border:1px solid var(--bd);}
+.handoff-stat-n{font-family:"JetBrains Mono",monospace;font-size:1.5rem;font-weight:700;line-height:1;}
+.handoff-stat-l{font-size:.58rem;color:var(--mu);margin-top:3px;}
+.handoff-stat.ro .handoff-stat-n{color:#ff6060;}
+.handoff-stat.am .handoff-stat-n{color:#ffc832;}
+.handoff-stat.ve .handoff-stat-n{color:#00e07a;}
+.handoff-stat.total .handoff-stat-n{color:var(--cy);}
+.handoff-entry{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border-radius:10px;margin-bottom:6px;border:1px solid var(--bd);}
+.handoff-entry-cl{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.handoff-entry-info{flex:1;min-width:0;}
+.handoff-entry-top{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.handoff-entry-sub{font-size:.66rem;color:var(--mu);}
+.handoff-entry-time{font-family:"JetBrains Mono",monospace;font-size:.64rem;color:var(--mu);flex-shrink:0;}
+/* CALCULADORA DOSIS PEDIÁTRICA */
+.dosp-overlay{position:fixed;inset:0;z-index:3600;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.dosp-overlay.on{display:flex;}
+.dosp-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:18px 16px 36px;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.dosp-drug-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;}
+.dosp-drug{background:var(--bg3);border:1.5px solid var(--bd);border-radius:10px;padding:8px 10px;font-size:.73rem;cursor:pointer;text-align:left;transition:all .15s;touch-action:manipulation;}
+.dosp-drug:active{transform:scale(.95);}
+.dosp-drug.sel{background:rgba(100,160,255,.12);border-color:rgba(100,160,255,.5);}
+.dosp-drug-name{font-weight:700;}
+.dosp-drug-sub{font-size:.64rem;color:var(--mu);}
+.dosp-result{background:var(--bg3);border-radius:14px;padding:14px;border:1px solid var(--bd);margin-top:12px;}
+.dosp-res-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd);}
+.dosp-res-row:last-child{border-bottom:none;}
+.dosp-res-lbl{font-size:.72rem;color:var(--mu);}
+.dosp-res-val{font-family:"JetBrains Mono",monospace;font-size:.88rem;font-weight:700;color:var(--cy);}
+.dosp-warn{font-size:.7rem;color:var(--yw);background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);border-radius:8px;padding:7px 10px;margin-top:8px;}
+/* MCI — INCIDENTE DE MÚLTIPLES VÍCTIMAS */
+.mci-banner{display:none;align-items:center;justify-content:space-between;padding:7px 14px;background:linear-gradient(90deg,rgba(255,40,40,.22),rgba(255,100,0,.16));border-bottom:1px solid rgba(255,60,60,.4);flex-shrink:0;z-index:200;animation:fadeUp .3s ease;}
+.mci-banner.on{display:flex;}
+.mci-banner-left{display:flex;align-items:center;gap:8px;}
+.mci-banner-pulse{width:10px;height:10px;border-radius:50%;background:#ff3c3c;animation:mciPulse 1.2s ease-in-out infinite;}
+@keyframes mciPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.mci-banner-txt{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:700;color:#ff6060;letter-spacing:.5px;}
+.mci-banner-name{font-size:.65rem;color:var(--mu);margin-left:4px;}
+.mci-banner-counts{display:flex;gap:8px;}
+.mci-bc{font-family:"JetBrains Mono",monospace;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:8px;}
+.mci-bc.ro{background:rgba(255,40,40,.25);color:#ff6060;}
+.mci-bc.am{background:rgba(255,200,0,.25);color:#ffc832;}
+.mci-bc.ve{background:rgba(0,200,80,.25);color:#00e07a;}
+.mci-bc.ng{background:rgba(90,90,90,.35);color:#aaa;}
+.mci-banner-close{font-size:.85rem;padding:3px 8px;background:none;border:1px solid rgba(255,60,60,.4);border-radius:8px;color:#ff6060;cursor:pointer;}
+.mci-quick-card{background:var(--bg2);border:1px solid rgba(255,60,60,.3);border-radius:16px;padding:16px;margin-bottom:12px;}
+.mci-patient-n{font-family:"JetBrains Mono",monospace;font-size:.75rem;color:var(--mu);margin-bottom:12px;}
+.mci-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.mci-btn{border:none;border-radius:12px;padding:18px 10px;font-family:"JetBrains Mono",monospace;font-size:.82rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;touch-action:manipulation;transition:transform .15s;}
+.mci-btn:active{transform:scale(.93);}
+.mci-btn.ro{background:rgba(255,40,40,.22);border:2px solid #ff3c3c;color:#ff6060;}
+.mci-btn.am{background:rgba(255,200,0,.22);border:2px solid #ffc832;color:#ffc832;}
+.mci-btn.ve{background:rgba(0,200,80,.18);border:2px solid #00e07a;color:#00e07a;}
+.mci-btn.ng{background:rgba(90,90,90,.22);border:2px solid #888;color:#aaa;}
+.mci-btn-ic{font-size:1.8rem;}
+.mci-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.mci-stat{background:var(--bg3);border-radius:10px;padding:10px 6px;text-align:center;border:1px solid var(--bd);}
+.mci-stat-n{font-family:"JetBrains Mono",monospace;font-size:1.6rem;font-weight:700;line-height:1;}
+.mci-stat-l{font-size:.58rem;color:var(--mu);margin-top:3px;font-weight:700;}
+.mci-stat.ro .mci-stat-n{color:#ff6060;}
+.mci-stat.am .mci-stat-n{color:#ffc832;}
+.mci-stat.ve .mci-stat-n{color:#00e07a;}
+.mci-stat.ng .mci-stat-n{color:#aaa;}
+.mci-setup-overlay{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.mci-setup-overlay.on{display:flex;}
+.mci-setup-sheet{background:var(--bg2);border:1px solid rgba(255,60,60,.3);border-radius:22px 22px 0 0;padding:22px 18px 36px;width:100%;max-width:480px;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.mci-setup-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;color:#ff6060;margin-bottom:4px;}
+.mci-setup-sub{font-size:.73rem;color:var(--mu);margin-bottom:16px;}
+/* GLASGOW COMA SCALE */
+.gcs-overlay{position:fixed;inset:0;z-index:3500;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.gcs-overlay.on{display:flex;}
+.gcs-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:18px 16px 32px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.gcs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.gcs-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;}
+.gcs-sub{font-size:.72rem;color:var(--mu);margin-bottom:14px;}
+.gcs-score-box{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg3);border-radius:14px;margin-bottom:16px;border:1px solid var(--bd);}
+.gcs-total{font-family:"JetBrains Mono",monospace;font-size:2.8rem;font-weight:700;line-height:1;color:var(--cy);}
+.gcs-evm{font-size:.68rem;color:var(--mu);font-family:"JetBrains Mono",monospace;line-height:1.8;}
+.gcs-sev{font-size:.75rem;font-weight:700;padding:5px 13px;border-radius:20px;display:none;}
+.gcs-sev.leve{background:rgba(0,224,122,.18);color:#00e07a;}
+.gcs-sev.mod{background:rgba(255,200,50,.18);color:#ffc832;}
+.gcs-sev.grave{background:rgba(255,60,60,.18);color:#ff3c3c;}
+.gcs-section{margin-bottom:14px;}
+.gcs-sec-lbl{font-size:.68rem;font-weight:700;color:var(--mu);font-family:"JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.gcs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.gcs-opt{background:var(--bg3);border:1.5px solid var(--bd);border-radius:10px;padding:9px 10px;cursor:pointer;display:flex;align-items:center;gap:9px;text-align:left;transition:all .15s;touch-action:manipulation;}
+.gcs-opt:active{transform:scale(.95);}
+.gcs-opt.sel{background:rgba(0,200,240,.12);border-color:var(--cy);}
+.gcs-opt-n{font-family:"JetBrains Mono",monospace;font-size:1.1rem;font-weight:700;color:var(--cy);min-width:20px;}
+.gcs-opt-l{font-size:.7rem;line-height:1.3;color:var(--tx);}
+.gcs-fab-chip{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-family:"JetBrains Mono",monospace;padding:5px 11px;border-radius:20px;background:rgba(0,200,240,.12);border:1px solid rgba(0,200,240,.3);color:var(--cy);margin-top:10px;cursor:pointer;touch-action:manipulation;}
 /* AGE ERROR */
 .num-err{font-size:.72rem;color:var(--rd);font-family:"JetBrains Mono",monospace;margin-top:6px;min-height:16px;animation:fadeUp .2s ease;}
 
@@ -552,6 +685,168 @@ select option{background:var(--bg3);}
   <button class="inact-btn" onclick="resetActivity()">Seguir activo</button>
 </div>
 
+<!-- VITALES POR IMAGEN -->
+<div class="vitcam-overlay" id="vitcamOverlay" onclick="if(event.target===this)closeVitcam()">
+  <div class="vitcam-sheet">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+      <div class="vitcam-title">📷 <span id="vitcamTitleTxt">Vitales por imagen</span></div>
+      <button class="bsec" style="padding:5px 12px;font-size:.72rem" onclick="closeVitcam()">✕</button>
+    </div>
+    <div class="vitcam-sub" id="vitcamSubTxt">Fotografía el monitor y la IA extrae los valores</div>
+    <img id="vitcamPreview" class="vitcam-preview" alt="preview">
+    <div class="vitcam-drop" id="vitcamDrop" onclick="document.getElementById('vitcamFileIn').click()">
+      <input type="file" id="vitcamFileIn" accept="image/*" capture="environment" style="display:none" onchange="vitcamLoadImage(this)">
+      <div class="vitcam-drop-ic">📷</div>
+      <div class="vitcam-drop-txt" id="vitcamDropTxt">Toca para fotografiar o seleccionar imagen</div>
+    </div>
+    <div class="vitcam-result" id="vitcamResult">
+      <div class="vitcam-res-grid" id="vitcamResGrid"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="bpri" id="vitcamAnalyzeBtn" style="flex:1;display:none" onclick="analyzeVitcam()">
+        <span id="vitcamAnalyzeTxt">🔍 Analizar</span>
+      </button>
+      <button class="bpri" id="vitcamApplyBtn" style="flex:1;display:none;background:linear-gradient(135deg,rgba(0,200,100,.8),rgba(0,160,80,.8))" onclick="applyVitcam()">
+        ✓ <span id="vitcamApplyTxt">Aplicar vitales</span>
+      </button>
+    </div>
+    <button class="bsec" style="width:100%;margin-top:8px" onclick="closeVitcam()">Cerrar</button>
+  </div>
+</div>
+
+<!-- NOTIFICACION PRE-HOSPITALARIA -->
+<div class="preh-overlay" id="prehOverlay" onclick="if(event.target===this)closePrehNotif()">
+  <div class="preh-sheet">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+      <div class="preh-title">🚑 <span id="prehTitleTxt">Notificacion Pre-hospitalaria</span></div>
+      <button class="bsec" style="padding:5px 12px;font-size:.72rem" onclick="closePrehNotif()">✕</button>
+    </div>
+    <div class="preh-sub" id="prehSubTxt">Aviso de llegada al hospital</div>
+    <div class="preh-row" style="margin-bottom:10px">
+      <div class="preh-field">
+        <div class="preh-lbl" id="prehAgeLbl">Edad</div>
+        <input class="fi" id="prehAge" type="number" min="0" max="120" placeholder="—" style="height:38px;font-size:.9rem">
+      </div>
+      <div class="preh-field">
+        <div class="preh-lbl" id="prehSexLbl">Sexo</div>
+        <div style="display:flex;gap:6px;margin-top:2px">
+          <button class="preh-eta-btn" id="prehSexM" onclick="selPrehSex('M')">♂ M</button>
+          <button class="preh-eta-btn" id="prehSexF" onclick="selPrehSex('F')">♀ F</button>
+        </div>
+      </div>
+    </div>
+    <div class="preh-field">
+      <div class="preh-lbl" id="prehMechLbl">Mecanismo / Motivo</div>
+      <input class="fi" id="prehMechIn" type="text" placeholder="Ej: Trauma cerrado, PCR, ACV..." style="height:38px;font-size:.85rem">
+    </div>
+    <div class="preh-field">
+      <div class="preh-lbl" id="prehVitLbl">Signos vitales</div>
+      <div class="preh-row">
+        <div class="preh-vital"><div class="preh-vital-lbl">FC (lpm)</div><input class="preh-vital-in" id="prehFC" type="number" placeholder="80"></div>
+        <div class="preh-vital"><div class="preh-vital-lbl">PA (mmHg)</div><input class="preh-vital-in" id="prehPA" type="text" placeholder="120/80"></div>
+        <div class="preh-vital"><div class="preh-vital-lbl">SpO2 (%)</div><input class="preh-vital-in" id="prehSat" type="number" placeholder="97"></div>
+        <div class="preh-vital"><div class="preh-vital-lbl">FR (rpm)</div><input class="preh-vital-in" id="prehFR" type="number" placeholder="16"></div>
+      </div>
+    </div>
+    <div class="preh-field">
+      <div class="preh-lbl" id="prehTxLbl">Tratamiento prehospitalario</div>
+      <textarea class="fi" id="prehTxIn" style="resize:vertical;min-height:65px;font-size:.8rem;padding:9px;font-family:'Familjen Grotesk',sans-serif" placeholder="Ej: O2 15L/min, via venosa, adrenalina 1mg..."></textarea>
+    </div>
+    <div class="preh-field">
+      <div class="preh-lbl" id="prehETALbl">ETA (minutos)</div>
+      <div class="preh-eta-btns" id="prehETABtns">
+        <button class="preh-eta-btn" onclick="selPrehETA(5,this)">5 min</button>
+        <button class="preh-eta-btn" onclick="selPrehETA(10,this)">10 min</button>
+        <button class="preh-eta-btn" onclick="selPrehETA(15,this)">15 min</button>
+        <button class="preh-eta-btn" onclick="selPrehETA(20,this)">20 min</button>
+        <button class="preh-eta-btn" onclick="selPrehETA(30,this)">30 min</button>
+      </div>
+    </div>
+    <button class="preh-send" id="prehSendBtn" onclick="sendPrehNotif()">🚑 Enviar notificacion</button>
+    <button class="bsec" style="width:100%;margin-top:8px" onclick="closePrehNotif()">Cancelar</button>
+  </div>
+</div>
+
+<!-- HANDOFF / RESUMEN DE TURNO MODAL -->
+<div class="handoff-overlay" id="handoffOverlay" onclick="if(event.target===this)closeHandoff()">
+  <div class="handoff-sheet">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+      <div class="handoff-title">📋 <span id="handoffTitleTxt">Resumen de Turno</span></div>
+      <button class="bsec" style="padding:5px 12px;font-size:.72rem" onclick="closeHandoff()">✕</button>
+    </div>
+    <div class="handoff-sub" id="handoffSubTxt">Reporte de cierre y traspaso</div>
+    <div class="handoff-stats" id="handoffStats"></div>
+    <div style="font-size:.68rem;font-weight:700;color:var(--mu);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="handoffShiftLbl">Turno actual (ultimas 8h)</div>
+    <div id="handoffList" style="max-height:220px;overflow-y:auto;margin-bottom:14px"></div>
+    <div style="font-size:.68rem;font-weight:700;color:var(--mu);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px" id="handoffNotesLbl">Notas de traspaso</div>
+    <textarea class="fi" id="handoffNotesIn" style="resize:vertical;min-height:90px;font-size:.8rem;padding:10px;line-height:1.55;font-family:'Familjen Grotesk',sans-serif" placeholder="Pendientes, observaciones criticas..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="bpri" style="flex:1" onclick="shareHandoff()">📤 <span id="handoffShareBtnTxt">Compartir</span></button>
+      <button class="bsec" style="flex:1" onclick="closeHandoff()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOSIS PEDIÁTRICA MODAL -->
+<div class="dosp-overlay" id="dospOverlay" onclick="if(event.target===this)closeDosP()">
+  <div class="dosp-sheet">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700">👶 <span id="dospTitleTxt">Dosis Pediatrica</span></div>
+      <button class="bsec" style="padding:5px 12px;font-size:.72rem" onclick="closeDosP()">✕</button>
+    </div>
+    <div style="font-size:.7rem;color:var(--mu);margin-bottom:14px" id="dospSubLbl">Seleccione medicamento y peso</div>
+    <div style="font-size:.68rem;font-weight:700;color:var(--mu);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="dospDrugLbl">Medicamento</div>
+    <div class="dosp-drug-grid" id="dospDrugGrid"></div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:.68rem;font-weight:700;color:var(--mu);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px" id="dospWtLbl">Peso (kg)</div>
+      <input class="fi" id="dospWeightIn" type="number" min="1" max="100" step="0.1" placeholder="Ej: 20" oninput="_calcDosP()" style="height:42px;font-size:.9rem">
+    </div>
+    <div style="margin-bottom:12px" id="dospConcWrap">
+      <div style="font-size:.68rem;font-weight:700;color:var(--mu);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px" id="dospConcLbl">Concentracion</div>
+      <select class="fi" id="dospConcSel" onchange="_calcDosP()" style="height:40px;font-size:.82rem"></select>
+    </div>
+    <div id="dospResult"></div>
+    <button class="bsec" style="width:100%;margin-top:14px" onclick="closeDosP()">Cerrar</button>
+  </div>
+</div>
+
+<!-- MCI SETUP MODAL -->
+<div class="mci-setup-overlay" id="mciSetupOverlay" onclick="if(event.target===this)closeMCISetup()">
+  <div class="mci-setup-sheet">
+    <div class="mci-setup-title">⚠️ <span id="mciSetupTitleTxt">Activar Modo MCI</span></div>
+    <div class="mci-setup-sub" id="mciSetupSubTxt">Incidente de multiples victimas — triage START rapido</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:.72rem;color:var(--mu);margin-bottom:5px" id="mciNameLbl">Nombre del incidente</div>
+      <input class="fi" id="mciNameInput" type="text" placeholder="Ej: Accidente vial ruta 7" style="font-size:.85rem">
+    </div>
+    <button class="bpri" style="width:100%;background:linear-gradient(135deg,#c0392b,#e74c3c)" onclick="activateMCI()">⚠️ <span id="mciActivateBtnTxt">Activar MCI</span></button>
+    <button class="bsec" style="width:100%;margin-top:8px" onclick="closeMCISetup()">Cancelar</button>
+  </div>
+</div>
+
+<!-- GLASGOW COMA SCALE MODAL -->
+<div class="gcs-overlay" id="gcsOverlay" onclick="if(event.target===this)closeGCS()">
+  <div class="gcs-sheet">
+    <div class="gcs-head">
+      <div class="gcs-title">🧠 Escala de Glasgow</div>
+      <button class="bsec" style="padding:5px 12px;font-size:.72rem" onclick="closeGCS()">✕</button>
+    </div>
+    <div class="gcs-sub" id="gcsSubLbl">Evaluacion cuantitativa del nivel de consciencia</div>
+    <div class="gcs-score-box">
+      <div>
+        <div class="gcs-total" id="gcsTotalN">—</div>
+        <div class="gcs-evm" id="gcsEvmLbl">E: — &nbsp; V: — &nbsp; M: —</div>
+      </div>
+      <div>
+        <div class="gcs-sev" id="gcsSevChip"></div>
+      </div>
+    </div>
+    <div id="gcsBody"></div>
+    <button class="bpri" id="gcsApplyBtn" style="width:100%;margin-top:6px;display:none" onclick="applyGCS()">✓ Aplicar al triage</button>
+    <button class="bsec" style="width:100%;margin-top:8px" onclick="closeGCS()">Cerrar</button>
+  </div>
+</div>
+
 <!-- CONFIRM DIALOG (Remember Me) -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -676,10 +971,26 @@ select option{background:var(--bg3);}
         <button class="icon-btn" onclick="doSignOut()" title="Salir">⬅</button>
       </div>
     </div>
+    <!-- OFFLINE BANNER -->
+    <div class="offline-bar" id="offlineBar">
+      <div class="ob-dot"></div>
+      <span id="offlineBarTxt">Sin conexion — modo offline activo</span>
+    </div>
+    <!-- MCI BANNER -->
+    <div class="mci-banner" id="mciBanner">
+      <div class="mci-banner-left">
+        <div class="mci-banner-pulse"></div>
+        <div class="mci-banner-txt" id="mciBannerTxt">MCI ACTIVO</div>
+        <div class="mci-banner-name" id="mciBannerName"></div>
+      </div>
+      <div class="mci-banner-counts" id="mciBannerCounts"></div>
+      <button class="mci-banner-close" onclick="confirmDeactivateMCI()">✕</button>
+    </div>
     <div class="body" id="mainBody">
       <!-- DASHBOARD -->
       <div class="sc" id="sc-dash">
         <div class="stat-grid" id="statGrid"></div>
+        <button class="bsec" id="handoffBtn" style="width:100%;margin-bottom:10px;font-size:.82rem" onclick="openHandoff()">📋 <span id="handoffBtnTxt">Resumen de turno</span></button>
         <div class="card"><div class="clabel" id="lbRecentT">Ultimos triages</div><div id="recentT"></div></div>
         <div class="card" id="chartCard" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -714,7 +1025,11 @@ select option{background:var(--bg3);}
       </div>
       <!-- TRIAGE -->
       <div class="sc" id="sc-triage">
-        <div class="pgw"><div class="pgf" id="pg" style="width:0%"></div></div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:6px">
+          <button class="bsec" style="font-size:.72rem;padding:5px 12px;border-color:rgba(255,140,0,.4);color:#ffa040" onclick="openPrehNotif()">🚑 Pre-hosp.</button>
+          <button class="bsec" id="mciToggleBtn" style="font-size:.72rem;padding:5px 12px;border-color:rgba(255,60,60,.4);color:#ff8060" onclick="openMCISetup()">⚠️ MCI</button>
+        </div>
+        <div class="pgw" id="pgWrap"><div class="pgf" id="pg" style="width:0%"></div></div>
         <div id="trc"></div>
       </div>
       <!-- MEDS -->
@@ -1017,6 +1332,12 @@ const L={
     ptnTitle:"Acceso como paciente",ptnSub:"Escanear codigo QR de la clinica",staffLink:"Personal medico / Administrador",
     dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historial",cola:"Cola",config:"Ajustes",prof:"Perfil",
     colaTitle:"Cola de espera",colaPending:"Pendientes",colaAttended:"Atendidos",colaMarkDone:"Atendido",colaUndone:"Pendiente",colaEmpty:"Sin pacientes pendientes",colaShift:"pacientes en el turno",colaOverdue:"VENCIDO",colaRemaining:"restantes",colaAgo:"hace",colaMin:"min",colaRefresh:"Actualizar",
+    gcsTitle:"Escala de Glasgow",gcsSub:"Evaluacion del nivel de consciencia",gcsEye:"Apertura ocular",gcsVerbal:"Respuesta verbal",gcsMotor:"Respuesta motora",gcsSevLeve:"Leve",gcsSevMod:"Moderado",gcsSevGrave:"Grave",gcsApply:"Aplicar al triage",gcsBtn:"Calcular Glasgow",gcsApplied:"GCS aplicado",
+    vitcamTitle:"Vitales por imagen",vitcamSub:"Fotografía el monitor y la IA extrae los valores",vitcamDrop:"Toca para fotografiar o seleccionar imagen",vitcamAnalyze:"Analizar imagen",vitcamApply:"Aplicar vitales",vitcamApplied:"Vitales aplicados",vitcamError:"No se pudo leer la imagen. Intente con mejor iluminacion.",vitcamAnalyzing:"Analizando imagen...",
+    prehTitle:"Notificacion Pre-hospitalaria",prehSub:"Aviso de llegada al hospital",prehAge:"Edad aprox.",prehSex:"Sexo",prehSexM:"M",prehSexF:"F",prehMechanism:"Mecanismo / motivo",prehVitals:"Signos vitales",prehTx:"Tratamiento prehospitalario",prehTxPh:"Ej: O2 15L/min, via venosa, adrenalina 1mg...",prehETA:"ETA (minutos)",prehSend:"Enviar notificacion",prehSent:"Notificacion enviada",prehCopied:"Notificacion copiada",
+    handoffTitle:"Resumen de Turno",handoffSub:"Reporte de cierre y traspaso de guardia",handoffGenerate:"Generar resumen",handoffNotes:"Notas de traspaso",handoffNotesPh:"Pendientes, observaciones criticas, pacientes a vigilar...",handoffShare:"Compartir reporte",handoffCopy:"Reporte copiado",handoffShift:"Turno actual (ultimas 8h)",handoffPending:"Pendientes",handoffAttended:"Atendidos",handoffCritical:"Criticos",handoffTotal:"Total",
+    dospTitle:"Calculadora Dosis Pediatrica",dospWeight:"Peso del paciente (kg)",dospWeightPh:"Ej: 20",dospConc:"Concentracion disponible",dospDrug:"Seleccione medicamento",dospDose:"Dosis calculada",dospVol:"Volumen",dospMax:"Dosis maxima",dospFreq:"Frecuencia",dospWarn:"Dosis supera el maximo recomendado. Usar dosis maxima.",dospNoData:"Seleccione medicamento y peso.",
+    mciMode:"MODO MCI",mciActive:"MCI ACTIVO",mciSetup:"Activar Modo MCI",mciSetupSub:"Incidente de multiples victimas — triage START rapido",mciName:"Nombre del incidente",mciNamePh:"Ej: Accidente vial ruta 7",mciActivate:"Activar MCI",mciDeactivate:"Desactivar MCI",mciPatient:"Paciente #",mciImmediate:"INMEDIATO",mciDelayed:"DIFERIDO",mciMinor:"MENOR",mciExpectant:"EXPECTANTE",mciFullTriage:"Triage completo",mciConfirmEnd:"Desactivar MCI y volver al modo normal?",mciTotal:"Total",
     search:"Buscar",myMeds:"Mis meds",alerts:"Alertas",inter:"Inter.",
     searchDrug:"Buscar medicamento",consultAI:"Consultar con IA",
     newMed:"Nuevo medicamento",dose:"Dosis",freq:"Frecuencia",hour:"Hora",notes:"Notas",addMed:"+ Agregar",
@@ -1117,6 +1438,12 @@ const L={
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
     dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"History",cola:"Queue",config:"Settings",prof:"Profile",
     colaTitle:"Waiting queue",colaPending:"Pending",colaAttended:"Attended",colaMarkDone:"Attended",colaUndone:"Pending",colaEmpty:"No pending patients",colaShift:"patients this shift",colaOverdue:"OVERDUE",colaRemaining:"remaining",colaAgo:"ago",colaMin:"min",colaRefresh:"Refresh",
+    gcsTitle:"Glasgow Coma Scale",gcsSub:"Quantitative consciousness assessment",gcsEye:"Eye opening",gcsVerbal:"Verbal response",gcsMotor:"Motor response",gcsSevLeve:"Mild",gcsSevMod:"Moderate",gcsSevGrave:"Severe",gcsApply:"Apply to triage",gcsBtn:"Calculate Glasgow",gcsApplied:"GCS applied",
+    vitcamTitle:"Vitals from image",vitcamSub:"Photograph the monitor and AI extracts the values",vitcamDrop:"Tap to photograph or select image",vitcamAnalyze:"Analyze image",vitcamApply:"Apply vitals",vitcamApplied:"Vitals applied",vitcamError:"Could not read the image. Try better lighting.",vitcamAnalyzing:"Analyzing image...",
+    prehTitle:"Pre-hospital Notification",prehSub:"Arrival alert to hospital",prehAge:"Approx. age",prehSex:"Sex",prehSexM:"M",prehSexF:"F",prehMechanism:"Mechanism / reason",prehVitals:"Vital signs",prehTx:"Pre-hospital treatment",prehTxPh:"E.g.: O2 15L/min, IV access, epinephrine 1mg...",prehETA:"ETA (minutes)",prehSend:"Send notification",prehSent:"Notification sent",prehCopied:"Notification copied",
+    handoffTitle:"Shift Summary",handoffSub:"Shift closure and handoff report",handoffGenerate:"Generate summary",handoffNotes:"Handoff notes",handoffNotesPh:"Pending items, critical observations, patients to watch...",handoffShare:"Share report",handoffCopy:"Report copied",handoffShift:"Current shift (last 8h)",handoffPending:"Pending",handoffAttended:"Attended",handoffCritical:"Critical",handoffTotal:"Total",
+    dospTitle:"Pediatric Dose Calculator",dospWeight:"Patient weight (kg)",dospWeightPh:"E.g.: 20",dospConc:"Available concentration",dospDrug:"Select medication",dospDose:"Calculated dose",dospVol:"Volume",dospMax:"Maximum dose",dospFreq:"Frequency",dospWarn:"Dose exceeds recommended maximum. Use maximum dose.",dospNoData:"Select medication and weight.",
+    mciMode:"MCI MODE",mciActive:"MCI ACTIVE",mciSetup:"Activate MCI Mode",mciSetupSub:"Mass casualty incident — rapid START triage",mciName:"Incident name",mciNamePh:"E.g.: Highway accident route 7",mciActivate:"Activate MCI",mciDeactivate:"Deactivate MCI",mciPatient:"Patient #",mciImmediate:"IMMEDIATE",mciDelayed:"DELAYED",mciMinor:"MINOR",mciExpectant:"EXPECTANT",mciFullTriage:"Full triage",mciConfirmEnd:"Deactivate MCI and return to normal mode?",mciTotal:"Total",
     search:"Search",myMeds:"My meds",alerts:"Alerts",inter:"Interact.",
     searchDrug:"Search medication",consultAI:"Consult AI",
     newMed:"New medication",dose:"Dose",freq:"Frequency",hour:"Time",notes:"Notes",addMed:"+ Add",
@@ -1217,6 +1544,12 @@ const L={
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
     dash:"Dashboard",triage:"Triagem",meds:"Meds",hist:"Historico",cola:"Fila",config:"Ajustes",prof:"Perfil",
     colaTitle:"Fila de espera",colaPending:"Pendentes",colaAttended:"Atendidos",colaMarkDone:"Atendido",colaUndone:"Pendente",colaEmpty:"Sem pacientes pendentes",colaShift:"pacientes no turno",colaOverdue:"VENCIDO",colaRemaining:"restantes",colaAgo:"ha",colaMin:"min",colaRefresh:"Atualizar",
+    gcsTitle:"Escala de Glasgow",gcsSub:"Avaliacao do nivel de consciencia",gcsEye:"Abertura ocular",gcsVerbal:"Resposta verbal",gcsMotor:"Resposta motora",gcsSevLeve:"Leve",gcsSevMod:"Moderado",gcsSevGrave:"Grave",gcsApply:"Aplicar ao triage",gcsBtn:"Calcular Glasgow",gcsApplied:"GCS aplicado",
+    vitcamTitle:"Vitais por imagem",vitcamSub:"Fotografe o monitor e a IA extrai os valores",vitcamDrop:"Toque para fotografar ou selecionar imagem",vitcamAnalyze:"Analisar imagem",vitcamApply:"Aplicar vitais",vitcamApplied:"Vitais aplicados",vitcamError:"Nao foi possivel ler a imagem. Tente com melhor iluminacao.",vitcamAnalyzing:"Analisando imagem...",
+    prehTitle:"Notificacao Pre-hospitalar",prehSub:"Aviso de chegada ao hospital",prehAge:"Idade aprox.",prehSex:"Sexo",prehSexM:"M",prehSexF:"F",prehMechanism:"Mecanismo / motivo",prehVitals:"Sinais vitais",prehTx:"Tratamento pre-hospitalar",prehTxPh:"Ex: O2 15L/min, acesso venoso, adrenalina 1mg...",prehETA:"ETA (minutos)",prehSend:"Enviar notificacao",prehSent:"Notificacao enviada",prehCopied:"Notificacao copiada",
+    handoffTitle:"Resumo de Turno",handoffSub:"Relatorio de fechamento e passagem de plantao",handoffGenerate:"Gerar resumo",handoffNotes:"Notas de passagem",handoffNotesPh:"Pendencias, observacoes criticas, pacientes a vigiar...",handoffShare:"Compartilhar relatorio",handoffCopy:"Relatorio copiado",handoffShift:"Turno atual (ultimas 8h)",handoffPending:"Pendentes",handoffAttended:"Atendidos",handoffCritical:"Criticos",handoffTotal:"Total",
+    dospTitle:"Calculadora Dose Pediatrica",dospWeight:"Peso do paciente (kg)",dospWeightPh:"Ex: 20",dospConc:"Concentracao disponivel",dospDrug:"Selecione medicamento",dospDose:"Dose calculada",dospVol:"Volume",dospMax:"Dose maxima",dospFreq:"Frequencia",dospWarn:"Dose supera o maximo recomendado. Usar dose maxima.",dospNoData:"Selecione medicamento e peso.",
+    mciMode:"MODO MCI",mciActive:"MCI ATIVO",mciSetup:"Ativar Modo MCI",mciSetupSub:"Incidente com multiplas vitimas — triagem START rapida",mciName:"Nome do incidente",mciNamePh:"Ex: Acidente rodoviario rodovia 7",mciActivate:"Ativar MCI",mciDeactivate:"Desativar MCI",mciPatient:"Paciente #",mciImmediate:"IMEDIATO",mciDelayed:"DIFERIDO",mciMinor:"MENOR",mciExpectant:"EXPECTANTE",mciFullTriage:"Triagem completa",mciConfirmEnd:"Desativar MCI e voltar ao modo normal?",mciTotal:"Total",
     search:"Buscar",myMeds:"Meus meds",alerts:"Alertas",inter:"Interac.",
     searchDrug:"Buscar medicamento",consultAI:"Consultar IA",
     newMed:"Novo medicamento",dose:"Dose",freq:"Frequencia",hour:"Hora",notes:"Notas",addMed:"+ Adicionar",
@@ -1317,6 +1650,12 @@ const L={
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
     dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historique",cola:"File",config:"Reglages",prof:"Profil",
     colaTitle:"File d attente",colaPending:"En attente",colaAttended:"Pris en charge",colaMarkDone:"Pris en charge",colaUndone:"En attente",colaEmpty:"Aucun patient en attente",colaShift:"patients ce quart",colaOverdue:"DEPASSE",colaRemaining:"restantes",colaAgo:"il y a",colaMin:"min",colaRefresh:"Actualiser",
+    gcsTitle:"Echelle de Glasgow",gcsSub:"Evaluation quantitative de la conscience",gcsEye:"Ouverture des yeux",gcsVerbal:"Reponse verbale",gcsMotor:"Reponse motrice",gcsSevLeve:"Leger",gcsSevMod:"Modere",gcsSevGrave:"Grave",gcsApply:"Appliquer au triage",gcsBtn:"Calculer Glasgow",gcsApplied:"GCS applique",
+    vitcamTitle:"Constantes par image",vitcamSub:"Photographiez le moniteur et l IA extrait les valeurs",vitcamDrop:"Touchez pour photographier ou selectionner une image",vitcamAnalyze:"Analyser l image",vitcamApply:"Appliquer les constantes",vitcamApplied:"Constantes appliquees",vitcamError:"Impossible de lire l image. Essayez avec un meilleur eclairage.",vitcamAnalyzing:"Analyse en cours...",
+    prehTitle:"Notification Pre-hospitaliere",prehSub:"Avis d arrivee a l hopital",prehAge:"Age approx.",prehSex:"Sexe",prehSexM:"H",prehSexF:"F",prehMechanism:"Mecanisme / motif",prehVitals:"Signes vitaux",prehTx:"Traitement pre-hospitalier",prehTxPh:"Ex: O2 15L/min, voie veineuse, adrenaline 1mg...",prehETA:"DDA (minutes)",prehSend:"Envoyer la notification",prehSent:"Notification envoyee",prehCopied:"Notification copiee",
+    handoffTitle:"Resume de Garde",handoffSub:"Rapport de cloture et passation de garde",handoffGenerate:"Generer le resume",handoffNotes:"Notes de passation",handoffNotesPh:"En attente, observations critiques, patients a surveiller...",handoffShare:"Partager le rapport",handoffCopy:"Rapport copie",handoffShift:"Garde actuelle (8 dernieres heures)",handoffPending:"En attente",handoffAttended:"Pris en charge",handoffCritical:"Critiques",handoffTotal:"Total",
+    dospTitle:"Calculateur Dose Pediatrique",dospWeight:"Poids du patient (kg)",dospWeightPh:"Ex: 20",dospConc:"Concentration disponible",dospDrug:"Selectionner medicament",dospDose:"Dose calculee",dospVol:"Volume",dospMax:"Dose maximale",dospFreq:"Frequence",dospWarn:"La dose depasse le maximum recommande. Utiliser la dose maximale.",dospNoData:"Selectionnez medicament et poids.",
+    mciMode:"MODE MCI",mciActive:"MCI ACTIF",mciSetup:"Activer Mode MCI",mciSetupSub:"Incident a victimes multiples — triage START rapide",mciName:"Nom de l incident",mciNamePh:"Ex: Accident autoroute 7",mciActivate:"Activer MCI",mciDeactivate:"Desactiver MCI",mciPatient:"Patient #",mciImmediate:"IMMEDIAT",mciDelayed:"DIFFERE",mciMinor:"MINEUR",mciExpectant:"ATTENDU",mciFullTriage:"Triage complet",mciConfirmEnd:"Desactiver MCI et revenir au mode normal?",mciTotal:"Total",
     search:"Chercher",myMeds:"Mes meds",alerts:"Alertes",inter:"Interact.",
     searchDrug:"Rechercher medicament",consultAI:"Consulter IA",
     newMed:"Nouveau medicament",dose:"Dose",freq:"Frequence",hour:"Heure",notes:"Notes",addMed:"+ Ajouter",
@@ -1417,6 +1756,12 @@ const L={
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
     dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Verlauf",cola:"Warteschlange",config:"Einstellungen",prof:"Profil",
     colaTitle:"Warteschlange",colaPending:"Wartend",colaAttended:"Behandelt",colaMarkDone:"Behandelt",colaUndone:"Wartend",colaEmpty:"Keine wartenden Patienten",colaShift:"Patienten dieser Schicht",colaOverdue:"UBERSCHRITTEN",colaRemaining:"verbleibend",colaAgo:"vor",colaMin:"min",colaRefresh:"Aktualisieren",
+    gcsTitle:"Glasgow-Koma-Skala",gcsSub:"Quantitative Bewusstseinsbewertung",gcsEye:"Augenbewegung",gcsVerbal:"Verbale Reaktion",gcsMotor:"Motorische Reaktion",gcsSevLeve:"Leicht",gcsSevMod:"Maessig",gcsSevGrave:"Schwer",gcsApply:"Auf Triage anwenden",gcsBtn:"Glasgow berechnen",gcsApplied:"GCS angewendet",
+    vitcamTitle:"Vitalwerte per Kamera",vitcamSub:"Monitor fotografieren und KI extrahiert die Werte",vitcamDrop:"Zum Fotografieren oder Bild auswaehlen tippen",vitcamAnalyze:"Bild analysieren",vitcamApply:"Vitalwerte uebernehmen",vitcamApplied:"Vitalwerte uebernommen",vitcamError:"Bild konnte nicht gelesen werden. Bessere Beleuchtung versuchen.",vitcamAnalyzing:"Bild wird analysiert...",
+    prehTitle:"Praeklinische Meldung",prehSub:"Ankunftsmeldung an das Krankenhaus",prehAge:"Ungefaehres Alter",prehSex:"Geschlecht",prehSexM:"M",prehSexF:"W",prehMechanism:"Unfallmechanismus / Grund",prehVitals:"Vitalzeichen",prehTx:"Praeklinische Behandlung",prehTxPh:"z.B.: O2 15L/min, IV-Zugang, Epinephrin 1mg...",prehETA:"ETA (Minuten)",prehSend:"Meldung senden",prehSent:"Meldung gesendet",prehCopied:"Meldung kopiert",
+    handoffTitle:"Schichtbericht",handoffSub:"Schichtabschluss und Uebergabebericht",handoffGenerate:"Bericht erstellen",handoffNotes:"Uebergabenotizen",handoffNotesPh:"Offene Punkte, kritische Beobachtungen, zu ueberwachende Patienten...",handoffShare:"Bericht teilen",handoffCopy:"Bericht kopiert",handoffShift:"Aktuelle Schicht (letzte 8 Std.)",handoffPending:"Wartend",handoffAttended:"Behandelt",handoffCritical:"Kritisch",handoffTotal:"Gesamt",
+    dospTitle:"Paediatrischer Dosisrechner",dospWeight:"Gewicht des Patienten (kg)",dospWeightPh:"z.B.: 20",dospConc:"Verfuegbare Konzentration",dospDrug:"Medikament auswaehlen",dospDose:"Berechnete Dosis",dospVol:"Volumen",dospMax:"Maximaldosis",dospFreq:"Haeufigkeit",dospWarn:"Dosis ueberschreitet das empfohlene Maximum. Maximaldosis verwenden.",dospNoData:"Medikament und Gewicht auswaehlen.",
+    mciMode:"MCI-MODUS",mciActive:"MCI AKTIV",mciSetup:"MCI-Modus aktivieren",mciSetupSub:"Massenanfall von Verletzten — schnelles START-Triage",mciName:"Vorfallsname",mciNamePh:"z.B.: Verkehrsunfall Bundesstr. 7",mciActivate:"MCI aktivieren",mciDeactivate:"MCI deaktivieren",mciPatient:"Patient #",mciImmediate:"SOFORT",mciDelayed:"AUFGESCHOBEN",mciMinor:"LEICHT",mciExpectant:"ERWARTEND",mciFullTriage:"Vollstaendiges Triage",mciConfirmEnd:"MCI deaktivieren und zum normalen Modus zurueckkehren?",mciTotal:"Gesamt",
     search:"Suchen",myMeds:"Meine Meds",alerts:"Alarme",inter:"Interakt.",
     searchDrug:"Medikament suchen",consultAI:"KI befragen",
     newMed:"Neues Medikament",dose:"Dosis",freq:"Haufigkeit",hour:"Uhrzeit",notes:"Notizen",addMed:"+ Hinzufugen",
@@ -1517,6 +1862,12 @@ const L={
     ptnTitle:"患者アクセス",ptnSub:"クリニックのQRコードをスキャン",staffLink:"医療スタッフ / 管理者",
     dash:"ダッシュボード",triage:"トリアージ",meds:"薬",hist:"履歴",cola:"待機列",config:"設定",prof:"プロフィール",
     colaTitle:"待機列",colaPending:"待機中",colaAttended:"対応済",colaMarkDone:"対応済",colaUndone:"待機中",colaEmpty:"待機患者なし",colaShift:"このシフトの患者",colaOverdue:"超過",colaRemaining:"残り",colaAgo:"前",colaMin:"分",colaRefresh:"更新",
+    gcsTitle:"グラスゴー昏睡尺度",gcsSub:"意識レベルの定量評価",gcsEye:"開眼",gcsVerbal:"言語反応",gcsMotor:"運動反応",gcsSevLeve:"軽度",gcsSevMod:"中等度",gcsSevGrave:"重度",gcsApply:"トリアージに適用",gcsBtn:"Glasgow計算",gcsApplied:"GCS適用済",
+    vitcamTitle:"画像からバイタル",vitcamSub:"モニターを撮影するとAIが値を抽出します",vitcamDrop:"タップして撮影または画像選択",vitcamAnalyze:"画像を分析",vitcamApply:"バイタルを適用",vitcamApplied:"バイタル適用済",vitcamError:"画像を読み取れませんでした。照明を改善してください。",vitcamAnalyzing:"画像分析中...",
+    prehTitle:"病院前通知",prehSub:"病院への到着連絡",prehAge:"推定年齢",prehSex:"性別",prehSexM:"男",prehSexF:"女",prehMechanism:"受傷機転・主訴",prehVitals:"バイタルサイン",prehTx:"病院前処置",prehTxPh:"例: O2 15L/min、静脈路確保、アドレナリン1mg...",prehETA:"ETA（分）",prehSend:"通知送信",prehSent:"通知送信済",prehCopied:"通知コピー済",
+    handoffTitle:"シフトサマリー",handoffSub:"シフト終了・引継ぎ報告",handoffGenerate:"サマリー生成",handoffNotes:"引継ぎメモ",handoffNotesPh:"未対応案件、重要観察事項、要監視患者...",handoffShare:"レポート共有",handoffCopy:"レポートコピー済",handoffShift:"現在シフト(直近8時間)",handoffPending:"待機中",handoffAttended:"対応済",handoffCritical:"重症",handoffTotal:"合計",
+    dospTitle:"小児薬剤量計算",dospWeight:"体重 (kg)",dospWeightPh:"例: 20",dospConc:"利用可能な濃度",dospDrug:"薬剤選択",dospDose:"計算用量",dospVol:"容量",dospMax:"最大用量",dospFreq:"投与間隔",dospWarn:"用量が推奨最大値を超えています。最大用量を使用してください。",dospNoData:"薬剤と体重を選択してください。",
+    mciMode:"MCIモード",mciActive:"MCI有効",mciSetup:"MCIモードを有効化",mciSetupSub:"多数傷病者事故 — 迅速STARTトリアージ",mciName:"事故名",mciNamePh:"例: 国道7号交通事故",mciActivate:"MCI有効化",mciDeactivate:"MCI無効化",mciPatient:"患者 #",mciImmediate:"即時",mciDelayed:"遅延",mciMinor:"軽症",mciExpectant:"期待的",mciFullTriage:"完全トリアージ",mciConfirmEnd:"MCIを無効化して通常モードに戻りますか？",mciTotal:"合計",
     search:"検索",myMeds:"マイ薬",alerts:"アラート",inter:"相互作用",
     searchDrug:"薬を検索",consultAI:"AIに相談",
     newMed:"新しい薬",dose:"用量",freq:"頻度",hour:"時間",notes:"メモ",addMed:"+ 追加",
@@ -1738,8 +2089,8 @@ function authTab(m){
 }
 
 // FIREBASE
-window.addEventListener("fbready",()=>{FB=window._fb;initAuth();});
-setTimeout(()=>{if(!FB&&window._fb){FB=window._fb;initAuth();}},2000);
+window.addEventListener("fbready",()=>{FB=window._fb;initAuth();_initOfflineDetection();});
+setTimeout(()=>{if(!FB&&window._fb){FB=window._fb;initAuth();_initOfflineDetection();}},2000);
 
 function initAuth(){
   FB.onAuthStateChanged(FB.auth,async user=>{
@@ -2771,6 +3122,7 @@ const STEPS=getSteps();
 function aSteps(){return getSteps().filter(s=>!s.skip||!s.skip(TD));}
 
 function rTriage(){
+  if(_mciActive){_renderMCITriage();return;}
   const steps=aSteps();const tot=steps.length;
   document.getElementById("pg").style.width=((TS/tot)*100)+"%";
   if(TS>=tot){rAnalyzing();return;}
@@ -2784,6 +3136,21 @@ function rTriage(){
     const g=document.createElement("div");g.className="opts";
     s.opts.forEach(o=>{const b=document.createElement("button");b.className="opt"+(TD[s.id]===o.v?" sel":"");b.innerHTML=`<span class="opic">${o.ic}</span>${o.l}`;b.onclick=()=>{TD[s.id]=o.v;rTriage();};g.appendChild(b);});
     card.appendChild(g);
+    if(s.id==="consc"){
+      const tx2=L[CL]||L.es;
+      if(TD.gcs){
+        const chip=document.createElement("div");chip.className="gcs-fab-chip";
+        chip.innerHTML=`🧠 GCS ${TD.gcs.total}/15 &nbsp;(E${TD.gcs.E} V${TD.gcs.V} M${TD.gcs.M})`;
+        chip.onclick=()=>openGCS();
+        card.appendChild(chip);
+      } else {
+        const gb=document.createElement("button");gb.className="bsec";
+        gb.style.cssText="margin-top:12px;width:100%;font-size:.78rem;";
+        gb.textContent="🧠 "+(tx2.gcsBtn||"Calcular Escala de Glasgow");
+        gb.onclick=()=>openGCS();
+        card.appendChild(gb);
+      }
+    }
   }else if(s.t==="multi"){
     if(!TM.length&&TD[s.id])TM=[...TD[s.id]];
     const g=document.createElement("div");g.className="opts";
@@ -2797,10 +3164,16 @@ function rTriage(){
     if(skipped) return;
   }else if(s.t==="vitals"){
     if(!TD.vit)TD.vit={};
+    const tx4=L[CL]||L.es;
+    const vcBtn=document.createElement("button");vcBtn.className="bsec";
+    vcBtn.style.cssText="width:100%;font-size:.76rem;margin-bottom:10px;";
+    vcBtn.textContent="📷 "+(tx4.vitcamTitle||"Vitales por imagen");
+    vcBtn.onclick=()=>openVitcam();
+    card.appendChild(vcBtn);
     const vg=document.createElement("div");vg.className="vgrid";
     [{id:"ps",l:t("vSysBP")||"P. sistolica (mmHg)",ph:"120"},{id:"pd",l:t("vDiaBP")||"P. diastolica (mmHg)",ph:"80"},{id:"fc",l:t("vHR")||"Frec. cardiaca (lpm)",ph:"80"},{id:"sat",l:t("vSpO2")||"Saturacion O2 (%)",ph:"97"},{id:"tem",l:t("vTemp")||"Temperatura (C)",ph:"37"},{id:"fr",l:t("vRR")||"Frec. respiratoria (rpm)",ph:"16"}].forEach(f=>{
       const w=document.createElement("div");w.className="vf";w.innerHTML=`<label>${f.l}</label>`;
-      const i=document.createElement("input");i.type="number";i.placeholder=f.ph;i.value=TD.vit[f.id]||"";i.oninput=()=>{TD.vit[f.id]=i.value;};w.appendChild(i);vg.appendChild(w);});
+      const i=document.createElement("input");i.type="number";i.id="vf_"+f.id;i.placeholder=f.ph;i.value=TD.vit[f.id]||"";i.oninput=()=>{TD.vit[f.id]=i.value;};w.appendChild(i);vg.appendChild(w);});
     card.appendChild(vg);
   }else if(s.t==="notes_step"){
     if(!TD.notas)TD.notas=s.defaultMsg||"";
@@ -2851,6 +3224,14 @@ function rTriage(){
     };
     i.oninput=checkNum;
     requestAnimationFrame(()=>i.focus());
+    if(s.id==="enino"||s.id==="semanas"){
+      const tx3=L[CL]||L.es;
+      const dcb=document.createElement("button");dcb.className="bsec";
+      dcb.style.cssText="margin-top:12px;width:100%;font-size:.76rem;";
+      dcb.textContent="👶 "+(tx3.dospTitle||"Calculadora dosis pediatrica");
+      dcb.onclick=()=>openDosP(TD.enino?+TD.enino:null);
+      card.appendChild(dcb);
+    }
   }
   const nav=document.createElement("div");nav.className="bnav-row";
   if(TS>0){const b=document.createElement("button");b.className="bbk";b.textContent="← "+(t("back")||"Atras");b.onclick=()=>{TS--;TM=[];rTriage();};nav.appendChild(b);}
@@ -2931,7 +3312,9 @@ SOLO JSON sin backticks:
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const res=JSON.parse(txt);
     if(FB&&CU&&CR!=="paciente"){
-      try{await FB.addDoc(FB.collection(FB.db,"triages"),{...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userName:uName(),userRole:CR||"",userEmail:CU?.email||"",userId:CU?.uid||"",createdAt:FB.serverTimestamp()});}catch(e){}
+      const triageData={...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userName:uName(),userRole:CR||"",userEmail:CU?.email||"",userId:CU?.uid||""};
+      if(!navigator.onLine){_queueOfflineTriage(triageData);}
+      else{try{await FB.addDoc(FB.collection(FB.db,"triages"),{...triageData,createdAt:FB.serverTimestamp()});}catch(e){_queueOfflineTriage(triageData);}}
     }
     rResult(res);
   }catch(e){
@@ -3703,6 +4086,533 @@ async function markCola(id,done){
     if(card)card.style.opacity="";
     toast("Error: "+e.message);
   }
+}
+
+// ── RECONOCIMIENTO DE VITALES POR IMAGEN ──────────────────────────────────
+let _vitcamB64=null,_vitcamExtracted=null;
+
+function openVitcam(){
+  const tx=L[CL]||L.es;
+  _vitcamB64=null;_vitcamExtracted=null;
+  document.getElementById("vitcamTitleTxt").textContent=tx.vitcamTitle||"Vitales por imagen";
+  document.getElementById("vitcamSubTxt").textContent=tx.vitcamSub||"Fotografía el monitor y la IA extrae los valores";
+  document.getElementById("vitcamDropTxt").textContent=tx.vitcamDrop||"Toca para fotografiar o seleccionar imagen";
+  document.getElementById("vitcamAnalyzeTxt").textContent="🔍 "+(tx.vitcamAnalyze||"Analizar imagen");
+  document.getElementById("vitcamApplyTxt").textContent=tx.vitcamApply||"Aplicar vitales";
+  document.getElementById("vitcamPreview").style.display="none";
+  document.getElementById("vitcamDrop").style.display="";
+  document.getElementById("vitcamResult").style.display="none";
+  document.getElementById("vitcamAnalyzeBtn").style.display="none";
+  document.getElementById("vitcamApplyBtn").style.display="none";
+  document.getElementById("vitcamFileIn").value="";
+  document.getElementById("vitcamOverlay").classList.add("on");
+}
+function closeVitcam(){document.getElementById("vitcamOverlay").classList.remove("on");}
+
+function vitcamLoadImage(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=document.getElementById("vitcamPreview");
+    img.src=e.target.result;img.style.display="block";
+    document.getElementById("vitcamDrop").style.display="none";
+    // Resize to max 800px, JPEG 0.75 for API
+    const imgEl=new Image();
+    imgEl.onload=()=>{
+      const MAX=800;let w=imgEl.width,h=imgEl.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      const cv=document.createElement("canvas");cv.width=w;cv.height=h;
+      cv.getContext("2d").drawImage(imgEl,0,0,w,h);
+      _vitcamB64=cv.toDataURL("image/jpeg",0.75).split(",")[1];
+      document.getElementById("vitcamAnalyzeBtn").style.display="";
+    };
+    imgEl.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeVitcam(){
+  const tx=L[CL]||L.es;
+  if(!_vitcamB64){toast("Seleccione una imagen primero");return;}
+  const btn=document.getElementById("vitcamAnalyzeBtn");
+  btn.disabled=true;btn.textContent=tx.vitcamAnalyzing||"Analizando...";
+  try{
+    const prompt="Analiza esta imagen de un monitor de signos vitales medico. Extrae SOLO los siguientes valores si son visibles. Responde UNICAMENTE con un JSON valido con estas claves exactas (usa null si no se ve el valor): {\"fc\":...,\"ps\":...,\"pd\":...,\"sat\":...,\"tem\":...,\"fr\":...}. fc=frecuencia cardiaca lpm, ps=presion sistolica mmHg, pd=presion diastolica mmHg, sat=saturacion O2 %, tem=temperatura C, fr=frecuencia respiratoria rpm.";
+    const messages=[{role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:"data:image/jpeg;base64,"+_vitcamB64}}]}];
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:200,messages})});
+    const d=await r.json();
+    const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
+    const extracted=JSON.parse(txt);
+    _vitcamExtracted=extracted;
+    const labels={fc:"FC",ps:"P.Sis",pd:"P.Dia",sat:"SpO2",tem:"Temp",fr:"FR"};
+    const units={fc:"lpm",ps:"mmHg",pd:"mmHg",sat:"%",tem:"°C",fr:"rpm"};
+    document.getElementById("vitcamResGrid").innerHTML=Object.entries(extracted).map(([k,v])=>`
+      <div class="vitcam-res-item">
+        <div class="vitcam-res-val">${v!==null?v:"—"}</div>
+        <div class="vitcam-res-lbl">${labels[k]||k} ${v!==null?units[k]||"":""}</div>
+      </div>`).join("");
+    document.getElementById("vitcamResult").style.display="";
+    document.getElementById("vitcamApplyBtn").style.display="";
+  }catch(e){
+    toast(tx.vitcamError||"No se pudo leer la imagen.");
+  }
+  btn.disabled=false;
+  const tx2=L[CL]||L.es;
+  btn.textContent="🔍 "+(tx2.vitcamAnalyze||"Analizar imagen");
+}
+
+function applyVitcam(){
+  if(!_vitcamExtracted)return;
+  const tx=L[CL]||L.es;
+  if(!TD.vit)TD.vit={};
+  const map={fc:"fc",ps:"ps",pd:"pd",sat:"sat",tem:"tem",fr:"fr"};
+  Object.entries(_vitcamExtracted).forEach(([k,v])=>{
+    if(v!==null&&v!==undefined){
+      TD.vit[map[k]||k]=String(v);
+      const inp=document.getElementById("vf_"+k);
+      if(inp)inp.value=v;
+    }
+  });
+  closeVitcam();
+  toast("📷 "+(tx.vitcamApplied||"Vitales aplicados"));
+}
+
+// ── MODO OFFLINE ──────────────────────────────────────────────────────────
+const OFFLINE_QUEUE_KEY="ms_offline_triages";
+
+function _initOfflineDetection(){
+  const bar=document.getElementById("offlineBar");
+  const update=()=>{
+    const offline=!navigator.onLine;
+    bar.classList.toggle("on",offline);
+    if(!offline)_syncOfflineQueue();
+  };
+  window.addEventListener("online",update);
+  window.addEventListener("offline",update);
+  update();
+}
+
+function _queueOfflineTriage(data){
+  const queue=JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||"[]");
+  queue.push({...data,queuedAt:Date.now()});
+  localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(queue));
+  toast("📶 Sin conexion — triage guardado localmente");
+}
+
+async function _syncOfflineQueue(){
+  if(!FB||!CU)return;
+  const queue=JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||"[]");
+  if(!queue.length)return;
+  const remaining=[];
+  for(const item of queue){
+    try{
+      await FB.addDoc(FB.collection(FB.db,"triages"),{...item,syncedAt:FB.serverTimestamp()});
+    }catch(e){remaining.push(item);}
+  }
+  localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(remaining));
+  if(remaining.length<queue.length){
+    const synced=queue.length-remaining.length;
+    toast(`✓ ${synced} triage${synced>1?"s":""} sincronizado${synced>1?"s":""}  offline → Firebase`);
+  }
+}
+
+// ── NOTIFICACIÓN PRE-HOSPITALARIA ─────────────────────────────────────────
+let _prehETA=null,_prehSex=null;
+
+function openPrehNotif(){
+  const tx=L[CL]||L.es;
+  _prehETA=null;_prehSex=null;
+  document.getElementById("prehTitleTxt").textContent=tx.prehTitle||"Notificacion Pre-hospitalaria";
+  document.getElementById("prehSubTxt").textContent=tx.prehSub||"Aviso de llegada al hospital";
+  document.getElementById("prehAgeLbl").textContent=tx.prehAge||"Edad";
+  document.getElementById("prehSexLbl").textContent=tx.prehSex||"Sexo";
+  document.getElementById("prehMechLbl").textContent=tx.prehMechanism||"Mecanismo / Motivo";
+  document.getElementById("prehVitLbl").textContent=tx.prehVitals||"Signos vitales";
+  document.getElementById("prehTxLbl").textContent=tx.prehTx||"Tratamiento";
+  document.getElementById("prehTxIn").placeholder=tx.prehTxPh||"Ej: O2 15L/min...";
+  document.getElementById("prehETALbl").textContent=tx.prehETA||"ETA (minutos)";
+  document.getElementById("prehSendBtn").textContent="🚑 "+(tx.prehSend||"Enviar notificacion");
+  ["prehAge","prehFC","prehPA","prehSat","prehFR","prehMechIn","prehTxIn"].forEach(id=>{document.getElementById(id).value="";});
+  document.querySelectorAll(".preh-eta-btn").forEach(b=>b.classList.remove("sel"));
+  document.getElementById("prehSexM").classList.remove("sel");
+  document.getElementById("prehSexF").classList.remove("sel");
+  document.getElementById("prehOverlay").classList.add("on");
+}
+function closePrehNotif(){document.getElementById("prehOverlay").classList.remove("on");}
+function selPrehETA(min,btn){
+  _prehETA=min;
+  document.querySelectorAll(".preh-eta-btn").forEach(b=>b.classList.remove("sel"));
+  btn.classList.add("sel");
+}
+function selPrehSex(s){
+  _prehSex=s;
+  document.getElementById("prehSexM").classList.toggle("sel",s==="M");
+  document.getElementById("prehSexF").classList.toggle("sel",s==="F");
+}
+
+async function sendPrehNotif(){
+  const tx=L[CL]||L.es;
+  const age=document.getElementById("prehAge").value||"—";
+  const mech=document.getElementById("prehMechIn").value||"—";
+  const fc=document.getElementById("prehFC").value;
+  const pa=document.getElementById("prehPA").value;
+  const sat=document.getElementById("prehSat").value;
+  const fr=document.getElementById("prehFR").value;
+  const treatment=document.getElementById("prehTxIn").value;
+  const eta=_prehETA?`${_prehETA} min`:"—";
+  const sex=_prehSex||"—";
+  const now=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  const vitStr=[fc?`FC ${fc}lpm`:"",pa?`PA ${pa}mmHg`:"",sat?`SpO2 ${sat}%`:"",fr?`FR ${fr}rpm`:""].filter(Boolean).join(" · ")||"No registrados";
+  const txt=`🚑 NOTIFICACION PRE-HOSPITALARIA\n${now} — ETA: ${eta}\n${"─".repeat(30)}\nPaciente: ${age} años, ${sex}\nMotivo: ${mech}\nVitales: ${vitStr}${treatment?`\nTratamiento: ${treatment}`:""}\n— Enviado desde MedIA Suite`;
+  if(FB&&CU){
+    try{
+      await FB.addDoc(FB.collection(FB.db,"prehospital"),{
+        age,sex,mechanism:mech,vitals:{fc,pa,sat,fr},treatment,eta:_prehETA,
+        userId:CU.uid,userName:CUName||CU.email,
+        createdAt:FB.serverTimestamp()
+      });
+    }catch(e){}
+  }
+  if(navigator.share){
+    navigator.share({title:"Notificacion Pre-hospitalaria",text:txt}).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(txt);
+    toast(tx.prehCopied||"Notificacion copiada");
+  }
+  closePrehNotif();
+  toast("🚑 "+(tx.prehSent||"Notificacion enviada")+" — ETA "+eta);
+}
+
+// ── RESUMEN DE TURNO / HANDOFF ────────────────────────────────────────────
+async function openHandoff(){
+  const tx=L[CL]||L.es;
+  document.getElementById("handoffTitleTxt").textContent=tx.handoffTitle||"Resumen de Turno";
+  document.getElementById("handoffSubTxt").textContent=tx.handoffSub||"Reporte de cierre y traspaso";
+  document.getElementById("handoffShiftLbl").textContent=tx.handoffShift||"Turno actual (ultimas 8h)";
+  document.getElementById("handoffNotesLbl").textContent=tx.handoffNotes||"Notas de traspaso";
+  document.getElementById("handoffNotesIn").placeholder=tx.handoffNotesPh||"Pendientes, observaciones criticas...";
+  document.getElementById("handoffShareBtnTxt").textContent=tx.handoffShare||"Compartir";
+  document.getElementById("handoffStats").innerHTML=`<div style="text-align:center;padding:10px;color:var(--mu);font-size:.75rem">Cargando...</div>`;
+  document.getElementById("handoffList").innerHTML="";
+  document.getElementById("handoffOverlay").classList.add("on");
+  if(!FB||!CU)return;
+  try{
+    const since=new Date(Date.now()-8*3600*1000);
+    const q=FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(50));
+    const snap=await FB.getDocs(q);
+    const items=[];
+    snap.forEach(d=>{
+      const dd=d.data();
+      const ts=dd.createdAt?.toDate?.();
+      if(ts&&ts>=since)items.push({id:d.id,...dd,ts});
+    });
+    const counts={ROJO:0,AMARILLO:0,VERDE:0,total:0,pending:0};
+    items.forEach(it=>{
+      counts[it.clasificacion]=(counts[it.clasificacion]||0)+1;
+      counts.total++;
+      if(!it.atendido)counts.pending++;
+    });
+    const statHtml=`
+      <div class="handoff-stat ro"><div class="handoff-stat-n">${counts.ROJO||0}</div><div class="handoff-stat-l">ROJO</div></div>
+      <div class="handoff-stat am"><div class="handoff-stat-n">${counts.AMARILLO||0}</div><div class="handoff-stat-l">AMARILLO</div></div>
+      <div class="handoff-stat ve"><div class="handoff-stat-n">${counts.VERDE||0}</div><div class="handoff-stat-l">VERDE</div></div>
+      <div class="handoff-stat total"><div class="handoff-stat-n">${counts.total}</div><div class="handoff-stat-l">${tx.handoffTotal||"Total"}</div></div>`;
+    document.getElementById("handoffStats").innerHTML=statHtml;
+    const clrDot={ROJO:"#ff3c3c",AMARILLO:"#ffc832",VERDE:"#00e07a"};
+    const listHtml=items.slice(0,20).map(it=>{
+      const dt=it.ts?it.ts.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—";
+      const mM={dolor_pecho:"Dolor pecho",disnea:"Dif. respirar",trauma:"Trauma",abdominal:"Dolor abd.",neuro:"Neurologico",fiebre:"Fiebre",otro:"Otro"};
+      return `<div class="handoff-entry">
+        <div class="handoff-entry-cl" style="background:${clrDot[it.clasificacion]||"#888"}"></div>
+        <div class="handoff-entry-info">
+          <div class="handoff-entry-top">${it.clasificacion} — ${mM[it.motivo]||it.motivo||"—"}</div>
+          <div class="handoff-entry-sub">${it.tipo||"—"} · ${it.userName||"—"} ${it.atendido?"✓":""}</div>
+        </div>
+        <div class="handoff-entry-time">${dt}</div>
+      </div>`;}).join("");
+    document.getElementById("handoffList").innerHTML=listHtml||`<div style="font-size:.75rem;color:var(--mu);padding:10px;text-align:center">${tx.noData||"Sin datos."}</div>`;
+  }catch(e){document.getElementById("handoffStats").innerHTML="";document.getElementById("handoffList").innerHTML=`<div style="font-size:.75rem;color:var(--rd);padding:8px">Error: ${e.message}</div>`;}
+}
+function closeHandoff(){document.getElementById("handoffOverlay").classList.remove("on");}
+
+function shareHandoff(){
+  const tx=L[CL]||L.es;
+  const notes=document.getElementById("handoffNotesIn").value.trim();
+  const stats=document.getElementById("handoffStats");
+  const ro=stats.querySelector(".ro .handoff-stat-n")?.textContent||"0";
+  const am=stats.querySelector(".am .handoff-stat-n")?.textContent||"0";
+  const ve=stats.querySelector(".ve .handoff-stat-n")?.textContent||"0";
+  const tot=stats.querySelector(".total .handoff-stat-n")?.textContent||"0";
+  const now=new Date().toLocaleString();
+  const txt=`📋 ${tx.handoffTitle||"RESUMEN DE TURNO"}\n${now}\n${"─".repeat(32)}\n🔴 ROJO: ${ro}  🟡 AMARILLO: ${am}  🟢 VERDE: ${ve}  📊 TOTAL: ${tot}\n${"─".repeat(32)}\n${notes?`📝 Notas:\n${notes}\n`:""}\n— MedIA Suite`;
+  if(navigator.share){navigator.share({title:tx.handoffTitle||"Resumen de Turno",text:txt}).catch(()=>{});}
+  else{navigator.clipboard?.writeText(txt);toast(tx.handoffCopy||"Reporte copiado");}
+}
+
+// ── DOSIS PEDIÁTRICA ──────────────────────────────────────────────────────
+const PED_DRUGS=[
+  {n:"Paracetamol",sub:"10-15 mg/kg c/6h",dmin:10,dmax:15,maxDose:1000,freq:"c/6h",concs:[{l:"250mg/5ml",mml:50},{l:"500mg/5ml",mml:100},{l:"1g/5ml (jarabe fuerte)",mml:200}]},
+  {n:"Ibuprofeno",sub:"5-10 mg/kg c/8h",dmin:5,dmax:10,maxDose:400,freq:"c/8h",concs:[{l:"200mg/5ml",mml:40},{l:"400mg/5ml",mml:80}]},
+  {n:"Amoxicilina",sub:"25-50 mg/kg/dia c/8h",dmin:25,dmax:50,maxDose:500,freq:"c/8h (dosis total diaria ÷3)",concs:[{l:"250mg/5ml",mml:50},{l:"500mg/5ml",mml:100}],perDay:true},
+  {n:"Azitromicina",sub:"10 mg/kg/dia c/24h",dmin:10,dmax:10,maxDose:500,freq:"c/24h",concs:[{l:"200mg/5ml",mml:40}],perDay:true},
+  {n:"Diazepam",sub:"0.2-0.5 mg/kg dosis unica",dmin:0.2,dmax:0.5,maxDose:10,freq:"Dosis unica",concs:[{l:"5mg/ml IV/IO",mml:5},{l:"2mg/ml rectal",mml:2}]},
+  {n:"Midazolam",sub:"0.1-0.2 mg/kg dosis unica",dmin:0.1,dmax:0.2,maxDose:5,freq:"Dosis unica",concs:[{l:"5mg/ml",mml:5},{l:"1mg/ml",mml:1}]},
+  {n:"Epinefrina",sub:"0.01 mg/kg dosis unica",dmin:0.01,dmax:0.01,maxDose:0.5,freq:"Dosis unica",concs:[{l:"1mg/ml (1:1000)",mml:1},{l:"0.1mg/ml (1:10000)",mml:0.1}]},
+  {n:"Dexametasona",sub:"0.15-0.6 mg/kg c/6-8h",dmin:0.15,dmax:0.6,maxDose:8,freq:"c/6-8h",concs:[{l:"4mg/ml",mml:4},{l:"8mg/ml",mml:8}]},
+  {n:"Salbutamol",sub:"0.1-0.15 mg/kg NEB c/4h",dmin:0.1,dmax:0.15,maxDose:2.5,freq:"c/4-6h NEB",concs:[{l:"5mg/ml (Nebulizar)",mml:5}]},
+  {n:"Ondansetron",sub:"0.1-0.15 mg/kg c/8h",dmin:0.1,dmax:0.15,maxDose:4,freq:"c/8h",concs:[{l:"2mg/ml",mml:2},{l:"4mg/5ml",mml:0.8}]},
+];
+let _dospDrug=null;
+
+function openDosP(ageHint){
+  const tx=L[CL]||L.es;
+  document.getElementById("dospTitleTxt").textContent=tx.dospTitle||"Dosis Pediatrica";
+  document.getElementById("dospSubLbl").textContent=tx.dospDrug||"Seleccione medicamento y peso";
+  document.getElementById("dospDrugLbl").textContent=tx.dospDrug||"Medicamento";
+  document.getElementById("dospWtLbl").textContent=tx.dospWeight||"Peso (kg)";
+  document.getElementById("dospConcLbl").textContent=tx.dospConc||"Concentracion";
+  _dospDrug=null;
+  const grid=document.getElementById("dospDrugGrid");
+  grid.innerHTML=PED_DRUGS.map((d,i)=>`
+    <button class="dosp-drug" onclick="_selDospDrug(${i})">
+      <div class="dosp-drug-name">${d.n}</div>
+      <div class="dosp-drug-sub">${d.sub}</div>
+    </button>`).join("");
+  document.getElementById("dospWeightIn").value="";
+  document.getElementById("dospResult").innerHTML=`<div style="font-size:.75rem;color:var(--mu);text-align:center;padding:12px">${tx.dospNoData||"Seleccione medicamento y peso."}</div>`;
+  document.getElementById("dospOverlay").classList.add("on");
+}
+function closeDosP(){document.getElementById("dospOverlay").classList.remove("on");}
+
+function _selDospDrug(idx){
+  _dospDrug=PED_DRUGS[idx];
+  document.querySelectorAll(".dosp-drug").forEach((b,i)=>b.classList.toggle("sel",i===idx));
+  const sel=document.getElementById("dospConcSel");
+  sel.innerHTML=_dospDrug.concs.map(c=>`<option value="${c.mml}">${c.l}</option>`).join("");
+  document.getElementById("dospConcWrap").style.display="";
+  _calcDosP();
+}
+
+function _calcDosP(){
+  if(!_dospDrug)return;
+  const tx=L[CL]||L.es;
+  const wt=parseFloat(document.getElementById("dospWeightIn").value);
+  const mml=parseFloat(document.getElementById("dospConcSel").value);
+  const res=document.getElementById("dospResult");
+  if(!wt||wt<=0||wt>150){
+    res.innerHTML=`<div style="font-size:.75rem;color:var(--mu);text-align:center;padding:12px">${tx.dospNoData||"Ingrese peso valido."}</div>`;
+    return;
+  }
+  const d=_dospDrug;
+  let doseMin=d.dmin*wt,doseMax=d.dmax*wt;
+  const capped=doseMax>d.maxDose;
+  if(doseMin>d.maxDose)doseMin=d.maxDose;
+  if(doseMax>d.maxDose)doseMax=d.maxDose;
+  const volMin=mml?(doseMin/mml):null;
+  const volMax=mml?(doseMax/mml):null;
+  const fmt=n=>Number.isInteger(n)?n.toString():n.toFixed(2);
+  const doseStr=doseMin===doseMax?`${fmt(doseMin)} mg`:`${fmt(doseMin)}–${fmt(doseMax)} mg`;
+  const volStr=volMin&&volMax?(volMin===volMax?`${fmt(volMin)} ml`:`${fmt(volMin)}–${fmt(volMax)} ml`):"—";
+  res.innerHTML=`
+    <div class="dosp-result">
+      <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospDose||"Dosis"}</span><span class="dosp-res-val">${doseStr}</span></div>
+      <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospVol||"Volumen"}</span><span class="dosp-res-val">${volStr}</span></div>
+      <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospMax||"Max"}</span><span class="dosp-res-val">${d.maxDose} mg</span></div>
+      <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospFreq||"Frecuencia"}</span><span class="dosp-res-val" style="font-size:.75rem">${d.freq}</span></div>
+    </div>
+    ${capped?`<div class="dosp-warn">⚠️ ${tx.dospWarn||"Dosis supera el maximo. Usar dosis maxima."}</div>`:""}`;
+}
+
+// ── MCI — INCIDENTE DE MÚLTIPLES VÍCTIMAS ─────────────────────────────────
+let _mciActive=false,_mciName="",_mciCounts={ROJO:0,AMARILLO:0,VERDE:0,NEGRO:0},_mciPatientN=1;
+
+function openMCISetup(){
+  if(_mciActive){confirmDeactivateMCI();return;}
+  document.getElementById("mciNameInput").value="";
+  const tx=L[CL]||L.es;
+  document.getElementById("mciSetupTitleTxt").textContent=tx.mciSetup||"Activar Modo MCI";
+  document.getElementById("mciSetupSubTxt").textContent=tx.mciSetupSub||"Incidente de multiples victimas — triage START rapido";
+  document.getElementById("mciNameLbl").textContent=tx.mciName||"Nombre del incidente";
+  document.getElementById("mciNameInput").placeholder=tx.mciNamePh||"Ej: Accidente vial";
+  document.getElementById("mciActivateBtnTxt").textContent=tx.mciActivate||"Activar MCI";
+  document.getElementById("mciSetupOverlay").classList.add("on");
+  setTimeout(()=>document.getElementById("mciNameInput").focus(),350);
+}
+function closeMCISetup(){document.getElementById("mciSetupOverlay").classList.remove("on");}
+
+function activateMCI(){
+  const name=document.getElementById("mciNameInput").value.trim()||"Incidente MCI";
+  _mciName=name;_mciCounts={ROJO:0,AMARILLO:0,VERDE:0,NEGRO:0};_mciPatientN=1;_mciActive=true;
+  closeMCISetup();
+  _updateMCIBanner();
+  navigateTo("triage");
+  toast("⚠️ MCI activado: "+name);
+}
+function confirmDeactivateMCI(){
+  const tx=L[CL]||L.es;
+  if(confirm(tx.mciConfirmEnd||"Desactivar MCI y volver al modo normal?")){deactivateMCI();}
+}
+function deactivateMCI(){
+  _mciActive=false;_mciName="";_mciCounts={ROJO:0,AMARILLO:0,VERDE:0,NEGRO:0};_mciPatientN=1;
+  document.getElementById("mciBanner").classList.remove("on");
+  document.getElementById("mciToggleBtn").style.cssText="font-size:.72rem;padding:5px 12px;border-color:rgba(255,60,60,.4);color:#ff8060";
+  document.getElementById("mciToggleBtn").textContent="⚠️ MCI";
+  navigateTo("triage");
+  toast("MCI desactivado");
+}
+function _updateMCIBanner(){
+  if(!_mciActive)return;
+  const tx=L[CL]||L.es;
+  document.getElementById("mciBanner").classList.add("on");
+  document.getElementById("mciBannerTxt").textContent=tx.mciActive||"MCI ACTIVO";
+  document.getElementById("mciBannerName").textContent=_mciName;
+  const tot=_mciCounts.ROJO+_mciCounts.AMARILLO+_mciCounts.VERDE+_mciCounts.NEGRO;
+  document.getElementById("mciBannerCounts").innerHTML=
+    `<span class="mci-bc ro">🔴 ${_mciCounts.ROJO}</span>`+
+    `<span class="mci-bc am">🟡 ${_mciCounts.AMARILLO}</span>`+
+    `<span class="mci-bc ve">🟢 ${_mciCounts.VERDE}</span>`+
+    `<span class="mci-bc ng">⚫ ${_mciCounts.NEGRO}</span>`;
+  document.getElementById("mciToggleBtn").textContent="⚠️ MCI "+tot;
+  document.getElementById("mciToggleBtn").style.cssText="font-size:.72rem;padding:5px 12px;border-color:rgba(255,60,60,.6);color:#ff6060;background:rgba(255,40,40,.12)";
+}
+
+function _renderMCITriage(){
+  const tx=L[CL]||L.es;
+  const c=document.getElementById("trc");c.innerHTML="";
+  document.getElementById("pgWrap").style.display="none";
+  const tot=_mciCounts.ROJO+_mciCounts.AMARILLO+_mciCounts.VERDE+_mciCounts.NEGRO;
+  c.innerHTML=`
+    <div style="font-size:.72rem;color:#ff8060;font-family:'JetBrains Mono',monospace;font-weight:700;margin-bottom:10px;letter-spacing:.5px">⚠️ MODO MCI — ${_mciName}</div>
+    <div class="mci-stats-grid">
+      <div class="mci-stat ro"><div class="mci-stat-n">${_mciCounts.ROJO}</div><div class="mci-stat-l">ROJO</div></div>
+      <div class="mci-stat am"><div class="mci-stat-n">${_mciCounts.AMARILLO}</div><div class="mci-stat-l">AMARILLO</div></div>
+      <div class="mci-stat ve"><div class="mci-stat-n">${_mciCounts.VERDE}</div><div class="mci-stat-l">VERDE</div></div>
+      <div class="mci-stat ng"><div class="mci-stat-n">${_mciCounts.NEGRO}</div><div class="mci-stat-l">NEGRO</div></div>
+    </div>
+    <div class="mci-quick-card">
+      <div class="mci-patient-n">${tx.mciPatient||"Paciente #"}${_mciPatientN} &nbsp;·&nbsp; ${tot} clasificados</div>
+      <div class="mci-btns">
+        <button class="mci-btn ro" onclick="quickMCI('ROJO')"><div class="mci-btn-ic">🔴</div>${tx.mciImmediate||"INMEDIATO"}</button>
+        <button class="mci-btn am" onclick="quickMCI('AMARILLO')"><div class="mci-btn-ic">🟡</div>${tx.mciDelayed||"DIFERIDO"}</button>
+        <button class="mci-btn ve" onclick="quickMCI('VERDE')"><div class="mci-btn-ic">🟢</div>${tx.mciMinor||"MENOR"}</button>
+        <button class="mci-btn ng" onclick="quickMCI('NEGRO')"><div class="mci-btn-ic">⚫</div>${tx.mciExpectant||"EXPECTANTE"}</button>
+      </div>
+      <button class="bsec" style="width:100%;font-size:.75rem" onclick="_mciActive=false;document.getElementById('pgWrap').style.display='';resetT();rTriage()">📋 ${tx.mciFullTriage||"Triage completo"}</button>
+    </div>`;
+}
+
+async function quickMCI(clasificacion){
+  _mciCounts[clasificacion]++;_mciPatientN++;
+  _updateMCIBanner();
+  if(FB&&CU){
+    try{
+      await FB.addDoc(FB.collection(FB.db,"triages"),{
+        clasificacion,tipo:"MCI",motivo:_mciName,notas:"Triage START rapido MCI",
+        userId:CU.uid,userName:CUName||CU.email,
+        createdAt:FB.serverTimestamp(),esMCI:true
+      });
+    }catch(e){}
+  }
+  _renderMCITriage();
+  toast(`✓ ${clasificacion} — Paciente #${_mciPatientN-1}`);
+}
+
+// ── GLASGOW COMA SCALE ─────────────────────────────────────────────────────
+const GCS_DATA={
+  eye:[
+    {n:4,es:"Espontanea",en:"Spontaneous",pt:"Espontanea",fr:"Spontanee",de:"Spontan",ja:"自発的"},
+    {n:3,es:"Al llamado verbal",en:"To voice",pt:"A voz",fr:"A la voix",de:"Auf Ansprechen",ja:"呼声"},
+    {n:2,es:"Al estimulo doloroso",en:"To pain",pt:"A dor",fr:"A la douleur",de:"Auf Schmerz",ja:"疼痛"},
+    {n:1,es:"Sin respuesta",en:"No response",pt:"Sem resposta",fr:"Aucune reponse",de:"Keine",ja:"なし"}
+  ],
+  verbal:[
+    {n:5,es:"Orientado",en:"Oriented",pt:"Orientado",fr:"Oriente",de:"Orientiert",ja:"見当識あり"},
+    {n:4,es:"Confuso / desorientado",en:"Confused",pt:"Confuso",fr:"Confus",de:"Verwirrt",ja:"混乱"},
+    {n:3,es:"Palabras inapropiadas",en:"Inappropriate words",pt:"Palavras inapropriadas",fr:"Mots inappropries",de:"Unangemessen",ja:"不適切語"},
+    {n:2,es:"Sonidos incomprensibles",en:"Incomprehensible sounds",pt:"Sons incompreensiveis",fr:"Sons incomprehensibles",de:"Unverstandlich",ja:"不明音"},
+    {n:1,es:"Sin respuesta / intubado",en:"No response / intubated",pt:"Sem resposta / intubado",fr:"Aucune reponse / intube",de:"Keine / intubiert",ja:"なし/挿管"}
+  ],
+  motor:[
+    {n:6,es:"Obedece ordenes",en:"Obeys commands",pt:"Obedece ordens",fr:"Obeissance",de:"Befolgt Befehle",ja:"命令に従う"},
+    {n:5,es:"Localiza el dolor",en:"Localizes pain",pt:"Localiza a dor",fr:"Localise la douleur",de:"Lokalisiert Schmerz",ja:"疼痛局在"},
+    {n:4,es:"Retira al dolor",en:"Withdraws from pain",pt:"Retira a dor",fr:"Retrait a la douleur",de:"Beugebewegung",ja:"疼痛回避"},
+    {n:3,es:"Flexion anormal (decorticacion)",en:"Abnormal flexion",pt:"Flexao anormal",fr:"Flexion anormale",de:"Abnorme Beugung",ja:"異常屈曲"},
+    {n:2,es:"Extension anormal (descerebracion)",en:"Extension (decerebrate)",pt:"Extensao anormal",fr:"Extension anormale",de:"Strecksynergie",ja:"伸展反応"},
+    {n:1,es:"Sin respuesta",en:"No response",pt:"Sem resposta",fr:"Aucune reponse",de:"Keine",ja:"なし"}
+  ]
+};
+let _gcs={E:null,V:null,M:null};
+
+function openGCS(){
+  _gcs={E:TD.gcs?TD.gcs.E:null,V:TD.gcs?TD.gcs.V:null,M:TD.gcs?TD.gcs.M:null};
+  _renderGCSBody();
+  _updateGCSScore();
+  document.getElementById("gcsOverlay").classList.add("on");
+}
+function closeGCS(){document.getElementById("gcsOverlay").classList.remove("on");}
+
+function selectGCS(comp,val){
+  _gcs[comp]=val;
+  document.querySelectorAll(`.gcs-opt[data-comp="${comp}"]`).forEach(b=>b.classList.toggle("sel",+b.dataset.val===val));
+  _updateGCSScore();
+}
+
+function _updateGCSScore(){
+  const {E,V,M}=_gcs;
+  const scoreEl=document.getElementById("gcsTotalN");
+  const sevEl=document.getElementById("gcsSevChip");
+  const evmEl=document.getElementById("gcsEvmLbl");
+  const applyBtn=document.getElementById("gcsApplyBtn");
+  const tx=L[CL]||L.es;
+  if(E&&V&&M){
+    const tot=E+V+M;
+    scoreEl.textContent=tot;
+    let cls,lbl;
+    if(tot>=13){cls="leve";lbl=tx.gcsSevLeve||"Leve";}
+    else if(tot>=9){cls="mod";lbl=tx.gcsSevMod||"Moderado";}
+    else{cls="grave";lbl=tx.gcsSevGrave||"Grave";}
+    sevEl.className="gcs-sev "+cls;sevEl.textContent=lbl;sevEl.style.display="";
+    evmEl.innerHTML=`E: ${E} &nbsp;|&nbsp; V: ${V} &nbsp;|&nbsp; M: ${M}`;
+    if(applyBtn)applyBtn.style.display="";
+  } else {
+    scoreEl.textContent="—";
+    sevEl.style.display="none";
+    evmEl.innerHTML=`E: ${E||"—"} &nbsp;|&nbsp; V: ${V||"—"} &nbsp;|&nbsp; M: ${M||"—"}`;
+    if(applyBtn)applyBtn.style.display="none";
+  }
+}
+
+function _renderGCSBody(){
+  const tx=L[CL]||L.es;const lang=CL||"es";
+  const secs=[
+    {key:"E",comp:"eye",title:tx.gcsEye||"Apertura ocular",ic:"👁️"},
+    {key:"V",comp:"verbal",title:tx.gcsVerbal||"Respuesta verbal",ic:"🗣️"},
+    {key:"M",comp:"motor",title:tx.gcsMotor||"Respuesta motora",ic:"✊"}
+  ];
+  document.getElementById("gcsBody").innerHTML=secs.map(s=>`
+    <div class="gcs-section">
+      <div class="gcs-sec-lbl">${s.ic} ${s.title}</div>
+      <div class="gcs-grid">
+        ${GCS_DATA[s.comp].map(o=>`
+          <button class="gcs-opt${_gcs[s.key]===o.n?" sel":""}" data-comp="${s.key}" data-val="${o.n}" onclick="selectGCS('${s.key}',${o.n})">
+            <div class="gcs-opt-n">${o.n}</div>
+            <div class="gcs-opt-l">${o[lang]||o.es}</div>
+          </button>`).join("")}
+      </div>
+    </div>`).join("");
+}
+
+function applyGCS(){
+  const {E,V,M}=_gcs;
+  if(!E||!V||!M)return;
+  const total=E+V+M;
+  TD.gcs={E,V,M,total};
+  const gcsText=`GCS: ${total}/15 (E${E}V${V}M${M})`;
+  if(TD.notas){if(!TD.notas.includes("GCS"))TD.notas=gcsText+". "+TD.notas;}
+  else{TD.notas=gcsText+".";}
+  closeGCS();
+  rTriage();
+  toast("🧠 GCS "+total+"/15 aplicado");
 }
 </script>
 </body>
