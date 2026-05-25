@@ -133,10 +133,10 @@ html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(-
 /* BOTTOM NAV — Liquid Glass (iOS style) */
 .bottom-nav{display:flex;background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-top:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -10px 36px rgba(0,0,0,.28);flex-shrink:0;position:relative;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
 .light .bottom-nav{background:rgba(240,244,248,.78);border-top:1px solid rgba(0,0,0,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 -4px 20px rgba(0,0,0,.07);}
-.nb{flex:1;min-width:44px;display:flex;flex-direction:column;align-items:center;padding:9px 4px 11px;gap:2px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;position:relative;z-index:1;}
-.nb .ni{font-size:1.25rem;transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.nb{flex:1;min-width:52px;display:flex;flex-direction:column;align-items:center;padding:12px 8px 13px;gap:3px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;position:relative;z-index:1;}
+.nb .ni{font-size:1.45rem;transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
 .nb.on .ni{transform:scale(1.22);}
-.nb .nl{font-size:.54rem;font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--mu);letter-spacing:0;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 2px;transition:color .2s;}
+.nb .nl{font-size:.58rem;font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--mu);letter-spacing:0;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 3px;transition:color .2s;}
 .nb.on .nl{color:var(--cy);}
 .nb:active{opacity:.6;}
 /* Glass pill — active tab indicator */
@@ -735,6 +735,7 @@ const L={
     chestPainL:"Dolor en el pecho",breathingL:"Dificultad para respirar",traumaL:"Trauma / golpe / herida",abdominalL:"Dolor abdominal / vomito",neuroL:"Convulsion / perdida de consciencia",feverL:"Fiebre alta",otherL:"Otro / sintomas generales",
     consc1:"Alerta — responde normalmente",consc2:"Responde solo a voz",consc3:"Responde solo al dolor",consc4:"No responde (inconsciente)",
     sym1:"Sangrado activo",sym2:"Palidez / sudoracion fria",sym3:"Mareo / perdida de equilibrio",sym4:"Cianosis (labios o unas azulados)",sym5:"Temperatura >39C",sym6:"Debilidad muscular intensa",sym7:"Ninguno de los anteriores",
+    vSysBP:"P. sistolica (mmHg)",vDiaBP:"P. diastolica (mmHg)",vHR:"Frec. cardiaca (lpm)",vSpO2:"Saturacion O2 (%)",vTemp:"Temperatura (C)",vRR:"Frec. respiratoria (rpm)",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -812,6 +813,7 @@ const L={
     chestPainL:"Chest pain",breathingL:"Difficulty breathing",traumaL:"Trauma / injury",abdominalL:"Abdominal pain / vomiting",neuroL:"Seizure / loss of consciousness",feverL:"High fever",otherL:"Other / general symptoms",
     consc1:"Alert — responds normally",consc2:"Responds only to voice",consc3:"Responds only to pain",consc4:"Unresponsive (unconscious)",
     sym1:"Active bleeding",sym2:"Pallor / cold sweating",sym3:"Dizziness / loss of balance",sym4:"Cyanosis (blue lips or nails)",sym5:"Temperature >39C",sym6:"Severe muscle weakness",sym7:"None of the above",
+    vSysBP:"Systolic BP (mmHg)",vDiaBP:"Diastolic BP (mmHg)",vHR:"Heart rate (bpm)",vSpO2:"O2 saturation (%)",vTemp:"Temperature (C)",vRR:"Resp. rate (rpm)",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -889,6 +891,7 @@ const L={
     chestPainL:"Dor no peito",breathingL:"Dificuldade para respirar",traumaL:"Trauma / golpe / ferida",abdominalL:"Dor abdominal / vomito",neuroL:"Convulsao / perda de consciencia",feverL:"Febre alta",otherL:"Outro / sintomas gerais",
     consc1:"Alerta — responde normalmente",consc2:"Responde apenas a voz",consc3:"Responde apenas a dor",consc4:"Nao responde (inconsciente)",
     sym1:"Sangramento ativo",sym2:"Palidez / sudoracao fria",sym3:"Tontura / perda de equilibrio",sym4:"Cianose (labios ou unhas azulados)",sym5:"Temperatura >39C",sym6:"Fraqueza muscular intensa",sym7:"Nenhum dos anteriores",
+    vSysBP:"PA sistolica (mmHg)",vDiaBP:"PA diastolica (mmHg)",vHR:"Frec. cardiaca (bpm)",vSpO2:"Saturacao O2 (%)",vTemp:"Temperatura (C)",vRR:"Frec. respiratoria (rpm)",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -966,6 +969,7 @@ const L={
     chestPainL:"Douleur thoracique",breathingL:"Difficulte respiratoire",traumaL:"Traumatisme / blessure",abdominalL:"Douleur abdominale / vomissement",neuroL:"Convulsion / perte de conscience",feverL:"Forte fievre",otherL:"Autre / symptomes generaux",
     consc1:"Alerte — repond normalement",consc2:"Repond uniquement a la voix",consc3:"Repond uniquement a la douleur",consc4:"Ne repond pas (inconscient)",
     sym1:"Saignement actif",sym2:"Paleur / sudation froide",sym3:"Vertige / perte d equilibre",sym4:"Cyanose (levres ou ongles bleus)",sym5:"Temperature >39C",sym6:"Faiblesse musculaire intense",sym7:"Aucun des precedents",
+    vSysBP:"PA systolique (mmHg)",vDiaBP:"PA diastolique (mmHg)",vHR:"Freq. cardiaque (bpm)",vSpO2:"Saturation O2 (%)",vTemp:"Temperature (C)",vRR:"Freq. respiratoire (rpm)",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -1043,6 +1047,7 @@ const L={
     chestPainL:"Brustschmerzen",breathingL:"Atembeschwerden",traumaL:"Trauma / Verletzung",abdominalL:"Bauchschmerzen / Erbrechen",neuroL:"Krampf / Bewusstlosigkeit",feverL:"Hohes Fieber",otherL:"Sonstiges / allgemeine Symptome",
     consc1:"Wach — reagiert normal",consc2:"Reagiert nur auf Sprache",consc3:"Reagiert nur auf Schmerz",consc4:"Reagiert nicht (bewusstlos)",
     sym1:"Aktive Blutung",sym2:"Blasse / kalter Schweiss",sym3:"Schwindel / Gleichgewichtsverlust",sym4:"Zyanose (blaue Lippen oder Nagel)",sym5:"Temperatur >39C",sym6:"Starke Muskelschwache",sym7:"Keines der oben genannten",
+    vSysBP:"Syst. Blutdruck (mmHg)",vDiaBP:"Diast. Blutdruck (mmHg)",vHR:"Herzfrequenz (bpm)",vSpO2:"O2-Sattigung (%)",vTemp:"Temperatur (C)",vRR:"Atemfrequenz (rpm)",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE"};
@@ -1248,13 +1253,18 @@ const NAV={
 };
 
 function buildNav(){
-  const items=NAV[CR]||NAV.medico;const tx=L[CL]||L.es;const pct=Math.floor(100/items.length);
+  const items=NAV[CR]||NAV.medico;const tx=L[CL]||L.es;
   const bnav=document.getElementById("bnav");
-  bnav.innerHTML=`<div class="nind" id="nind" style="width:${pct}%;left:0"></div>`;
-  items.forEach((it,i)=>{
-    const b=document.createElement("button");b.className="nb";b.id="nb-"+it.id;
+  // Save active tab before rebuild
+  const prevActive=bnav.querySelector(".nb.on");
+  const activeId=prevActive?prevActive.id.replace("nb-",""):null;
+  bnav.innerHTML=`<div class="nind" id="nind"></div>`;
+  items.forEach((it)=>{
+    const b=document.createElement("button");
+    b.className="nb"+(it.id===activeId?" on":"");
+    b.id="nb-"+it.id;
     b.innerHTML=`<span class="ni">${it.ic}</span><span class="nl">${tx[it.k]||it.k}</span>`;
-    b.onclick=()=>navigateTo(it.id,i);bnav.appendChild(b);
+    b.onclick=()=>navigateTo(it.id);bnav.appendChild(b);
   });
   const snav=document.getElementById("sidebarNav");snav.innerHTML="";
   items.forEach(it=>{
@@ -1262,18 +1272,24 @@ function buildNav(){
     b.innerHTML=`<span class="sni">${it.ic}</span>${tx[it.k]||it.k}`;
     b.onclick=()=>navigateTo(it.id);snav.appendChild(b);
   });
+  // Position pill precisely after layout paint
+  requestAnimationFrame(()=>{
+    const targetId=activeId||items[0].id;
+    const nb=document.getElementById("nb-"+targetId);
+    const ind=document.getElementById("nind");
+    if(ind&&nb){ind.style.width=nb.offsetWidth+"px";ind.style.left=nb.offsetLeft+"px";}
+  });
 }
 
 function navigateTo(id,idx){
-  const items=NAV[CR]||NAV.medico;
-  const i=idx!==undefined?idx:items.findIndex(x=>x.id===id);
-  const pct=Math.floor(100/items.length);
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
   document.querySelectorAll(".nb,.snav-btn").forEach(b=>b.classList.remove("on"));
   const sc=document.getElementById("sc-"+id);if(sc)sc.classList.add("on");
   const nb=document.getElementById("nb-"+id);if(nb)nb.classList.add("on");
   const snb=document.getElementById("snb-"+id);if(snb)snb.classList.add("on");
-  const ind=document.getElementById("nind");if(ind){ind.style.width=pct+'%';ind.style.left=(i>=0?i*pct:0)+'%';}
+  // Pixel-precise pill positioning — no floating-point percentage drift
+  const ind=document.getElementById("nind");
+  if(ind&&nb){ind.style.width=nb.offsetWidth+"px";ind.style.left=nb.offsetLeft+"px";}
   if(id==="dash")loadDash();
   if(id==="triage")rTriage();
   if(id==="hist")loadHist();
@@ -1518,7 +1534,7 @@ function rTriage(){
   }else if(s.t==="vitals"){
     if(!TD.vit)TD.vit={};
     const vg=document.createElement("div");vg.className="vgrid";
-    [{id:"ps",l:"Presion sistolica (mmHg)",ph:"120"},{id:"pd",l:"Presion diastolica (mmHg)",ph:"80"},{id:"fc",l:"Frec. cardiaca (lpm)",ph:"80"},{id:"sat",l:"Saturacion O2 (%)",ph:"97"},{id:"tem",l:"Temperatura (C)",ph:"37"},{id:"fr",l:"Frec. respiratoria (rpm)",ph:"16"}].forEach(f=>{
+    [{id:"ps",l:t("vSysBP")||"P. sistolica (mmHg)",ph:"120"},{id:"pd",l:t("vDiaBP")||"P. diastolica (mmHg)",ph:"80"},{id:"fc",l:t("vHR")||"Frec. cardiaca (lpm)",ph:"80"},{id:"sat",l:t("vSpO2")||"Saturacion O2 (%)",ph:"97"},{id:"tem",l:t("vTemp")||"Temperatura (C)",ph:"37"},{id:"fr",l:t("vRR")||"Frec. respiratoria (rpm)",ph:"16"}].forEach(f=>{
       const w=document.createElement("div");w.className="vf";w.innerHTML=`<label>${f.l}</label>`;
       const i=document.createElement("input");i.type="number";i.placeholder=f.ph;i.value=TD.vit[f.id]||"";i.oninput=()=>{TD.vit[f.id]=i.value;};w.appendChild(i);vg.appendChild(w);});
     card.appendChild(vg);
@@ -1797,6 +1813,10 @@ function renderScaleEnhanced(card, stepId){
     cIdx = Math.max(0, Math.min(idx, faces.length-1));
     const f = faces[cIdx];
     TD[stepId] = f.score;
+    // Sync numeric grid selection
+    document.querySelectorAll('#trc .sb').forEach(b=>{
+      const v=+b.textContent;b.className='sb'+(v===f.score?(v>=7?' selh':' sel'):'');
+    });
     const bnxt=document.querySelector('#trc .bnxt');
     if(bnxt) bnxt.disabled=false;
     cWrap.innerHTML=`
