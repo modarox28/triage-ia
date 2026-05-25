@@ -797,7 +797,8 @@ const QR_SECRET=btoa("media-patient-2025");
 
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
-let CU=null,CR=null,isDark=true,FB=null;
+let CU=null,CR=null,CUName=null,isDark=true,FB=null;
+function uName(fallback="Usuario"){return CUName||CU?.displayName||CU?.email?.split("@")[0]||fallback;}
 
 // THEME
 function toggleTheme(){
@@ -1352,11 +1353,13 @@ function initAuth(){
       CU=user;
       try{
         const snap=await FB.getDoc(FB.doc(FB.db,"users",user.uid));
-        if(snap.exists()){CR=snap.data().role;}
+        if(snap.exists()){CR=snap.data().role;CUName=snap.data().name||null;}
         else{
           const all=await FB.getDocs(FB.collection(FB.db,"users"));
           CR=all.empty?"admin":"medico";
-          await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:user.displayName||user.email.split("@")[0],email:user.email,role:CR,createdAt:FB.serverTimestamp()});
+          const autoName=user.displayName||user.email.split("@")[0];
+          CUName=autoName;
+          await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:autoName,email:user.email,role:CR,createdAt:FB.serverTimestamp()});
         }
       }catch(e){CR="medico";}
       showApp();
@@ -1460,7 +1463,7 @@ async function doSignOut(){
 function showAuthScreen(){
   document.getElementById("authScreen").style.display="flex";
   document.getElementById("mainApp").classList.remove("on");
-  showPatientView();CU=null;CR=null;
+  showPatientView();CU=null;CR=null;CUName=null;
   // Pre-fill email if saved
   const saved=localStorage.getItem("ms_remember_email");
   if(saved){document.getElementById("aEmail").value=saved;_rememberOn=true;document.getElementById("rememberCheck").classList.add("on");}
@@ -1559,7 +1562,7 @@ function showApp(){
 }
 
 function showWelcome(){
-  const name=CU?.displayName||CU?.email?.split("@")[0]||"Usuario";
+  const name=uName();
   const av=name[0].toUpperCase();
   const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];
   const col=cols[av.charCodeAt(0)%cols.length];
@@ -1664,7 +1667,7 @@ function navigateTo(id,idx){
 }
 
 function updateUI(){
-  const name=CU?.displayName||CU?.email?.split("@")[0]||"Usuario";
+  const name=uName();
   const email=CU?.email||"";
   const RL={admin:"ADMIN",admin_hosp:"ADM. HOSP",medico:"MEDICO",paciente:"PACIENTE"};
   const RC={admin:"admin",admin_hosp:"admin_hosp",medico:"medico",paciente:"paciente"};
@@ -1729,7 +1732,7 @@ async function loadHist(){
 
 // CONFIG & PROFILE
 function loadConfig(){
-  const name=CU?.displayName||CU?.email?.split("@")[0]||"Usuario";
+  const name=uName();
   document.getElementById("profName").textContent=name;
   document.getElementById("profEmail").textContent=CU?.email||"";
   const RL={admin:"ADMIN",admin_hosp:"ADM. HOSP",medico:"MEDICO",paciente:"PACIENTE"};
@@ -1756,7 +1759,7 @@ function loadConfig(){
 }
 
 function loadProf(){
-  const name=CU?.displayName||CU?.email?.split("@")[0]||"Paciente";
+  const name=uName("Paciente");
   const av=name[0].toUpperCase();const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];
   const col=cols[av.charCodeAt(0)%cols.length];
   const profEl=document.getElementById("profAv2");
