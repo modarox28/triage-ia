@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=3,user-scalable=yes,viewport-fit=cover">
 <title>MedIA Suite</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -23,10 +23,11 @@ window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,si
 window.dispatchEvent(new Event("fbready"));
 </script>
 <style>
-:root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);}
+:root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);--zoom:1;}
 .light{--bg:#f0f4f8;--bg2:#fff;--bg3:#e8edf5;--bd:#d0dae8;--tx:#0f1923;--mu:#6b7fa3;--mu2:#9aabc4;--cy:#0099bb;--gn:#00a855;--rd:#d42042;--yw:#c97a00;--cy-a:rgba(0,153,187,.08);--gn-a:rgba(0,168,85,.08);--rd-a:rgba(212,32,66,.08);--yw-a:rgba(201,122,0,.08);--shadow:0 4px 24px rgba(0,0,0,.08);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;touch-action:manipulation;}
-html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(--bg);color:var(--tx);font-family:"Familjen Grotesk",sans-serif;transition:background .3s,color .3s;}
+html{font-size:calc(16px * var(--zoom));height:100%;height:100dvh;}
+body{height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;background:var(--bg);color:var(--tx);font-family:"Familjen Grotesk",sans-serif;transition:background .3s,color .3s;}
 
 /* ANIMATIONS */
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -37,6 +38,48 @@ html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(-
 @keyframes scanLine{0%{top:8%}100%{top:88%}}
 @keyframes dropDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes pageSlideIn{from{opacity:0;transform:translateX(22px) scale(.985)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes pageSlideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rippleAnim{0%{transform:scale(0);opacity:.45}100%{transform:scale(4.5);opacity:0}}
+@keyframes skeletonPulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes critBlink{0%,100%{background:var(--rd-a);border-color:var(--rd)}50%{background:rgba(255,58,92,.22);border-color:rgba(255,58,92,.6)}}
+@keyframes bounceIn{0%{transform:scale(0)}60%{transform:scale(1.1)}80%{transform:scale(.95)}100%{transform:scale(1)}}
+@keyframes slideInBottom{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Ripple container */
+.rpl-wrap{position:relative;overflow:hidden;}
+.rpl{position:absolute;border-radius:50%;width:100px;height:100px;margin-left:-50px;margin-top:-50px;pointer-events:none;background:rgba(255,255,255,.25);animation:rippleAnim .55s linear forwards;}
+/* Skeleton loader */
+.skel{background:linear-gradient(90deg,var(--bg3) 25%,var(--bd) 50%,var(--bg3) 75%);background-size:200%;animation:skeletonPulse 1.4s ease-in-out infinite;border-radius:8px;}
+/* Vitals críticos */
+.vital-crit{animation:critBlink 1.2s ease-in-out infinite;border-radius:8px;}
+/* Zoom btns */
+.zoom-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--bd);background:var(--bg3);cursor:pointer;font-size:1rem;font-weight:700;color:var(--tx);transition:all .18s cubic-bezier(.34,1.4,.64,1);touch-action:manipulation;display:flex;align-items:center;justify-content:center;}
+.zoom-btn:hover{border-color:var(--cy);color:var(--cy);transform:scale(1.1);}
+.zoom-btn:active{transform:scale(.92);}
+.zoom-lbl{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:700;color:var(--cy);min-width:38px;text-align:center;}
+/* Critical vitals badge */
+.vcrit-badge{display:inline-flex;align-items:center;gap:4px;background:var(--rd-a);border:1px solid var(--rd);color:var(--rd);border-radius:6px;padding:2px 7px;font-size:.65rem;font-family:"JetBrains Mono",monospace;font-weight:700;animation:critBlink 1s ease-in-out infinite;margin-left:6px;}
+/* Triage timer badge */
+.triage-timer{display:inline-flex;align-items:center;gap:5px;background:var(--cy-a);border:1px solid rgba(0,200,240,.22);border-radius:20px;padding:3px 10px;font-family:"JetBrains Mono",monospace;font-size:.65rem;color:var(--cy);font-weight:700;}
+/* qSOFA chip */
+.sofa-chip{display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;font-family:"JetBrains Mono",monospace;}
+.sofa-chip.low{background:var(--gn-a);color:var(--gn);border:1px solid rgba(0,224,122,.25);}
+.sofa-chip.high{background:var(--rd-a);color:var(--rd);border:1px solid rgba(255,58,92,.25);}
+/* Nearby result card */
+.near-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--bd);border-radius:10px;margin-bottom:6px;transition:all .18s;cursor:pointer;}
+.near-item:hover{border-color:var(--cy);background:var(--cy-a);}
+.near-icon{font-size:1.4rem;flex-shrink:0;}
+.near-name{font-weight:700;font-size:.84rem;}
+.near-dist{font-size:.68rem;color:var(--cy);font-family:"JetBrains Mono",monospace;font-weight:700;}
+.near-addr{font-size:.68rem;color:var(--mu);}
+/* Accessibility banner */
+.access-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--bd);}
+/* Score display */
+.score-ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",monospace;font-size:1.3rem;font-weight:700;flex-shrink:0;border:3px solid;}
+.score-ring.ok{border-color:var(--gn);color:var(--gn);background:var(--gn-a);}
+.score-ring.warn{border-color:var(--yw);color:var(--yw);background:var(--yw-a);}
+.score-ring.crit{border-color:var(--rd);color:var(--rd);background:var(--rd-a);}
 
 /* AUTH */
 .auth-screen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}
@@ -86,7 +129,7 @@ html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(-
 .auth-staff-link:hover{color:var(--cy);}
 
 /* APP SHELL */
-.app{display:none;height:100vh;width:100%;overflow:hidden;position:fixed;inset:0;}
+.app{display:none;height:100vh;height:100dvh;width:100%;overflow:hidden;position:fixed;inset:0;inset:0 0 0 0;padding-top:env(safe-area-inset-top,0px);}
 .app.on{display:flex;flex-direction:column;width:100%;}
 @media(min-width:768px){
   .app.on{flex-direction:row;}
@@ -127,8 +170,8 @@ html,body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(-
 .body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:70px;-webkit-overflow-scrolling:touch;width:100%;}
 .body::-webkit-scrollbar{width:3px;}
 .body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
-.sc{display:none;padding:14px;animation:slideR .28s cubic-bezier(.4,0,.2,1);width:100%;box-sizing:border-box;}
-.sc.on{display:block;}
+.sc{display:none;padding:14px;width:100%;box-sizing:border-box;}
+.sc.on{display:block;animation:pageSlideIn .3s cubic-bezier(.34,1.4,.64,1);}
 
 /* BOTTOM NAV — Liquid Glass (iOS style) */
 .bottom-nav{display:flex;background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-top:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -10px 36px rgba(0,0,0,.28);flex-shrink:0;position:relative;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
@@ -1025,9 +1068,12 @@ select option{background:var(--bg3);}
       </div>
       <!-- TRIAGE -->
       <div class="sc" id="sc-triage">
-        <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:6px">
-          <button class="bsec" style="font-size:.72rem;padding:5px 12px;border-color:rgba(255,140,0,.4);color:#ffa040" onclick="openPrehNotif()">🚑 Pre-hosp.</button>
-          <button class="bsec" id="mciToggleBtn" style="font-size:.72rem;padding:5px 12px;border-color:rgba(255,60,60,.4);color:#ff8060" onclick="openMCISetup()">⚠️ MCI</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">
+          <span class="triage-timer" id="triageTimerBadge" style="display:none"></span>
+          <div style="display:flex;gap:6px;margin-left:auto">
+            <button class="bsec" style="font-size:.72rem;padding:5px 12px;border-color:rgba(255,140,0,.4);color:#ffa040" onclick="openPrehNotif()">🚑 Pre-hosp.</button>
+            <button class="bsec" id="mciToggleBtn" style="font-size:.72rem;padding:5px 12px;border-color:rgba(255,60,60,.4);color:#ff8060" onclick="openMCISetup()">⚠️ MCI</button>
+          </div>
         </div>
         <div class="pgw" id="pgWrap"><div class="pgf" id="pg" style="width:0%"></div></div>
         <div id="trc"></div>
@@ -1185,7 +1231,7 @@ select option{background:var(--bg3);}
 </div>
 
 <div class="sc" id="sc-hist">
-        <div style="padding:10px 0 4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center" id="histFilters">
+        <div style="padding:10px 0 4px;display:flex;gap:6px;align-items:center;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;flex-shrink:0;padding-bottom:8px" id="histFilters">
           <button class="hist-flt on" data-f="all" onclick="setHistFilter('all',this)">Todos</button>
           <button class="hist-flt" data-f="ROJO" onclick="setHistFilter('ROJO',this)" style="color:var(--rd)">🔴</button>
           <button class="hist-flt" data-f="AMARILLO" onclick="setHistFilter('AMARILLO',this)" style="color:var(--yw)">🟡</button>
@@ -1244,6 +1290,14 @@ select option{background:var(--bg3);}
           <div class="setting-row">
             <div><div class="setting-label" id="lbDarkMode">Modo oscuro</div><div class="setting-sub" id="lbDarkSub">Interfaz con fondo oscuro</div></div>
             <button class="tgl on" id="themeTgl" onclick="toggleTheme()"></button>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label" id="lbZoomMode">Tamaño de texto</div><div class="setting-sub" id="lbZoomSub">Ajuste para mejor visibilidad</div></div>
+            <div class="access-bar">
+              <button class="zoom-btn" onclick="adjustZoom(-1)" aria-label="Reducir texto">A−</button>
+              <span class="zoom-lbl" id="zoomLbl">100%</span>
+              <button class="zoom-btn" onclick="adjustZoom(1)" aria-label="Aumentar texto">A+</button>
+            </div>
           </div>
         </div>
         <div class="card" id="qrCard" style="display:none">
@@ -1326,6 +1380,95 @@ function toggleTheme(){
 // TOAST
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2400);}
 
+// ZOOM ACCESSIBILITY
+let _zoomLevel=parseFloat(localStorage.getItem("ms_zoom")||"1");
+function _updateZoomLbl(){const el=document.getElementById("zoomLbl");if(el)el.textContent=Math.round(_zoomLevel*100)+"%";}
+function adjustZoom(dir){
+  const steps=[0.8,0.9,1,1.1,1.2,1.35,1.5];
+  const cur=steps.findIndex(s=>Math.abs(s-_zoomLevel)<0.01);
+  const next=Math.max(0,Math.min(steps.length-1,(cur<0?2:cur)+dir));
+  _zoomLevel=steps[next];
+  document.documentElement.style.setProperty("--zoom",_zoomLevel);
+  localStorage.setItem("ms_zoom",_zoomLevel);
+  _updateZoomLbl();
+  toast(_zoomLevel===1?"Tamaño normal":_zoomLevel>1?"Texto más grande":"Texto más pequeño");
+}
+(()=>{if(_zoomLevel!==1){document.documentElement.style.setProperty("--zoom",_zoomLevel);}_updateZoomLbl();})();
+
+// RIPPLE EFFECT
+document.addEventListener("pointerdown",e=>{
+  const el=e.target.closest(".opt,.bpri,.bnxt,.bbk,.bsec,.nb,.htab,.icon-btn,.auth-btn,.auth-goo,.zoom-btn,.hist-flt,.near-item");
+  if(!el)return;
+  const r=document.createElement("span");r.className="rpl";
+  const rect=el.getBoundingClientRect();
+  r.style.left=(e.clientX-rect.left)+"px";r.style.top=(e.clientY-rect.top)+"px";
+  if(getComputedStyle(el).position==="static")el.style.position="relative";
+  el.style.overflow="hidden";el.appendChild(r);
+  setTimeout(()=>r.remove(),560);
+},{passive:true});
+
+// TRIAGE TIMER
+let _triageStartTime=null;
+let _triageTimerInterval=null;
+function _startTriageTimer(){
+  _triageStartTime=Date.now();
+  if(_triageTimerInterval)clearInterval(_triageTimerInterval);
+  _triageTimerInterval=setInterval(_updateTriageTimer,1000);
+  _updateTriageTimer();
+}
+function _stopTriageTimer(){if(_triageTimerInterval){clearInterval(_triageTimerInterval);_triageTimerInterval=null;}}
+function _updateTriageTimer(){
+  const el=document.getElementById("triageTimerBadge");if(!el)return;
+  if(!_triageStartTime){el.style.display="none";return;}
+  const s=Math.floor((Date.now()-_triageStartTime)/1000);
+  const m=Math.floor(s/60),ss=s%60;
+  el.textContent=`⏱ ${m}:${String(ss).padStart(2,"0")}`;
+  el.style.display="";
+  el.style.color=s>300?"var(--yw)":s>600?"var(--rd)":"var(--cy)";
+}
+function _getTriageElapsed(){
+  if(!_triageStartTime)return null;
+  return Math.floor((Date.now()-_triageStartTime)/1000);
+}
+
+// CRITICAL VITALS CHECK
+function checkCriticalVitals(vitals){
+  const alerts=[];
+  const {sys,dia,hr,spo2,rr,temp}=vitals;
+  if(spo2&&spo2<90)alerts.push({key:"SpO2",val:spo2,msg:`SpO₂ crítico: ${spo2}% (< 90%)`});
+  if(spo2&&spo2>=90&&spo2<94)alerts.push({key:"SpO2_warn",val:spo2,msg:`SpO₂ bajo: ${spo2}%`,warn:true});
+  if(hr&&hr>150)alerts.push({key:"HR_high",val:hr,msg:`FC muy elevada: ${hr} lpm`});
+  if(hr&&hr<40)alerts.push({key:"HR_low",val:hr,msg:`FC muy baja: ${hr} lpm`});
+  if(sys&&sys>180)alerts.push({key:"SYS_high",val:sys,msg:`PA sistólica muy elevada: ${sys} mmHg`});
+  if(sys&&sys<70)alerts.push({key:"SYS_low",val:sys,msg:`PA sistólica muy baja: ${sys} mmHg`});
+  if(rr&&rr>30)alerts.push({key:"RR_high",val:rr,msg:`FR elevada: ${rr} rpm`});
+  if(rr&&rr<8)alerts.push({key:"RR_low",val:rr,msg:`FR muy baja: ${rr} rpm`});
+  if(temp&&temp>=39.5)alerts.push({key:"TEMP_high",val:temp,msg:`Fiebre alta: ${temp}°C`});
+  if(temp&&temp<35)alerts.push({key:"TEMP_low",val:temp,msg:`Hipotermia: ${temp}°C`});
+  return alerts;
+}
+
+// Real-time vitals alert during triage entry
+function _checkVitalsRealtime(){
+  const box=document.getElementById("vitAlertBox");if(!box)return;
+  const vt=TD.vit||{};
+  const alerts=checkCriticalVitals({sys:parseFloat(vt.ps),dia:parseFloat(vt.pd),hr:parseFloat(vt.fc),spo2:parseFloat(vt.sat),rr:parseFloat(vt.fr),temp:parseFloat(vt.tem)}).filter(a=>!a.warn);
+  if(!alerts.length){box.innerHTML="";return;}
+  box.innerHTML=`<div style="background:var(--rd-a);border:1.5px solid rgba(255,58,92,.4);border-radius:10px;padding:10px 12px;animation:critBlink 1.2s ease-in-out infinite">
+    <div style="font-family:JetBrains Mono,monospace;font-size:.6rem;color:var(--rd);font-weight:700;letter-spacing:1px;margin-bottom:6px">⚠ VALORES CRÍTICOS DETECTADOS</div>
+    ${alerts.map(a=>`<div style="font-size:.78rem;color:var(--rd);margin-bottom:3px">• ${a.msg}</div>`).join("")}
+  </div>`;
+}
+
+// qSOFA QUICK SCORE
+function calcQSOFA(vitals,consciousness){
+  let score=0,details=[];
+  if(vitals.rr&&vitals.rr>=22){score++;details.push("FR ≥ 22 rpm");}
+  if(consciousness&&consciousness!=="alerta"){score++;details.push("Alteración nivel de consciencia");}
+  if(vitals.sys&&vitals.sys<=100){score++;details.push("PAS ≤ 100 mmHg");}
+  return{score,details,risk:score>=2?"high":"low"};
+}
+
 // I18N
 const L={
   es:{sub:"Sistema medico inteligente",login:"Iniciar sesion",register:"Registrarse",cont:"Continuar",forgot:"Olvide mi contrasena",google:"Continuar con Google",
@@ -1343,7 +1486,7 @@ const L={
     newMed:"Nuevo medicamento",dose:"Dosis",freq:"Frecuencia",hour:"Hora",notes:"Notas",addMed:"+ Agregar",
     addList:"Agregar a lista",verify:"Verificar con IA",
     recentT:"Ultimos triages",userMgmt:"Gestion de usuarios",histTitle:"Historial de triages",
-    appearance:"Apariencia",darkMode:"Modo oscuro",darkSub:"Interfaz con fondo oscuro",account:"Cuenta",
+    appearance:"Apariencia",darkMode:"Modo oscuro",darkSub:"Interfaz con fondo oscuro",account:"Cuenta",zoomMode:"Tamaño de texto",zoomSub:"Ajuste para mejor visibilidad",
     reminders:"Recordatorios de hoy",alarmsNote:"Las alarmas suenan mientras la app esta abierta.",
     hc:"Historia",
     signOut:"Cerrar sesion",
@@ -1449,7 +1592,7 @@ const L={
     newMed:"New medication",dose:"Dose",freq:"Frequency",hour:"Time",notes:"Notes",addMed:"+ Add",
     addList:"Add to list",verify:"Verify with AI",
     recentT:"Recent triages",userMgmt:"User management",histTitle:"Triage history",
-    appearance:"Appearance",darkMode:"Dark mode",darkSub:"Dark background interface",account:"Account",
+    appearance:"Appearance",darkMode:"Dark mode",darkSub:"Dark background interface",account:"Account",zoomMode:"Text size",zoomSub:"Adjust for better visibility",
     reminders:"Today reminders",alarmsNote:"Alarms ring while the app is open.",
     hc:"Records",
     signOut:"Sign out",
@@ -1555,7 +1698,7 @@ const L={
     newMed:"Novo medicamento",dose:"Dose",freq:"Frequencia",hour:"Hora",notes:"Notas",addMed:"+ Adicionar",
     addList:"Adicionar lista",verify:"Verificar com IA",
     recentT:"Ultimas triagens",userMgmt:"Gestao usuarios",histTitle:"Historico triagens",
-    appearance:"Aparencia",darkMode:"Modo escuro",darkSub:"Interface fundo escuro",account:"Conta",
+    appearance:"Aparencia",darkMode:"Modo escuro",darkSub:"Interface fundo escuro",account:"Conta",zoomMode:"Tamanho do texto",zoomSub:"Ajuste para melhor visibilidade",
     reminders:"Lembretes de hoje",alarmsNote:"Alarmes soam enquanto app esta aberto.",
     hc:"Historico",
     signOut:"Sair",
@@ -1661,7 +1804,7 @@ const L={
     newMed:"Nouveau medicament",dose:"Dose",freq:"Frequence",hour:"Heure",notes:"Notes",addMed:"+ Ajouter",
     addList:"Ajouter liste",verify:"Verifier IA",
     recentT:"Derniers triages",userMgmt:"Gestion utilisateurs",histTitle:"Historique triages",
-    appearance:"Apparence",darkMode:"Mode sombre",darkSub:"Interface fond sombre",account:"Compte",
+    appearance:"Apparence",darkMode:"Mode sombre",darkSub:"Interface fond sombre",account:"Compte",zoomMode:"Taille du texte",zoomSub:"Ajustez pour une meilleure visibilite",
     reminders:"Rappels du jour",alarmsNote:"Alarmes actives quand app ouverte.",
     hc:"Dossier",
     signOut:"Deconnexion",
@@ -1767,7 +1910,7 @@ const L={
     newMed:"Neues Medikament",dose:"Dosis",freq:"Haufigkeit",hour:"Uhrzeit",notes:"Notizen",addMed:"+ Hinzufugen",
     addList:"Zur Liste",verify:"Mit KI prufen",
     recentT:"Letzte Triagen",userMgmt:"Benutzerverwaltung",histTitle:"Triage-Verlauf",
-    appearance:"Erscheinungsbild",darkMode:"Dunkelmodus",darkSub:"Dunkler Hintergrund",account:"Konto",
+    appearance:"Erscheinungsbild",darkMode:"Dunkelmodus",darkSub:"Dunkler Hintergrund",account:"Konto",zoomMode:"Textgrosse",zoomSub:"Anpassen fur bessere Sichtbarkeit",
     reminders:"Heutige Erinnerungen",alarmsNote:"Alarme wenn App geoffnet.",
     hc:"Akte",
     signOut:"Abmelden",
@@ -1873,7 +2016,7 @@ const L={
     newMed:"新しい薬",dose:"用量",freq:"頻度",hour:"時間",notes:"メモ",addMed:"+ 追加",
     addList:"リストに追加",verify:"AIで確認",
     recentT:"最近のトリアージ",userMgmt:"ユーザー管理",histTitle:"トリアージ履歴",
-    appearance:"外観",darkMode:"ダークモード",darkSub:"暗い背景のインターフェース",account:"アカウント",
+    appearance:"外観",darkMode:"ダークモード",darkSub:"暗い背景のインターフェース",account:"アカウント",zoomMode:"文字サイズ",zoomSub:"見やすさを調整",
     reminders:"今日のリマインダー",alarmsNote:"アプリが開いている間、アラームが鳴ります。",
     hc:"カルテ",
     signOut:"サインアウト",
@@ -1975,6 +2118,7 @@ function setLang(lang){
   document.querySelectorAll(".lang-menu").forEach(m=>m.classList.remove("open"));
   // Config screen lang buttons
   ["es","en","pt","fr","de","ja"].forEach(l=>{const b=document.getElementById("lng-"+l);if(b)b.classList.toggle("sel",l===lang);});
+  _updateZoomLbl();
   applyTrans();
 }
 
@@ -2006,6 +2150,7 @@ function applyTrans(){
     lbHistTitle:"histTitle",
     // Config
     lbAppearance:"appearance",lbDarkMode:"darkMode",lbDarkSub:"darkSub",lbAccount:"account",
+    lbZoomMode:"zoomMode",lbZoomSub:"zoomSub",
     // Sign out buttons (all of them)
     signOutTxt:"signOut",signOutTxt2:"signOut",signOutTxt3:"signOut",
     // Chart + nearby + country labels
@@ -2013,6 +2158,10 @@ function applyTrans(){
     lbCountryLabel:"countryLabel",lbCountrySub:"countrySub",
     "chartPer-day":"chartDay","chartPer-week":"chartWeek","chartPer-month":"chartMonth",
     nearbySearchBtn:"nearbyBtn",
+    // Cola de espera (patient queue) — previously untranslated
+    lbColaTitle:"colaTitle",colaRefreshBtn:"colaRefresh",colaPendingBtn:"colaPending",
+    // Handoff button
+    handoffBtnTxt:"handoffTitle",
   };
   Object.entries(ids).forEach(([id,key])=>{
     const el=document.getElementById(id);
@@ -2629,7 +2778,7 @@ function navigateTo(id,idx){
   const ind=document.getElementById("nind");
   if(ind&&nb){ind.style.width=nb.offsetWidth+"px";ind.style.left=nb.offsetLeft+"px";}
   if(id==="dash")loadDash();
-  if(id==="triage")rTriage();
+  if(id==="triage"){if(!_triageStartTime)_startTriageTimer();rTriage();}
   if(id==="hist")loadHist();
   if(id==="cola")loadCola();
   if(id==="hc")loadHC();
@@ -2720,54 +2869,108 @@ function buildChart(){
 
 // NEARBY
 let _nearbyMap=null;
+const _OVERPASS_ENDPOINTS=[
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+];
+
+function _haversine(lat1,lon1,lat2,lon2){
+  const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+async function _fetchOverpass(query){
+  for(const url of _OVERPASS_ENDPOINTS){
+    try{
+      const r=await Promise.race([
+        fetch(url,{method:"POST",body:query,headers:{"Content-Type":"text/plain"}}),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),20000))
+      ]);
+      if(r.ok){const d=await r.json();return d;}
+    }catch(e){continue;}
+  }
+  throw new Error("all_failed");
+}
 
 function searchNearby(){
   const card=document.getElementById("nearbyCard");
   const status=document.getElementById("nearbyStatus");
-  if(!card||!window.L)return;
+  const mapEl=document.getElementById("nearbyMap");
+  const btn=document.getElementById("nearbySearchBtn");
+  if(!card)return;
   card.style.display="block";
-  status.textContent=t("nearbyLocating")||"Obteniendo ubicacion...";
-  if(!navigator.geolocation){status.textContent=t("nearbyError")||"No se pudo obtener la ubicacion.";return;}
+  status.innerHTML=`<span class="sp"></span>&nbsp;${t("nearbyLocating")||"Obteniendo ubicacion..."}`;
+  if(btn){btn.disabled=true;btn.textContent="⏳";}
+  if(!navigator.geolocation){
+    status.textContent="⚠️ "+(t("nearbyError")||"Geolocalización no disponible.");
+    if(btn){btn.disabled=false;btn.textContent=t("nearbyBtn")||"Buscar";}
+    return;
+  }
   navigator.geolocation.getCurrentPosition(async pos=>{
-    const {latitude:lat,longitude:lon}=pos.coords;
+    const {latitude:lat,longitude:lon,accuracy}=pos.coords;
     const eps=(document.getElementById("nearbyEpsInput")?.value||"").trim();
-    const radius=5000;
-    const query=`[out:json][timeout:15];(node["amenity"~"hospital|clinic|pharmacy|health_post|doctors"](around:${radius},${lat},${lon});way["amenity"~"hospital|clinic|pharmacy|health_post|doctors"](around:${radius},${lat},${lon}););out center 15;`;
-    status.textContent=t("nearbySearching")||"Buscando...";
+    const radius=6000;
+    const query=`[out:json][timeout:25];(node["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors)$"](around:${radius},${lat},${lon});way["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors)$"](around:${radius},${lat},${lon}););out center 20;`;
+    status.innerHTML=`<span class="sp"></span>&nbsp;${t("nearbySearching")||"Buscando..."}`;
     try{
-      const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:query});
-      const data=await r.json();
-      const elements=data.elements||[];
-      const filtered=eps?elements.filter(e=>{const n=(e.tags?.name||"").toLowerCase();return n.includes(eps.toLowerCase());}):elements;
-      renderNearby(lat,lon,filtered.length?filtered:elements);
-    }catch(e){status.textContent=t("nearbyError")||"Error al buscar.";}
-  },()=>{status.textContent=t("nearbyError")||"No se pudo obtener la ubicacion.";});
+      const data=await _fetchOverpass(query);
+      let elements=data.elements||[];
+      // Add distance and sort
+      elements=elements.map(e=>{
+        const elat=e.lat||e.center?.lat;const elon=e.lon||e.center?.lon;
+        const dist=elat&&elon?_haversine(lat,lon,elat,elon):Infinity;
+        return{...e,_dist:dist};
+      }).sort((a,b)=>a._dist-b._dist);
+      if(eps)elements=elements.filter(e=>{const n=(e.tags?.name||"").toLowerCase();return n.includes(eps.toLowerCase());});
+      if(btn){btn.disabled=false;btn.textContent=t("nearbyBtn")||"Buscar";}
+      renderNearby(lat,lon,elements);
+    }catch(e){
+      status.textContent="❌ "+(t("nearbyError")||"Error al buscar. Intente de nuevo.");
+      if(btn){btn.disabled=false;btn.textContent=t("nearbyBtn")||"Buscar";}
+    }
+  },err=>{
+    const msgs={1:"Permiso de ubicación denegado.",2:"Ubicación no disponible.",3:"Tiempo de espera agotado."};
+    status.textContent="❌ "+(msgs[err.code]||t("nearbyError")||"No se pudo obtener la ubicacion.");
+    if(btn){btn.disabled=false;btn.textContent=t("nearbyBtn")||"Buscar";}
+  },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
 }
 
 function renderNearby(lat,lon,elements){
   const status=document.getElementById("nearbyStatus");
   const list=document.getElementById("nearbyList");
-  if(!elements.length){status.textContent=t("nearbyNone")||"Sin resultados cercanos.";list.innerHTML="";return;}
-  status.textContent=`${elements.length} ${t("nearbyFoundN")||"centros encontrados"}`;
+  const mapEl=document.getElementById("nearbyMap");
+  if(!elements.length){status.textContent="📍 "+(t("nearbyNone")||"Sin resultados cercanos.");list.innerHTML="";mapEl.style.display="none";return;}
+  const shown=elements.slice(0,12);
+  status.textContent=`📍 ${shown.length} ${t("nearbyFoundN")||"centros encontrados"}`;
+  mapEl.style.display="block";
   if(_nearbyMap){_nearbyMap.remove();_nearbyMap=null;}
-  _nearbyMap=L.map("nearbyMap").setView([lat,lon],14);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OSM"}).addTo(_nearbyMap);
-  L.marker([lat,lon]).addTo(_nearbyMap).bindPopup("Tu ubicacion").openPopup();
+  if(window.L){
+    _nearbyMap=L.map("nearbyMap",{zoomControl:true}).setView([lat,lon],14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OSM",maxZoom:19}).addTo(_nearbyMap);
+    const userIcon=L.divIcon({html:"<div style='background:#00c8f0;border:3px solid #fff;border-radius:50%;width:16px;height:16px;box-shadow:0 0 8px #00c8f0'></div>",className:"",iconSize:[16,16],iconAnchor:[8,8]});
+    L.marker([lat,lon],{icon:userIcon}).addTo(_nearbyMap).bindPopup("📍 Tu ubicación");
+    const amenityIcon={"hospital":"🏥","clinic":"🏨","pharmacy":"💊","health_post":"🏥","doctors":"👨‍⚕️"};
+    shown.forEach(e=>{
+      const elat=e.lat||e.center?.lat;const elon=e.lon||e.center?.lon;
+      if(!elat||!elon)return;
+      const name=e.tags?.name||e.tags?.["name:es"]||"Centro de salud";
+      const am=e.tags?.amenity||"hospital";
+      const ic=amenityIcon[am]||"🏥";
+      L.marker([elat,elon]).addTo(_nearbyMap).bindPopup(`<b>${ic} ${name}</b><br><small>${am}</small>`);
+    });
+    setTimeout(()=>_nearbyMap.invalidateSize(),200);
+  }
   const amenityIcon={"hospital":"🏥","clinic":"🏨","pharmacy":"💊","health_post":"🏥","doctors":"👨‍⚕️"};
-  elements.slice(0,10).forEach(e=>{
-    const elat=e.lat||e.center?.lat;const elon=e.lon||e.center?.lon;
-    if(!elat||!elon)return;
-    const name=e.tags?.name||e.tags?.["name:es"]||"Centro de salud";
-    const am=e.tags?.amenity||"hospital";
-    const ic=amenityIcon[am]||"🏥";
-    L.marker([elat,elon]).addTo(_nearbyMap).bindPopup(`<b>${ic} ${name}</b>`);
-  });
-  list.innerHTML=elements.slice(0,8).map(e=>{
+  list.innerHTML=shown.map(e=>{
     const name=e.tags?.name||"Centro de salud";
     const addr=e.tags?.["addr:street"]?`${e.tags["addr:street"]} ${e.tags["addr:housenumber"]||""}`.trim():"";
     const am=e.tags?.amenity||"hospital";
     const ic=amenityIcon[am]||"🏥";
-    return`<div class="hist-row"><span style="font-size:1.3rem">${ic}</span><div style="flex:1"><div style="font-size:.83rem;font-weight:600">${name}</div>${addr?`<div style="font-size:.69rem;color:var(--mu)">${addr}</div>`:""}</div></div>`;
+    const dist=e._dist<1000?`${Math.round(e._dist)}m`:`${(e._dist/1000).toFixed(1)}km`;
+    const phone=e.tags?.phone||e.tags?.["contact:phone"]||"";
+    return`<div class="near-item"><span class="near-icon">${ic}</span><div style="flex:1;min-width:0"><div class="near-name">${name}</div>${addr?`<div class="near-addr">${addr}</div>`:""}<div style="display:flex;gap:8px;align-items:center;margin-top:2px">${phone?`<span style="font-size:.65rem;color:var(--mu)">📞 ${phone}</span>`:""}</div></div><span class="near-dist">${dist}</span></div>`;
   }).join("");
 }
 
@@ -3173,8 +3376,11 @@ function rTriage(){
     const vg=document.createElement("div");vg.className="vgrid";
     [{id:"ps",l:t("vSysBP")||"P. sistolica (mmHg)",ph:"120"},{id:"pd",l:t("vDiaBP")||"P. diastolica (mmHg)",ph:"80"},{id:"fc",l:t("vHR")||"Frec. cardiaca (lpm)",ph:"80"},{id:"sat",l:t("vSpO2")||"Saturacion O2 (%)",ph:"97"},{id:"tem",l:t("vTemp")||"Temperatura (C)",ph:"37"},{id:"fr",l:t("vRR")||"Frec. respiratoria (rpm)",ph:"16"}].forEach(f=>{
       const w=document.createElement("div");w.className="vf";w.innerHTML=`<label>${f.l}</label>`;
-      const i=document.createElement("input");i.type="number";i.id="vf_"+f.id;i.placeholder=f.ph;i.value=TD.vit[f.id]||"";i.oninput=()=>{TD.vit[f.id]=i.value;};w.appendChild(i);vg.appendChild(w);});
+      const i=document.createElement("input");i.type="number";i.id="vf_"+f.id;i.placeholder=f.ph;i.value=TD.vit[f.id]||"";
+      i.oninput=()=>{TD.vit[f.id]=i.value;_checkVitalsRealtime();};
+      w.appendChild(i);vg.appendChild(w);});
     card.appendChild(vg);
+    const vitAlertBox=document.createElement("div");vitAlertBox.id="vitAlertBox";vitAlertBox.style.cssText="margin-top:8px;";card.appendChild(vitAlertBox);
   }else if(s.t==="notes_step"){
     if(!TD.notas)TD.notas=s.defaultMsg||"";
     const ta=document.createElement("textarea");
@@ -3324,7 +3530,10 @@ SOLO JSON sin backticks:
 
 let _lastResult=null;
 function rResult(r){
-  _lastResult={...r,tipo:TD.tipo,motivo:TD.motivo,ts:Date.now()};
+  const elapsed=_getTriageElapsed();
+  _stopTriageTimer();
+  const timerBadge=document.getElementById("triageTimerBadge");if(timerBadge)timerBadge.style.display="none";
+  _lastResult={...r,tipo:TD.tipo,motivo:TD.motivo,ts:Date.now(),elapsed};
   const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[r.clasificacion]||"ve";
   const ic={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢"}[r.clasificacion];
   const pm={ROJO:t("immAttn")||"ATENCION INMEDIATA",AMARILLO:t("urgent")||"URGENTE",VERDE:t("canWait")||"PUEDE ESPERAR"}[r.clasificacion];
@@ -3334,28 +3543,46 @@ function rResult(r){
   if(deadlineMin===0){attnHtml=`<div class="attn-chip now">⚡ ATENDER AHORA</div>`;}
   else{const dl=new Date(Date.now()+deadlineMin*60000);const hh=String(dl.getHours()).padStart(2,"0");const mm2=String(dl.getMinutes()).padStart(2,"0");attnHtml=`<div class="attn-chip ${deadlineMin<=30?"soon":"wait"}">⏱ Atender antes de las ${hh}:${mm2}</div>`;}
 
+  // Timer display
+  let timerHtml="";
+  if(elapsed!=null){const m=Math.floor(elapsed/60),s=elapsed%60;timerHtml=`<div style="font-size:.65rem;opacity:.7;margin-top:4px">⏱ Triage completado en ${m}:${String(s).padStart(2,"0")}</div>`;}
+
+  // qSOFA score
+  const vt=TD.vit||{};
+  const qsofa=calcQSOFA({sys:parseFloat(vt.ps),rr:parseFloat(vt.fr)},TD.consc);
+  let qsofaHtml="";
+  if(qsofa.score>0||vt.fr||vt.ps){
+    qsofaHtml=`<div class="card"><div style="display:flex;align-items:center;gap:10px">
+      <div class="score-ring ${qsofa.risk==="high"?"crit":qsofa.score===1?"warn":"ok"}">${qsofa.score}/3</div>
+      <div><div style="font-weight:700;font-size:.88rem">qSOFA ${qsofa.risk==="high"?"— Riesgo sepsis ⚠️":"— Bajo riesgo"}</div>
+      ${qsofa.details.length?`<div style="font-size:.72rem;color:var(--mu);margin-top:3px">${qsofa.details.join(" · ")}</div>`:"<div style='font-size:.72rem;color:var(--mu);margin-top:3px'>Sin criterios positivos</div>"}
+      ${qsofa.risk==="high"?`<div style="font-size:.68rem;color:var(--rd);margin-top:4px;font-weight:700">≥2 criterios → Evaluar sepsis. Hemocultivos, lactato, antibióticos.</div>`:""}
+      </div></div></div>`;
+  }
+
   const tM2={adulto:t("adultLbl")||"Adulto",adulto_mayor:t("elderLbl")||"Tercera edad",embarazada:t("pregLbl")||"Embarazada",nino:t("childLbl")||"Pediatrico",adolescente:t("teenLbl")||"Adolescente"};
-  const vt=TD.vit||{};const dc={normal:"var(--gn)",warning:"var(--yw)",critical:"var(--rd)"};
-  const vcs=[vt.ps?{l:"PA",v:`${vt.ps}/${vt.pd}`,s:chkPA(vt.ps)}:null,vt.fc?{l:"FC",v:`${vt.fc}lpm`,s:chkFC(vt.fc)}:null,vt.sat?{l:"SatO2",v:`${vt.sat}%`,s:chkSat(vt.sat)}:null,vt.tem?{l:"Temp",v:`${vt.tem}C`,s:chkT(vt.tem)}:null,vt.fr?{l:"FR",v:`${vt.fr}rpm`,s:chkFR(vt.fr)}:null].filter(Boolean);
-  const alH=r.alertas_criticas&&r.alertas_criticas.length?`<div style="background:var(--rd-a);border:1px solid rgba(255,58,92,.25);border-radius:8px;padding:9px;margin-top:8px"><div style="font-family:JetBrains Mono,monospace;font-size:.55rem;color:var(--rd);margin-bottom:4px;letter-spacing:1px">ALERTAS CRITICAS</div>${r.alertas_criticas.map(a=>`<div style="font-size:.78rem;color:#ff8fa3;margin-bottom:2px">• ${a}</div>`).join("")}</div>`:"";
+  const dc={normal:"var(--gn)",warning:"var(--yw)",critical:"var(--rd)"};
+  const vcs=[vt.ps?{l:"PA",v:`${vt.ps}/${vt.pd||"—"}`,s:chkPA(vt.ps)}:null,vt.fc?{l:"FC",v:`${vt.fc} lpm`,s:chkFC(vt.fc)}:null,vt.sat?{l:"SatO₂",v:`${vt.sat}%`,s:chkSat(vt.sat)}:null,vt.tem?{l:"Temp",v:`${vt.tem}°C`,s:chkT(vt.tem)}:null,vt.fr?{l:"FR",v:`${vt.fr} rpm`,s:chkFR(vt.fr)}:null].filter(Boolean);
+  const alH=r.alertas_criticas&&r.alertas_criticas.length?`<div style="background:var(--rd-a);border:1px solid rgba(255,58,92,.25);border-radius:8px;padding:9px;margin-top:8px"><div style="font-family:JetBrains Mono,monospace;font-size:.55rem;color:var(--rd);margin-bottom:4px;letter-spacing:1px">ALERTAS CRITICAS</div>${r.alertas_criticas.map(a=>`<div style="font-size:.78rem;color:#ff8fa3;margin-bottom:2px">⚠ ${a}</div>`).join("")}</div>`:"";
   const pedH=(TD.tipo==="nino"||TD.tipo==="adolescente")?`<div class="cnote"><span style="font-size:.9rem;flex-shrink:0">👨‍👩‍👦</span><span>${t("pedNote")||"Paciente pediatrico / adolescente"}${TD.enino?` — ${TD.enino} años`:""}. ${t("pedNoteSub")||"Confirmar con pediatra."}</span></div>`:"";
   document.getElementById("trc").innerHTML=`
     ${pedH}
-    <div class="rcard ${cc}"><span class="ric">${ic}</span><div class="rlbl">${r.clasificacion}</div>
+    <div class="rcard ${cc}" style="animation:bounceIn .5s cubic-bezier(.34,1.4,.64,1)"><span class="ric">${ic}</span><div class="rlbl">${r.clasificacion}</div>
     <div class="rpri">${pm}${r.tiempo_atencion?" · "+r.tiempo_atencion:""}</div>
-    ${attnHtml}
+    ${attnHtml}${timerHtml}
     <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:8px">
-      <span class="chip">${tM2[TD.tipo]||""}</span>${TD.semanas?`<span class="chip">${TD.semanas} sem.</span>`:""}${TD.enino?`<span class="chip">${TD.enino} anos</span>`:""}
+      <span class="chip">${tM2[TD.tipo]||""}</span>${TD.semanas?`<span class="chip">${TD.semanas} sem.</span>`:""}${TD.enino?`<span class="chip">${TD.enino} años</span>`:""}
       <span class="chip">Dolor: ${TD.dolor}/10</span></div></div>
     <div class="card"><div class="clabel" data-i18n="clinicalAnalysis">${t("clinicalAnalysis")||"Analisis clinico"}</div><div style="font-size:.83rem;line-height:1.65">${r.justificacion}</div>${alH}</div>
-    ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:7px;height:7px;border-radius:50%;background:${dc[v.s]};flex-shrink:0"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.76rem">${v.v}</div></div>`).join("")}</div>`:""}
-    <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.82rem;line-height:1.5">${a}</span></div>`).join("")}</div>
+    ${qsofaHtml}
+    ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
+    <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${a}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
-    <button class="btn-share" onclick="shareResult()">📤 Compartir resultado</button>
-    <button class="bsec" onclick="resetT()">← ${t("newPatient")||"Nuevo paciente"}</button>`;
+    <button class="btn-share" onclick="shareResult()" style="animation:fadeUp .4s .2s both">📤 Compartir resultado</button>
+    <button class="bsec" onclick="resetT()" style="animation:fadeUp .4s .3s both">← ${t("newPatient")||"Nuevo paciente"}</button>`;
 }
 
-function resetT(){TS=0;TD={};TM=[];_lastResult=null;rTriage();}
+function resetT(){TS=0;TD={};TM=[];_lastResult=null;_stopTriageTimer();_startTriageTimer();rTriage();}
 
 function shareResult(){
   if(!_lastResult)return;
@@ -3365,7 +3592,8 @@ function shareResult(){
   const mM2={dolor_pecho:"Dolor en el pecho",disnea:"Dificultad respiratoria",trauma:"Trauma/herida",abdominal:"Dolor abdominal",neuro:"Neurologico",fiebre:"Fiebre alta",otro:"Otro"};
   const now=new Date();const ts=`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
   const acciones=(r.acciones||[]).map((a,i)=>`${String(i+1).padStart(2,"0")}. ${a}`).join("\n");
-  const text=`🏥 RESULTADO DE TRIAGE — MedIA Suite\n${"─".repeat(35)}\n${ic} ${r.clasificacion} · ${tM2[r.tipo]||r.tipo||""}\nMotivo: ${mM2[r.motivo]||r.motivo||""} · ${ts}\n${"─".repeat(35)}\n📋 Analisis:\n${r.justificacion||""}\n${"─".repeat(35)}\n✅ Acciones:\n${acciones}\n${"─".repeat(35)}\nGenerado con MedIA Suite`;
+  const elapsedTxt=r.elapsed!=null?`\nDuración triage: ${Math.floor(r.elapsed/60)}m ${r.elapsed%60}s`:"";
+  const text=`🏥 RESULTADO DE TRIAGE — MedIA Suite\n${"─".repeat(35)}\n${ic} ${r.clasificacion} · ${tM2[r.tipo]||r.tipo||""}\nMotivo: ${mM2[r.motivo]||r.motivo||""} · ${ts}${elapsedTxt}\n${"─".repeat(35)}\n📋 Analisis:\n${r.justificacion||""}\n${"─".repeat(35)}\n✅ Acciones:\n${acciones}\n${"─".repeat(35)}\nGenerado con MedIA Suite`;
   if(navigator.share){
     navigator.share({title:"Resultado de Triage",text}).catch(()=>{});
   }else{

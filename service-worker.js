@@ -1,17 +1,19 @@
-const CACHE_STATIC = 'media-static-v4';
-const CACHE_CDN    = 'media-cdn-v4';
+const CACHE_STATIC = 'media-static-v5';
+const CACHE_CDN    = 'media-cdn-v5';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './triage-ia.html',
-  './mediapp.html',
+  './manifest.json',
   './triage-manifest.json',
   './medi-manifest.json',
   './triage-icon-192.png',
   './triage-icon-512.png',
   './medi-icon-192.png',
   './medi-icon-512.png',
+  './icon-192.png',
+  './icon-512.png',
+  './apple-touch-icon.png',
 ];
 
 const CDN_PREFIXES = [
@@ -41,12 +43,15 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = e.request.url;
 
-  // Firebase, Worker proxy, API → network only, no cache
+  // Firebase, Worker proxy, API, Overpass → network only, no cache
   if (url.includes('firestore.googleapis.com') ||
       url.includes('firebase') ||
       url.includes('workers.dev') ||
       url.includes('googleapis.com/identitytoolkit') ||
-      url.includes('securetoken')) {
+      url.includes('securetoken') ||
+      url.includes('overpass-api.de') ||
+      url.includes('overpass.kumi.systems') ||
+      url.includes('mail.ru/osm')) {
     e.respondWith(fetch(e.request).catch(() => new Response('', { status: 503 })));
     return;
   }
