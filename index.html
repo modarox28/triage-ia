@@ -417,7 +417,7 @@ select option{background:var(--bg3);}
 .pass-form.open{display:block;}
 
 /* ANTECEDENTES CHIP */
-.ant-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(168,85,247,.1);color:#c084fc;border:1px solid rgba(168,85,247,.25);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:3px;}
+.ant-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(168,85,247,.1);color:#c084fc;border:1px solid rgba(168,85,247,.25);border-radius:20px;padding:4px 10px;font-size:.72rem;}
 .ant-chip .ax{margin-left:3px;opacity:.6;cursor:pointer;font-size:.7rem;}
 .ant-chip .ax:hover{opacity:1;color:var(--rd);}
 
@@ -442,27 +442,17 @@ select option{background:var(--bg3);}
 .int-explain-btn{padding:6px 13px;border-radius:8px;border:1.5px solid currentColor;background:transparent;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Familjen Grotesk",sans-serif;}
 .int-explain{display:none;margin-top:9px;padding:9px 11px;background:rgba(0,0,0,.15);border-radius:8px;font-size:.77rem;line-height:1.6;color:var(--tx);}
 .int-explain.open{display:block;animation:fadeUp .2s ease;}
-/* NOTES FAB */
-#notesFab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 140px);right:16px;width:48px;height:48px;border-radius:50%;border:none;background:var(--bg2);color:var(--tx);font-size:1.2rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);transition:all .28s cubic-bezier(.34,1.4,.64,1);z-index:200;opacity:0;pointer-events:none;touch-action:manipulation;user-select:none;}
-#notesFab.vis{opacity:1;pointer-events:auto;}
-#notesFab.has-notes{background:var(--gn);color:#000;box-shadow:0 4px 18px rgba(0,224,122,.45);}
-#notesFab:active{transform:scale(.88);}
-/* NOTES PANEL */
-#notesPanel{position:fixed;bottom:-105%;left:0;right:0;background:var(--bg2);border-top:1px solid var(--bd);border-radius:22px 22px 0 0;z-index:310;transition:bottom .32s cubic-bezier(.34,1.2,.64,1);padding:0;box-shadow:0 -8px 40px rgba(0,0,0,.4);}
-#notesPanel.on{bottom:0;}
-.notes-handle{width:36px;height:4px;background:var(--bd);border-radius:2px;margin:12px auto 0;}
-.notes-body{padding:16px 18px calc(env(safe-area-inset-bottom,0px) + 18px);}
-.notes-title{font-size:.78rem;font-family:"JetBrains Mono",monospace;letter-spacing:2px;color:var(--mu);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
-.notes-close{background:none;border:none;color:var(--mu);font-size:1.1rem;cursor:pointer;padding:4px 6px;}
-#notesTA{width:100%;min-height:120px;max-height:240px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;color:var(--tx);font-family:"JetBrains Mono",monospace;font-size:.82rem;line-height:1.6;padding:12px 14px;resize:none;box-sizing:border-box;outline:none;transition:border-color .2s;}
-#notesTA:focus{border-color:var(--cy);}
-.notes-footer{display:flex;gap:10px;margin-top:12px;align-items:center;}
-.notes-counter{font-size:.7rem;color:var(--mu);font-family:"JetBrains Mono",monospace;flex:1;}
-#notesSaveBtn{padding:9px 22px;background:var(--cy);color:#000;border:none;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;touch-action:manipulation;}
-#notesSaveBtn:active{opacity:.75;}
-/* NOTES OVERLAY */
-#notesOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:309;opacity:0;pointer-events:none;transition:opacity .28s;}
-#notesOverlay.on{opacity:1;pointer-events:auto;}
+/* TRIAGE NOTES INLINE VALIDATION */
+.notes-warn{font-size:.68rem;color:var(--yw);font-family:"JetBrains Mono",monospace;margin-top:6px;border-left:2px solid var(--yw);padding-left:8px;line-height:1.4;display:none;}
+.notes-warn.on{display:block;animation:fadeUp .2s ease;}
+/* SHARE RESULT BUTTON */
+.btn-share{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:11px;background:transparent;border:1.5px solid var(--cy);border-radius:9px;color:var(--cy);font-family:"Familjen Grotesk",sans-serif;font-size:.85rem;cursor:pointer;touch-action:manipulation;margin-bottom:8px;transition:all .2s;}
+.btn-share:hover,.btn-share:active{background:var(--cy-a);}
+/* ATTENTION TIMER CHIP */
+.attn-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.7rem;font-family:"JetBrains Mono",monospace;font-weight:700;letter-spacing:.5px;margin-top:6px;}
+.attn-chip.now{background:rgba(255,58,92,.15);color:var(--rd);border:1px solid rgba(255,58,92,.3);animation:pulse .9s infinite alternate;}
+.attn-chip.soon{background:rgba(255,184,48,.12);color:var(--yw);border:1px solid rgba(255,184,48,.3);}
+.attn-chip.wait{background:rgba(0,224,122,.1);color:var(--gn);border:1px solid rgba(0,224,122,.25);}
 /* VOICE MODE FAB */
 #voiceFab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);right:16px;width:52px;height:52px;border-radius:50%;border:none;background:var(--cy);color:#000;font-size:1.35rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(0,200,240,.45);transition:all .28s cubic-bezier(.34,1.4,.64,1);z-index:200;opacity:0;pointer-events:none;touch-action:manipulation;user-select:none;}
 #voiceFab.vis{opacity:1;pointer-events:auto;}
@@ -474,9 +464,60 @@ select option{background:var(--bg3);}
 #voiceBanner.on{opacity:1;transform:translateX(-50%) translateY(0);}
 .vb-dot{width:9px;height:9px;background:var(--cy);border-radius:50%;flex-shrink:0;animation:vbDot .8s ease-in-out infinite alternate;}
 @keyframes vbDot{from{opacity:.25;transform:scale(.65);}to{opacity:1;transform:scale(1.25);}}
+/* PATIENT QUEUE */
+.cola-stats{display:flex;gap:8px;margin-bottom:12px;}
+.cola-stat{display:flex;flex-direction:column;align-items:center;background:var(--bg3);border:1px solid var(--bd);border-radius:11px;padding:10px 6px;flex:1;min-width:0;}
+.cola-stat-n{font-size:1.5rem;font-weight:700;font-family:"JetBrains Mono",monospace;line-height:1;}
+.cola-stat-n.ro{color:var(--rd)}.cola-stat-n.am{color:var(--yw)}.cola-stat-n.ve{color:var(--gn)}.cola-stat-n.total{color:var(--cy)}
+.cola-stat-l{font-size:.56rem;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-top:3px;text-align:center;}
+.cola-card{display:flex;align-items:stretch;background:var(--bg2);border:1px solid var(--bd);border-radius:13px;margin-bottom:8px;overflow:hidden;transition:opacity .3s;}
+.cola-card.done{opacity:.45;filter:grayscale(.4);}
+.cola-card.vencido{border-color:rgba(255,58,92,.35);animation:none;}
+.cola-bar2{width:4px;flex-shrink:0;}
+.cola-bar2.ro{background:var(--rd)}.cola-bar2.am{background:var(--yw)}.cola-bar2.ve{background:var(--gn)}
+.cola-body{flex:1;padding:10px 12px;min-width:0;}
+.cola-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.cola-class{font-size:.7rem;font-family:"JetBrains Mono",monospace;font-weight:700;letter-spacing:1px;}
+.cola-class.ro{color:var(--rd)}.cola-class.am{color:var(--yw)}.cola-class.ve{color:var(--gn)}
+.cola-pt{font-size:.83rem;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cola-mot{font-size:.72rem;color:var(--mu);margin-bottom:6px;}
+.cola-times{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.cola-elapsed{font-size:.66rem;color:var(--mu);font-family:"JetBrains Mono",monospace;}
+.cola-dlchip{font-size:.66rem;font-family:"JetBrains Mono",monospace;font-weight:700;padding:2px 8px;border-radius:8px;}
+.cola-dlchip.ok{color:var(--gn);background:rgba(0,224,122,.1);}
+.cola-dlchip.warn{color:var(--yw);background:rgba(255,184,48,.1);}
+.cola-dlchip.over{color:var(--rd);background:rgba(255,58,92,.12);animation:pulse .8s infinite alternate;}
+.cola-by{font-size:.6rem;color:var(--mu2);margin-top:4px;font-family:"JetBrains Mono",monospace;}
+.cola-actions{padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-left:1px solid var(--bd);flex-shrink:0;}
+.cola-btn{background:var(--cy);color:#000;border:none;border-radius:8px;padding:7px 11px;font-size:.72rem;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap;font-family:"Familjen Grotesk",sans-serif;}
+.cola-btn.done-btn{background:transparent;border:1.5px solid var(--bd);color:var(--mu);font-size:.66rem;}
+.cola-done-lbl{font-size:.6rem;color:var(--gn);font-family:"JetBrains Mono",monospace;text-align:center;max-width:52px;}
+.cola-refresh{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:8px;padding:5px 10px;font-size:.75rem;cursor:pointer;touch-action:manipulation;transition:all .2s;}
+.cola-refresh:hover{border-color:var(--cy);color:var(--cy);}
+/* SPLASH SCREEN */
+#splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;transition:opacity .5s ease,visibility .5s ease;visibility:visible;}
+#splash.out{opacity:0;visibility:hidden;pointer-events:none;}
+.splash-logo{display:flex;flex-direction:column;align-items:center;gap:10px;animation:splashLogoIn .55s cubic-bezier(.34,1.4,.64,1) both;}
+@keyframes splashLogoIn{from{opacity:0;transform:scale(.82) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.splash-med{font-family:"JetBrains Mono",monospace;font-size:2.6rem;font-weight:700;line-height:1;}
+.splash-med b{background:linear-gradient(90deg,var(--cy),#fff,var(--cy));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 2.5s linear infinite;}
+.splash-med s{color:var(--mu);text-decoration:none;font-style:normal;-webkit-text-fill-color:var(--mu);}
+.splash-sub{font-size:.65rem;color:var(--mu);font-family:"JetBrains Mono",monospace;letter-spacing:3px;text-transform:uppercase;animation:fadeUp .45s .2s ease both;}
+.splash-bar{width:110px;height:2px;background:var(--bd);border-radius:1px;overflow:hidden;animation:fadeUp .45s .35s ease both;}
+.splash-progress{height:100%;width:35%;background:linear-gradient(90deg,transparent,var(--cy),var(--gn),transparent);border-radius:1px;animation:splashScan 1.4s ease-in-out infinite;}
+@keyframes splashScan{0%{transform:translateX(-200%)}100%{transform:translateX(400%)}}
 </style>
 </head>
 <body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-logo">
+    <div class="splash-med"><b>Med</b>IA<s> Suite</s></div>
+    <div class="splash-sub">Sistema medico inteligente</div>
+    <div class="splash-bar"><div class="splash-progress"></div></div>
+  </div>
+</div>
 
 <div class="abanner" id="ab"><div class="atitle" id="at">Medicamento</div><div class="asub" id="as"></div><button class="aok" onclick="dA()">OK</button></div>
 <div class="toast" id="toast"></div>
@@ -655,8 +696,8 @@ select option{background:var(--bg3);}
             <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)">🔬</button>
             <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)">📈</button>
           </div>
-          <div style="position:relative;height:240px;display:flex;align-items:center;justify-content:center">
-            <canvas id="mainChart" style="max-width:100%;max-height:240px"></canvas>
+          <div style="position:relative;height:260px;width:100%;overflow:hidden">
+            <canvas id="mainChart"></canvas>
           </div>
         </div>
         <div class="card" id="nearbyCard" style="display:none">
@@ -783,18 +824,18 @@ select option{background:var(--bg3);}
 
   <div class="card">
     <div class="clabel">Antecedentes medicos</div>
-    <div id="antChips" style="min-height:32px;margin-bottom:10px;display:flex;flex-wrap:wrap"></div>
+    <div id="antChips" style="min-height:28px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:5px"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-      <button class="symptom-opt" onclick="addAnt('HTA')">HTA</button>
-      <button class="symptom-opt" onclick="addAnt('Diabetes')">Diabetes</button>
-      <button class="symptom-opt" onclick="addAnt('Asma')">Asma</button>
-      <button class="symptom-opt" onclick="addAnt('Cardiopatia')">Cardiopatia</button>
-      <button class="symptom-opt" onclick="addAnt('EPOC')">EPOC</button>
-      <button class="symptom-opt" onclick="addAnt('IRC')">IRC</button>
-      <button class="symptom-opt" onclick="addAnt('Epilepsia')">Epilepsia</button>
-      <button class="symptom-opt" onclick="addAnt('Cancer')">Cancer</button>
-      <button class="symptom-opt" onclick="addAnt('VIH')">VIH</button>
-      <button class="symptom-opt" onclick="addAnt('Obesidad')">Obesidad</button>
+      <button class="symptom-opt" id="antBtn-HTA" onclick="toggleAnt('HTA',this)">HTA</button>
+      <button class="symptom-opt" id="antBtn-Diabetes" onclick="toggleAnt('Diabetes',this)">Diabetes</button>
+      <button class="symptom-opt" id="antBtn-Asma" onclick="toggleAnt('Asma',this)">Asma</button>
+      <button class="symptom-opt" id="antBtn-Cardiopatia" onclick="toggleAnt('Cardiopatia',this)">Cardiopatia</button>
+      <button class="symptom-opt" id="antBtn-EPOC" onclick="toggleAnt('EPOC',this)">EPOC</button>
+      <button class="symptom-opt" id="antBtn-IRC" onclick="toggleAnt('IRC',this)">IRC</button>
+      <button class="symptom-opt" id="antBtn-Epilepsia" onclick="toggleAnt('Epilepsia',this)">Epilepsia</button>
+      <button class="symptom-opt" id="antBtn-Cancer" onclick="toggleAnt('Cancer',this)">Cancer</button>
+      <button class="symptom-opt" id="antBtn-VIH" onclick="toggleAnt('VIH',this)">VIH</button>
+      <button class="symptom-opt" id="antBtn-Obesidad" onclick="toggleAnt('Obesidad',this)">Obesidad</button>
     </div>
     <div style="display:flex;gap:7px">
       <input class="fi" id="antCustom" type="text" placeholder="Otro antecedente..." style="flex:1;min-width:0">
@@ -804,7 +845,7 @@ select option{background:var(--bg3);}
 
   <div class="card">
     <div class="clabel">Alergias conocidas</div>
-    <div id="alerChips" style="min-height:32px;margin-bottom:10px;display:flex;flex-wrap:wrap"></div>
+    <div id="alerChips" style="min-height:28px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:5px"></div>
     <div style="display:flex;gap:7px">
       <input class="fi" id="alerInput" type="text" placeholder="ej. Penicilina, Aspirina..." style="flex:1;min-width:0">
       <button class="bpri" style="flex:0 0 auto;width:auto;padding:0 18px;white-space:nowrap" onclick="addAler()">+</button>
@@ -813,7 +854,7 @@ select option{background:var(--bg3);}
 
   <div class="card">
     <div class="clabel">Medicacion actual</div>
-    <div id="medActChips" style="min-height:32px;margin-bottom:10px;display:flex;flex-wrap:wrap"></div>
+    <div id="medActChips" style="min-height:28px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:5px"></div>
     <div style="display:flex;gap:7px">
       <input class="fi" id="medActInput" type="text" placeholder="ej. Metformina 500mg..." style="flex:1;min-width:0">
       <button class="bpri" style="flex:0 0 auto;width:auto;padding:0 18px;white-space:nowrap" onclick="addMedAct()">+</button>
@@ -844,6 +885,20 @@ select option{background:var(--bg3);}
         </div>
         <div id="histLegendPanel" class="hist-legend-panel" style="display:none"></div>
         <div class="card"><div class="clabel" id="lbHistTitle">Historial de triages</div><div id="histList"></div></div>
+      </div>
+      <!-- COLA DE ESPERA -->
+      <div class="sc" id="sc-cola">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="clabel" style="margin:0" id="lbColaTitle">Cola de espera</div>
+          <button class="cola-refresh" onclick="loadCola()" id="colaRefreshBtn">↻ Actualizar</button>
+        </div>
+        <div class="cola-stats" id="colaStats"></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap" id="colaFilters">
+          <button class="hist-flt on" data-cf="all" onclick="setColaFilter('all',this)">Todos</button>
+          <button class="hist-flt" data-cf="pending" onclick="setColaFilter('pending',this)" id="colaPendingBtn">Pendientes</button>
+          <button class="hist-flt" data-cf="done" onclick="setColaFilter('done',this)">Atendidos</button>
+        </div>
+        <div id="colaList"></div>
       </div>
       <!-- CONFIGURACION -->
       <div class="sc" id="sc-config">
@@ -924,25 +979,8 @@ select option{background:var(--bg3);}
     <nav class="bottom-nav" id="bnav"><div class="nind" id="nind"></div></nav>
   </div>
 </div>
-<button id="notesFab" onclick="openNotes()" aria-label="Anotaciones clínicas">📝</button>
 <button id="voiceFab" onclick="toggleVoiceMode()" aria-label="Modo voz">🎤</button>
 <div id="voiceBanner"></div>
-<div id="notesOverlay" onclick="closeNotes()"></div>
-<div id="notesPanel">
-  <div class="notes-handle"></div>
-  <div class="notes-body">
-    <div class="notes-title">
-      <span id="notesLabelEl"></span>
-      <button class="notes-close" onclick="closeNotes()">✕</button>
-    </div>
-    <textarea id="notesTA" oninput="onNotesInput(this)"></textarea>
-    <div id="notesErr" style="font-size:.72rem;color:var(--rd);font-family:'JetBrains Mono',monospace;min-height:18px;margin-top:6px;animation:fadeUp .2s ease;"></div>
-    <div class="notes-footer">
-      <span class="notes-counter" id="notesCounter">0 <span id="notesCharsLbl"></span></span>
-      <button id="notesSaveBtn" onclick="saveNotes()"></button>
-    </div>
-  </div>
-</div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -955,7 +993,7 @@ const QR_SECRET=btoa("media-patient-2025");
 
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
-let CU=null,CR=null,CUName=null,isDark=true,FB=null;
+let CU=null,CR=null,CUName=null,CUPhoto=null,isDark=true,FB=null;
 let CC=localStorage.getItem("ms_country")||"CO";
 function setCountry(cc){CC=cc;localStorage.setItem("ms_country",cc);loadConfig();}
 function getInsLabel(){const m={CO:"EPS afiliada",AR:"Obra social / prepaga",US:"Insurance provider",DE:"Krankenkasse",JP:"健康保険組合"};return m[CC]||t("insLabel");}
@@ -977,7 +1015,8 @@ function toast(m){const t=document.getElementById("toast");t.textContent=m;t.cla
 const L={
   es:{sub:"Sistema medico inteligente",login:"Iniciar sesion",register:"Registrarse",cont:"Continuar",forgot:"Olvide mi contrasena",google:"Continuar con Google",
     ptnTitle:"Acceso como paciente",ptnSub:"Escanear codigo QR de la clinica",staffLink:"Personal medico / Administrador",
-    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historial",config:"Ajustes",prof:"Perfil",
+    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historial",cola:"Cola",config:"Ajustes",prof:"Perfil",
+    colaTitle:"Cola de espera",colaPending:"Pendientes",colaAttended:"Atendidos",colaMarkDone:"Atendido",colaUndone:"Pendiente",colaEmpty:"Sin pacientes pendientes",colaShift:"pacientes en el turno",colaOverdue:"VENCIDO",colaRemaining:"restantes",colaAgo:"hace",colaMin:"min",colaRefresh:"Actualizar",
     search:"Buscar",myMeds:"Mis meds",alerts:"Alertas",inter:"Inter.",
     searchDrug:"Buscar medicamento",consultAI:"Consultar con IA",
     newMed:"Nuevo medicamento",dose:"Dosis",freq:"Frecuencia",hour:"Hora",notes:"Notas",addMed:"+ Agregar",
@@ -1076,7 +1115,8 @@ const L={
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
-    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"History",config:"Settings",prof:"Profile",
+    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"History",cola:"Queue",config:"Settings",prof:"Profile",
+    colaTitle:"Waiting queue",colaPending:"Pending",colaAttended:"Attended",colaMarkDone:"Attended",colaUndone:"Pending",colaEmpty:"No pending patients",colaShift:"patients this shift",colaOverdue:"OVERDUE",colaRemaining:"remaining",colaAgo:"ago",colaMin:"min",colaRefresh:"Refresh",
     search:"Search",myMeds:"My meds",alerts:"Alerts",inter:"Interact.",
     searchDrug:"Search medication",consultAI:"Consult AI",
     newMed:"New medication",dose:"Dose",freq:"Frequency",hour:"Time",notes:"Notes",addMed:"+ Add",
@@ -1175,7 +1215,8 @@ const L={
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
-    dash:"Dashboard",triage:"Triagem",meds:"Meds",hist:"Historico",config:"Ajustes",prof:"Perfil",
+    dash:"Dashboard",triage:"Triagem",meds:"Meds",hist:"Historico",cola:"Fila",config:"Ajustes",prof:"Perfil",
+    colaTitle:"Fila de espera",colaPending:"Pendentes",colaAttended:"Atendidos",colaMarkDone:"Atendido",colaUndone:"Pendente",colaEmpty:"Sem pacientes pendentes",colaShift:"pacientes no turno",colaOverdue:"VENCIDO",colaRemaining:"restantes",colaAgo:"ha",colaMin:"min",colaRefresh:"Atualizar",
     search:"Buscar",myMeds:"Meus meds",alerts:"Alertas",inter:"Interac.",
     searchDrug:"Buscar medicamento",consultAI:"Consultar IA",
     newMed:"Novo medicamento",dose:"Dose",freq:"Frequencia",hour:"Hora",notes:"Notas",addMed:"+ Adicionar",
@@ -1274,7 +1315,8 @@ const L={
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
-    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historique",config:"Reglages",prof:"Profil",
+    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historique",cola:"File",config:"Reglages",prof:"Profil",
+    colaTitle:"File d attente",colaPending:"En attente",colaAttended:"Pris en charge",colaMarkDone:"Pris en charge",colaUndone:"En attente",colaEmpty:"Aucun patient en attente",colaShift:"patients ce quart",colaOverdue:"DEPASSE",colaRemaining:"restantes",colaAgo:"il y a",colaMin:"min",colaRefresh:"Actualiser",
     search:"Chercher",myMeds:"Mes meds",alerts:"Alertes",inter:"Interact.",
     searchDrug:"Rechercher medicament",consultAI:"Consulter IA",
     newMed:"Nouveau medicament",dose:"Dose",freq:"Frequence",hour:"Heure",notes:"Notes",addMed:"+ Ajouter",
@@ -1373,7 +1415,8 @@ const L={
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
-    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Verlauf",config:"Einstellungen",prof:"Profil",
+    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Verlauf",cola:"Warteschlange",config:"Einstellungen",prof:"Profil",
+    colaTitle:"Warteschlange",colaPending:"Wartend",colaAttended:"Behandelt",colaMarkDone:"Behandelt",colaUndone:"Wartend",colaEmpty:"Keine wartenden Patienten",colaShift:"Patienten dieser Schicht",colaOverdue:"UBERSCHRITTEN",colaRemaining:"verbleibend",colaAgo:"vor",colaMin:"min",colaRefresh:"Aktualisieren",
     search:"Suchen",myMeds:"Meine Meds",alerts:"Alarme",inter:"Interakt.",
     searchDrug:"Medikament suchen",consultAI:"KI befragen",
     newMed:"Neues Medikament",dose:"Dosis",freq:"Haufigkeit",hour:"Uhrzeit",notes:"Notizen",addMed:"+ Hinzufugen",
@@ -1472,7 +1515,8 @@ const L={
   },
   ja:{sub:"インテリジェント医療システム",login:"ログイン",register:"登録",cont:"続ける",forgot:"パスワードを忘れた",google:"Googleで続ける",
     ptnTitle:"患者アクセス",ptnSub:"クリニックのQRコードをスキャン",staffLink:"医療スタッフ / 管理者",
-    dash:"ダッシュボード",triage:"トリアージ",meds:"薬",hist:"履歴",config:"設定",prof:"プロフィール",
+    dash:"ダッシュボード",triage:"トリアージ",meds:"薬",hist:"履歴",cola:"待機列",config:"設定",prof:"プロフィール",
+    colaTitle:"待機列",colaPending:"待機中",colaAttended:"対応済",colaMarkDone:"対応済",colaUndone:"待機中",colaEmpty:"待機患者なし",colaShift:"このシフトの患者",colaOverdue:"超過",colaRemaining:"残り",colaAgo:"前",colaMin:"分",colaRefresh:"更新",
     search:"検索",myMeds:"マイ薬",alerts:"アラート",inter:"相互作用",
     searchDrug:"薬を検索",consultAI:"AIに相談",
     newMed:"新しい薬",dose:"用量",freq:"頻度",hour:"時間",notes:"メモ",addMed:"+ 追加",
@@ -1703,7 +1747,7 @@ function initAuth(){
       CU=user;
       try{
         const snap=await FB.getDoc(FB.doc(FB.db,"users",user.uid));
-        if(snap.exists()){CR=snap.data().role;CUName=snap.data().name||null;}
+        if(snap.exists()){CR=snap.data().role;CUName=snap.data().name||null;CUPhoto=snap.data().photoBase64||null;if(CUPhoto)localStorage.setItem("ms_photo_"+user.uid,CUPhoto);}
         else{
           const all=await FB.getDocs(FB.collection(FB.db,"users"));
           CR=all.empty?"admin":"medico";
@@ -1812,13 +1856,20 @@ async function doSignOut(){
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
 }
 
+function dismissSplash(){
+  const s=document.getElementById('splash');
+  if(!s||s.classList.contains('out'))return;
+  s.classList.add('out');
+  setTimeout(()=>s.remove(),520);
+}
+
 function showAuthScreen(){
-  _voiceMode=false;_vStop();closeNotes();
+  dismissSplash();
+  _voiceMode=false;_vStop();
   const fab=document.getElementById('voiceFab');if(fab){fab.classList.remove('on','vis');}
-  _notesShowFab(false);
   document.getElementById("authScreen").style.display="flex";
   document.getElementById("mainApp").classList.remove("on");
-  showPatientView();CU=null;CR=null;CUName=null;
+  showPatientView();CU=null;CR=null;CUName=null;CUPhoto=null;
   // Pre-fill email if saved
   const saved=localStorage.getItem("ms_remember_email");
   if(saved){document.getElementById("aEmail").value=saved;_rememberOn=true;document.getElementById("rememberCheck").classList.add("on");}
@@ -2077,10 +2128,7 @@ function openNotes(){
   setTimeout(()=>document.getElementById('notesTA').focus(),350);
 }
 
-function closeNotes(){
-  document.getElementById('notesPanel').classList.remove('on');
-  document.getElementById('notesOverlay').classList.remove('on');
-}
+function closeNotes(){}
 
 function onNotesInput(el){
   const len=el.value.length;
@@ -2100,8 +2148,6 @@ function saveNotes(){
     return;
   }
   TD.notas=val;
-  const fab=document.getElementById('notesFab');
-  if(fab)fab.classList.toggle('has-notes',!!val);
   closeNotes();
   if(val)toast(t('notesIncluded'));
 }
@@ -2125,6 +2171,7 @@ function _vHideBanner(){
 }
 
 function showApp(){
+  dismissSplash();
   document.getElementById("authScreen").style.display="none";
   document.getElementById("mainApp").classList.add("on");
   buildNav();updateUI();
@@ -2186,9 +2233,9 @@ function showWelcome(){
 
 // NAV
 const NAV={
-  admin:[{id:"dash",ic:"📊",k:"dash"},{id:"triage",ic:"🏥",k:"triage"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
-  admin_hosp:[{id:"dash",ic:"📊",k:"dash"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
-  medico:[{id:"triage",ic:"🏥",k:"triage"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
+  admin:[{id:"dash",ic:"📊",k:"dash"},{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
+  admin_hosp:[{id:"dash",ic:"📊",k:"dash"},{id:"cola",ic:"🩺",k:"cola"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
+  medico:[{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
   paciente:[{id:"meds",ic:"💊",k:"meds"},{id:"prof",ic:"👤",k:"prof"}],
 };
 
@@ -2233,14 +2280,15 @@ function navigateTo(id,idx){
   if(id==="dash")loadDash();
   if(id==="triage")rTriage();
   if(id==="hist")loadHist();
+  if(id==="cola")loadCola();
   if(id==="hc")loadHC();
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
+  if(id!=="cola")_stopColaTimer();
   document.getElementById("mainBody").scrollTop=0;
   // Show FABs only on triage tab
   const fab=document.getElementById('voiceFab');
   if(fab){fab.classList.toggle('vis',id==='triage');if(id!=='triage'&&_voiceMode){_voiceMode=false;fab.classList.remove('on');_vStop();}}
-  _notesShowFab(id==='triage');
 }
 
 function updateUI(){
@@ -2252,8 +2300,10 @@ function updateUI(){
   const av=name[0].toUpperCase();
   const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];
   const col=cols[av.charCodeAt(0)%cols.length];
+  const photo=CUPhoto||localStorage.getItem("ms_photo_"+CU?.uid);
+  const avInner=photo?`<img id="userAvSidebar" src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span id="userAvSidebar" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">${av}</span>`;
   const sc=document.getElementById("sideChip");
-  if(sc)sc.innerHTML=`<div class="user-av" style="background:${col}">${av}</div><div><div class="user-name">${name}</div><div class="user-role">${RL[CR]||CR}</div></div>`;
+  if(sc)sc.innerHTML=`<div class="user-av" style="background:${photo?"transparent":col}">${avInner}</div><div><div class="user-name">${name}</div><div class="user-role">${RL[CR]||CR}</div></div>`;
   document.getElementById("qrCard").style.display=(CR==="admin"||CR==="medico")?"block":"none";
 }
 
@@ -2523,9 +2573,9 @@ function loadProf(){
   const av=name[0].toUpperCase();const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];
   const col=cols[av.charCodeAt(0)%cols.length];
   const profEl=document.getElementById("profAv2");
-  const saved=localStorage.getItem("ms_photo_"+CU?.uid);
+  const photo=CUPhoto||localStorage.getItem("ms_photo_"+CU?.uid);
   if(profEl){
-    if(saved){profEl.innerHTML=`<img src="${saved}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+    if(photo){profEl.innerHTML=`<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;profEl.style.background="transparent";}
     else{profEl.textContent=av;profEl.style.background=col;}
   }
   document.getElementById("profName2").textContent=name;
@@ -2567,16 +2617,23 @@ function handleProfilePhoto(input,ctx){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=e=>{
-    const data=e.target.result;
-    localStorage.setItem("ms_photo_"+CU?.uid,data);
-    if(ctx==="config"){
-      const el=document.getElementById("configPhotoAv");
-      if(el)el.innerHTML=`<img src="${data}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    } else if(ctx==="prof"){
-      const el=document.getElementById("profAv2");
-      if(el)el.innerHTML=`<img src="${data}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    }
-    toast(t("photoUpdated"));
+    const img=new Image();
+    img.onload=async()=>{
+      const MAX=220;let w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const data=canvas.toDataURL('image/jpeg',0.78);
+      CUPhoto=data;
+      localStorage.setItem("ms_photo_"+CU?.uid,data);
+      if(FB&&CU){try{await FB.updateDoc(FB.doc(FB.db,"users",CU.uid),{photoBase64:data});}catch(e){}}
+      const avStyle="width:100%;height:100%;object-fit:cover;border-radius:50%";
+      const inner=`<img src="${data}" style="${avStyle}">`;
+      const ids=ctx==="config"?["configPhotoAv","userAvSidebar"]:["profAv2","userAvSidebar"];
+      ids.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=inner;});
+      toast(t("photoUpdated"));
+    };
+    img.src=e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -2750,8 +2807,15 @@ function rTriage(){
     const ta=document.createElement("textarea");
     ta.className="fi";ta.style.cssText="resize:vertical;min-height:120px;font-size:.8rem;line-height:1.55;padding:12px;margin-top:4px;font-family:'Familjen Grotesk',sans-serif;";
     ta.value=TD.notas;
-    ta.oninput=()=>{TD.notas=ta.value;};
+    const warnEl=document.createElement("div");warnEl.className="notes-warn";
+    warnEl.textContent="⚠️ Incluya informacion clinica: antecedentes, alergias, medicacion, signos relevantes o \"Sin antecedentes conocidos.\"";
+    ta.oninput=()=>{
+      TD.notas=ta.value;
+      const v=ta.value.trim();
+      warnEl.classList.toggle("on",v.length>10&&!_isClinical(v));
+    };
     card.appendChild(ta);
+    card.appendChild(warnEl);
     const hint=document.createElement("div");
     hint.style.cssText="font-size:.68rem;color:var(--mu);margin-top:7px;font-family:'JetBrains Mono',monospace;line-height:1.4;border-left:2px solid var(--cy);padding-left:8px;";
     hint.textContent=s.hint||"";
@@ -2829,6 +2893,19 @@ function rAnalyzing(){
 }
 
 async function callAI(){
+  // Validate clinical notes before wasting an API call
+  if(TD.notas&&TD.notas.trim()&&!_isClinical(TD.notas)){
+    const lastStep=aSteps().length-1;
+    document.getElementById("trc").innerHTML=`
+      <div class="card">
+        <div class="ib rd" style="margin-bottom:12px">
+          <div class="ibl">⚠️ Anotaciones no validas</div>
+          <div class="ibt">Las anotaciones deben contener informacion clinica relevante: antecedentes, alergias, medicacion actual, signos vitales, diagnosticos previos, etc.<br><br>Si el paciente no refiere datos adicionales, deje el texto predeterminado o escriba "Sin antecedentes conocidos."</div>
+        </div>
+        <button class="bsec" onclick="TS=${lastStep};rTriage()">← Corregir anotaciones</button>
+      </div>`;
+    return;
+  }
   const mM={dolor_pecho:"Dolor pecho",disnea:"Dif. respirar",trauma:"Trauma",abdominal:"Dolor abdominal",neuro:"Convulsion/inconsciencia",fiebre:"Fiebre alta",otro:"Otro"};
   const cM={alerta:"Alerta",voz:"Solo a voz",dolor_e:"Solo al dolor",inconsc:"Inconsciente"};
   const tM={adulto:"Adulto 18-59",adulto_mayor:"Adulto mayor 60+",embarazada:"Embarazada",nino:`Nino ${TD.enino||"?"} anos`};
@@ -2862,10 +2939,18 @@ SOLO JSON sin backticks:
   }
 }
 
+let _lastResult=null;
 function rResult(r){
+  _lastResult={...r,tipo:TD.tipo,motivo:TD.motivo,ts:Date.now()};
   const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[r.clasificacion]||"ve";
   const ic={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢"}[r.clasificacion];
   const pm={ROJO:t("immAttn")||"ATENCION INMEDIATA",AMARILLO:t("urgent")||"URGENTE",VERDE:t("canWait")||"PUEDE ESPERAR"}[r.clasificacion];
+  // Attention deadline chip
+  const deadlineMin={ROJO:0,AMARILLO:30,VERDE:120}[r.clasificacion]??30;
+  let attnHtml="";
+  if(deadlineMin===0){attnHtml=`<div class="attn-chip now">⚡ ATENDER AHORA</div>`;}
+  else{const dl=new Date(Date.now()+deadlineMin*60000);const hh=String(dl.getHours()).padStart(2,"0");const mm2=String(dl.getMinutes()).padStart(2,"0");attnHtml=`<div class="attn-chip ${deadlineMin<=30?"soon":"wait"}">⏱ Atender antes de las ${hh}:${mm2}</div>`;}
+
   const tM2={adulto:t("adultLbl")||"Adulto",adulto_mayor:t("elderLbl")||"Tercera edad",embarazada:t("pregLbl")||"Embarazada",nino:t("childLbl")||"Pediatrico",adolescente:t("teenLbl")||"Adolescente"};
   const vt=TD.vit||{};const dc={normal:"var(--gn)",warning:"var(--yw)",critical:"var(--rd)"};
   const vcs=[vt.ps?{l:"PA",v:`${vt.ps}/${vt.pd}`,s:chkPA(vt.ps)}:null,vt.fc?{l:"FC",v:`${vt.fc}lpm`,s:chkFC(vt.fc)}:null,vt.sat?{l:"SatO2",v:`${vt.sat}%`,s:chkSat(vt.sat)}:null,vt.tem?{l:"Temp",v:`${vt.tem}C`,s:chkT(vt.tem)}:null,vt.fr?{l:"FR",v:`${vt.fr}rpm`,s:chkFR(vt.fr)}:null].filter(Boolean);
@@ -2875,17 +2960,35 @@ function rResult(r){
     ${pedH}
     <div class="rcard ${cc}"><span class="ric">${ic}</span><div class="rlbl">${r.clasificacion}</div>
     <div class="rpri">${pm}${r.tiempo_atencion?" · "+r.tiempo_atencion:""}</div>
-    <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap">
+    ${attnHtml}
+    <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:8px">
       <span class="chip">${tM2[TD.tipo]||""}</span>${TD.semanas?`<span class="chip">${TD.semanas} sem.</span>`:""}${TD.enino?`<span class="chip">${TD.enino} anos</span>`:""}
       <span class="chip">Dolor: ${TD.dolor}/10</span></div></div>
     <div class="card"><div class="clabel" data-i18n="clinicalAnalysis">${t("clinicalAnalysis")||"Analisis clinico"}</div><div style="font-size:.83rem;line-height:1.65">${r.justificacion}</div>${alH}</div>
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:7px;height:7px;border-radius:50%;background:${dc[v.s]};flex-shrink:0"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.76rem">${v.v}</div></div>`).join("")}</div>`:""}
     <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.82rem;line-height:1.5">${a}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
+    <button class="btn-share" onclick="shareResult()">📤 Compartir resultado</button>
     <button class="bsec" onclick="resetT()">← ${t("newPatient")||"Nuevo paciente"}</button>`;
 }
 
-function resetT(){TS=0;TD={};TM=[];const fab=document.getElementById('notesFab');if(fab)fab.classList.remove('has-notes');rTriage();}
+function resetT(){TS=0;TD={};TM=[];_lastResult=null;rTriage();}
+
+function shareResult(){
+  if(!_lastResult)return;
+  const r=_lastResult;
+  const ic={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢"}[r.clasificacion]||"⚪";
+  const tM2={adulto:"Adulto",adulto_mayor:"Adulto mayor",embarazada:"Embarazada",nino:"Pediatrico",adolescente:"Adolescente"};
+  const mM2={dolor_pecho:"Dolor en el pecho",disnea:"Dificultad respiratoria",trauma:"Trauma/herida",abdominal:"Dolor abdominal",neuro:"Neurologico",fiebre:"Fiebre alta",otro:"Otro"};
+  const now=new Date();const ts=`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  const acciones=(r.acciones||[]).map((a,i)=>`${String(i+1).padStart(2,"0")}. ${a}`).join("\n");
+  const text=`🏥 RESULTADO DE TRIAGE — MedIA Suite\n${"─".repeat(35)}\n${ic} ${r.clasificacion} · ${tM2[r.tipo]||r.tipo||""}\nMotivo: ${mM2[r.motivo]||r.motivo||""} · ${ts}\n${"─".repeat(35)}\n📋 Analisis:\n${r.justificacion||""}\n${"─".repeat(35)}\n✅ Acciones:\n${acciones}\n${"─".repeat(35)}\nGenerado con MedIA Suite`;
+  if(navigator.share){
+    navigator.share({title:"Resultado de Triage",text}).catch(()=>{});
+  }else{
+    navigator.clipboard?.writeText(text).then(()=>toast("Resultado copiado al portapapeles")).catch(()=>toast("No se pudo compartir"));
+  }
+}
 function chkPA(s){s=parseFloat(s);return s<90||s>180?"critical":s<100||s>150?"warning":"normal";}
 function chkFC(f){f=parseFloat(f);return f<50||f>130?"critical":f<60||f>100?"warning":"normal";}
 function chkSat(s){s=parseFloat(s);return s<90?"critical":s<95?"warning":"normal";}
@@ -3250,8 +3353,14 @@ function renderSymptomDetail(card){
 // ══════════════════════════════════════
 let hcAnts=[], hcAlers=[], hcMedActs=[], hcPhoto=null;
 
-function addAnt(val){
-  if(!hcAnts.includes(val)){hcAnts.push(val);}
+function toggleAnt(val,btn){
+  if(hcAnts.includes(val)){
+    hcAnts=hcAnts.filter(x=>x!==val);
+    if(btn)btn.classList.remove('sel');
+  }else{
+    hcAnts.push(val);
+    if(btn)btn.classList.add('sel');
+  }
   renderAntChips();
 }
 function addAntCustom(){
@@ -3259,7 +3368,12 @@ function addAntCustom(){
   if(v&&!hcAnts.includes(v)){hcAnts.push(v);document.getElementById('antCustom').value='';}
   renderAntChips();
 }
-function removeAnt(v){hcAnts=hcAnts.filter(x=>x!==v);renderAntChips();}
+function removeAnt(v){
+  hcAnts=hcAnts.filter(x=>x!==v);
+  const btn=document.getElementById('antBtn-'+v);
+  if(btn)btn.classList.remove('sel');
+  renderAntChips();
+}
 function renderAntChips(){
   document.getElementById('antChips').innerHTML=hcAnts.map(v=>`<span class="ant-chip">${v}<span class="ax" onclick="removeAnt('${v}')">✕</span></span>`).join('');
 }
@@ -3307,7 +3421,7 @@ Imagen: ${base64.substring(0,100)}... (imagen adjunta)`}
       const d=await r.json();
       const txt=d.choices[0].message.content.replace(/\`\`\`json|\`\`\`/g,'').trim();
       const extracted=JSON.parse(txt);
-      if(extracted.antecedentes?.length){extracted.antecedentes.forEach(a=>addAnt(a));}
+      if(extracted.antecedentes?.length){extracted.antecedentes.forEach(a=>{if(!hcAnts.includes(a))hcAnts.push(a);});renderAntChips();}
       if(extracted.alergias?.length){extracted.alergias.forEach(a=>{if(!hcAlers.includes(a)){hcAlers.push(a);}});renderAlerChips();}
       if(extracted.medicacion?.length){extracted.medicacion.forEach(m=>{if(!hcMedActs.includes(m)){hcMedActs.push(m);}});renderMedActChips();}
       analysis.innerHTML=`<div class="ib gn"><div class="ibl">Datos extraidos por IA</div><div class="ibt">${extracted.nota||'Datos agregados automaticamente arriba.'}</div></div>`;
@@ -3367,10 +3481,10 @@ async function loadHC(){
 
 function showNewHC(){
   hcAnts=[];hcAlers=[];hcMedActs=[];hcPhoto=null;
-  // Reset form
   ['hcName','hcAge','hcDoc','hcNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const preview=document.getElementById('hcPhotoPreview');if(preview)preview.style.display='none';
   const analysis=document.getElementById('hcPhotoAnalysis');if(analysis)analysis.innerHTML='';
+  document.querySelectorAll('[id^="antBtn-"]').forEach(b=>b.classList.remove('sel'));
   renderAntChips();renderAlerChips();renderMedActChips();
   navigateTo('hc-new');
 }
@@ -3379,6 +3493,217 @@ function viewHC(id){toast('Vista detallada proximamente.');}
 
 
 function toggleExplain(i){const el=document.getElementById("explain-"+i);if(el)el.classList.toggle("open");}
+
+// ══════════════════════════════════════
+// COLA DE PACIENTES
+// ══════════════════════════════════════
+let _colaData=[], _colaFilter="all", _colaInterval=null, _colaTimerInterval=null;
+
+const COLA_DEADLINE={ROJO:15,AMARILLO:30,VERDE:120}; // minutos
+
+function _stopColaTimer(){
+  if(_colaInterval){clearInterval(_colaInterval);_colaInterval=null;}
+  if(_colaTimerInterval){clearInterval(_colaTimerInterval);_colaTimerInterval=null;}
+}
+
+async function loadCola(){
+  if(!FB||!CU)return;
+  const listEl=document.getElementById("colaList");
+  const statsEl=document.getElementById("colaStats");
+  if(!listEl)return;
+  listEl.innerHTML=`<div class="ldg"><div class="sp"></div>Cargando cola...</div>`;
+
+  try{
+    // Últimas 12 horas
+    const since=new Date(Date.now()-12*60*60*1000);
+    const snap=await FB.getDocs(FB.query(
+      FB.collection(FB.db,"triages"),
+      FB.orderBy("createdAt","desc"),
+      FB.limit(150)
+    ));
+    _colaData=snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(d=>{
+        const ts=d.createdAt?.toDate?.()??new Date(d.createdAt??0);
+        return ts>since;
+      });
+
+    _renderCola();
+
+    // Auto-refresh cada 45s y timer cada 30s
+    _stopColaTimer();
+    _colaInterval=setInterval(loadCola,45000);
+    _colaTimerInterval=setInterval(_renderColaTimers,30000);
+  }catch(e){
+    if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error al cargar: ${e.message}</div>`;
+  }
+}
+
+function setColaFilter(f,btn){
+  _colaFilter=f;
+  document.querySelectorAll("[data-cf]").forEach(b=>b.classList.remove("on"));
+  if(btn)btn.classList.add("on");
+  _renderCola();
+}
+
+function _renderCola(){
+  const listEl=document.getElementById("colaList");
+  const statsEl=document.getElementById("colaStats");
+  if(!listEl)return;
+
+  const tx=L[CL]||L.es;
+  const tM={adulto:t("adultLbl")||"Adulto",adulto_mayor:t("elderLbl")||"Ad. mayor",embarazada:t("pregLbl")||"Embarazada",nino:t("childLbl")||"Pediatrico",adolescente:t("teenLbl")||"Adolescente"};
+  const mM={dolor_pecho:"💔 Dolor pecho",disnea:"🫁 Disnea",trauma:"🤕 Trauma",abdominal:"🤢 Abdominal",neuro:"🧠 Neurologico",fiebre:"🌡️ Fiebre",otro:"❓ Otro"};
+  const icM={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢"};
+  const ccM={ROJO:"ro",AMARILLO:"am",VERDE:"ve"};
+  const priorityOrder={ROJO:0,AMARILLO:1,VERDE:2};
+
+  // Estadísticas
+  const pending=_colaData.filter(d=>!d.atendido);
+  const done=_colaData.filter(d=>d.atendido);
+  const ro=pending.filter(d=>d.clasificacion==="ROJO").length;
+  const am=pending.filter(d=>d.clasificacion==="AMARILLO").length;
+  const ve=pending.filter(d=>d.clasificacion==="VERDE").length;
+
+  if(statsEl){
+    statsEl.innerHTML=`
+      <div class="cola-stat"><span class="cola-stat-n total">${_colaData.length}</span><span class="cola-stat-l">${tx.colaShift||"en turno"}</span></div>
+      <div class="cola-stat"><span class="cola-stat-n ro">${ro}</span><span class="cola-stat-l">🔴 ${tx.colaPending||"Pendientes"}</span></div>
+      <div class="cola-stat"><span class="cola-stat-n am">${am}</span><span class="cola-stat-l">🟡 ${tx.colaPending||"Pendientes"}</span></div>
+      <div class="cola-stat"><span class="cola-stat-n ve">${ve}</span><span class="cola-stat-l">🟢 ${tx.colaPending||"Pendientes"}</span></div>`;
+  }
+
+  // Filtrar
+  let filtered=_colaData;
+  if(_colaFilter==="pending")filtered=pending;
+  else if(_colaFilter==="done")filtered=done;
+
+  // Ordenar: pendientes por urgencia+tiempo, atendidos al fondo por hora desc
+  filtered=[...filtered].sort((a,b)=>{
+    if(a.atendido!==b.atendido)return a.atendido?1:-1;
+    if(!a.atendido){
+      const pd=(priorityOrder[a.clasificacion]??3)-(priorityOrder[b.clasificacion]??3);
+      if(pd!==0)return pd;
+      const ta=a.createdAt?.toDate?.()??new Date(0);
+      const tb=b.createdAt?.toDate?.()??new Date(0);
+      return ta-tb; // más antiguo primero
+    }
+    const ta=a.createdAt?.toDate?.()??new Date(0);
+    const tb=b.createdAt?.toDate?.()??new Date(0);
+    return tb-ta;
+  });
+
+  if(!filtered.length){
+    listEl.innerHTML=`<div class="cola-empty"><div class="cola-empty-ic">✅</div><div class="cola-empty-tx">${tx.colaEmpty||"Sin pacientes pendientes"}</div></div>`;
+    return;
+  }
+
+  listEl.innerHTML=filtered.map(d=>{
+    const cc=ccM[d.clasificacion]||"ve";
+    const ic=icM[d.clasificacion]||"⚪";
+    const ts=d.createdAt?.toDate?.()??new Date(0);
+    const elapsedMin=Math.floor((Date.now()-ts.getTime())/60000);
+    const deadlineMin=COLA_DEADLINE[d.clasificacion]??30;
+    const remainMin=deadlineMin-elapsedMin;
+    const isDone=!!d.atendido;
+
+    let dlClass="ok",dlLabel="";
+    if(!isDone){
+      if(remainMin<0){dlClass="over";dlLabel=`${tx.colaOverdue||"VENCIDO"} +${Math.abs(remainMin)}${tx.colaMin||"min"}`;}
+      else if(remainMin<=Math.round(deadlineMin*0.3)){dlClass="warn";dlLabel=`${remainMin}${tx.colaMin||"min"} ${tx.colaRemaining||"restantes"}`;}
+      else{dlClass="ok";dlLabel=`${remainMin}${tx.colaMin||"min"} ${tx.colaRemaining||"restantes"}`;}
+    }
+
+    const byLine=d.userName?`<div class="cola-by">Triageado por ${d.userName}</div>`:"";
+    const atendidoAt=d.atendidoAt?.toDate?.();
+    const doneLabel=atendidoAt?`<div class="cola-done-lbl">✓ ${String(atendidoAt.getHours()).padStart(2,"0")}:${String(atendidoAt.getMinutes()).padStart(2,"0")}</div>`:`<div class="cola-done-lbl">✓ ${tx.colaAttended||"Atendido"}</div>`;
+
+    return `<div class="cola-card${isDone?" done":""}${dlClass==="over"&&!isDone?" vencido":""}" id="colacard-${d.id}">
+      <div class="cola-bar2 ${cc}"></div>
+      <div class="cola-body">
+        <div class="cola-top">
+          <span>${ic}</span>
+          <span class="cola-class ${cc}">${d.clasificacion}</span>
+        </div>
+        <div class="cola-pt">${tM[d.tipo]||d.tipo||"—"}</div>
+        <div class="cola-mot">${mM[d.motivo]||d.motivo||"—"}</div>
+        <div class="cola-times">
+          <span class="cola-elapsed" id="elapsed-${d.id}">${tx.colaAgo||"hace"} ${elapsedMin}${tx.colaMin||"min"}</span>
+          ${!isDone?`<span class="cola-dlchip ${dlClass}" id="dlchip-${d.id}">${dlLabel}</span>`:""}
+        </div>
+        ${byLine}
+      </div>
+      <div class="cola-actions">
+        ${isDone
+          ? doneLabel+`<button class="cola-btn done-btn" onclick="markCola('${d.id}',false)">${tx.colaUndone||"Pendiente"}</button>`
+          : `<button class="cola-btn" onclick="markCola('${d.id}',true)">${tx.colaMarkDone||"Atendido"}</button>`
+        }
+      </div>
+    </div>`;
+  }).join("");
+
+  // Badge de pendientes en el botón nav
+  _updateColaBadge(pending.length);
+}
+
+function _renderColaTimers(){
+  const tx=L[CL]||L.es;
+  _colaData.filter(d=>!d.atendido).forEach(d=>{
+    const ts=d.createdAt?.toDate?.()??new Date(0);
+    const elapsedMin=Math.floor((Date.now()-ts.getTime())/60000);
+    const deadlineMin=COLA_DEADLINE[d.clasificacion]??30;
+    const remainMin=deadlineMin-elapsedMin;
+    const eEl=document.getElementById("elapsed-"+d.id);
+    const dEl=document.getElementById("dlchip-"+d.id);
+    if(eEl)eEl.textContent=`${tx.colaAgo||"hace"} ${elapsedMin}${tx.colaMin||"min"}`;
+    if(dEl){
+      if(remainMin<0){dEl.className="cola-dlchip over";dEl.textContent=`${tx.colaOverdue||"VENCIDO"} +${Math.abs(remainMin)}${tx.colaMin||"min"}`;}
+      else if(remainMin<=Math.round(deadlineMin*0.3)){dEl.className="cola-dlchip warn";dEl.textContent=`${remainMin}${tx.colaMin||"min"} ${tx.colaRemaining||"restantes"}`;}
+      else{dEl.className="cola-dlchip ok";dEl.textContent=`${remainMin}${tx.colaMin||"min"} ${tx.colaRemaining||"restantes"}`;}
+      // Si vence, añadir clase al card
+      const card=document.getElementById("colacard-"+d.id);
+      if(card)card.classList.toggle("vencido",remainMin<0);
+    }
+  });
+}
+
+function _updateColaBadge(count){
+  const btn=document.getElementById("nb-cola");
+  if(!btn)return;
+  const existing=btn.querySelector(".cola-badge");
+  if(existing)existing.remove();
+  if(count>0){
+    const badge=document.createElement("span");
+    badge.className="cola-badge";
+    badge.style.cssText="position:absolute;top:4px;right:4px;background:var(--rd);color:#fff;border-radius:50%;width:16px;height:16px;font-size:.55rem;font-family:JetBrains Mono,monospace;font-weight:700;display:flex;align-items:center;justify-content:center;";
+    badge.textContent=count>9?"9+":count;
+    btn.style.position="relative";
+    btn.appendChild(badge);
+  }
+}
+
+async function markCola(id,done){
+  if(!FB||!CU)return;
+  const card=document.getElementById("colacard-"+id);
+  if(card)card.style.opacity="0.5";
+  try{
+    await FB.updateDoc(FB.doc(FB.db,"triages",id),{
+      atendido:done,
+      atendidoAt:done?FB.serverTimestamp():null,
+      atendidoPor:done?uName():"",
+    });
+    const idx=_colaData.findIndex(d=>d.id===id);
+    if(idx>=0){
+      _colaData[idx].atendido=done;
+      _colaData[idx].atendidoAt=done?{toDate:()=>new Date()}:null;
+    }
+    _renderCola();
+    toast(done?t("colaAttended")||"Paciente atendido":"Marcado como pendiente");
+  }catch(e){
+    if(card)card.style.opacity="";
+    toast("Error: "+e.message);
+  }
+}
 </script>
 </body>
 </html>
