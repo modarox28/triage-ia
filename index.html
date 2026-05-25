@@ -408,6 +408,17 @@ select option{background:var(--bg3);}
 .int-explain-btn{padding:6px 13px;border-radius:8px;border:1.5px solid currentColor;background:transparent;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Familjen Grotesk",sans-serif;}
 .int-explain{display:none;margin-top:9px;padding:9px 11px;background:rgba(0,0,0,.15);border-radius:8px;font-size:.77rem;line-height:1.6;color:var(--tx);}
 .int-explain.open{display:block;animation:fadeUp .2s ease;}
+/* VOICE MODE FAB */
+#voiceFab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);right:16px;width:52px;height:52px;border-radius:50%;border:none;background:var(--cy);color:#000;font-size:1.35rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(0,200,240,.45);transition:all .28s cubic-bezier(.34,1.4,.64,1);z-index:200;opacity:0;pointer-events:none;touch-action:manipulation;user-select:none;}
+#voiceFab.vis{opacity:1;pointer-events:auto;}
+#voiceFab.on{background:#ff3b6e;box-shadow:0 4px 20px rgba(255,59,110,.55);animation:vFabPulse 1.4s ease-in-out infinite;}
+#voiceFab:active{transform:scale(.88);}
+@keyframes vFabPulse{0%,100%{box-shadow:0 4px 20px rgba(255,59,110,.55);}50%{box-shadow:0 4px 40px rgba(255,59,110,.9),0 0 0 10px rgba(255,59,110,.12);}}
+/* VOICE BANNER */
+#voiceBanner{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);left:50%;transform:translateX(-50%) translateY(14px);background:rgba(11,17,32,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 22px 10px 16px;border-radius:28px;font-size:.82rem;letter-spacing:.4px;opacity:0;transition:all .28s cubic-bezier(.34,1.4,.64,1);pointer-events:none;z-index:201;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+#voiceBanner.on{opacity:1;transform:translateX(-50%) translateY(0);}
+.vb-dot{width:9px;height:9px;background:var(--cy);border-radius:50%;flex-shrink:0;animation:vbDot .8s ease-in-out infinite alternate;}
+@keyframes vbDot{from{opacity:.25;transform:scale(.65);}to{opacity:1;transform:scale(1.25);}}
 </style>
 </head>
 <body>
@@ -788,6 +799,8 @@ select option{background:var(--bg3);}
     <nav class="bottom-nav" id="bnav"><div class="nind" id="nind"></div></nav>
   </div>
 </div>
+<button id="voiceFab" onclick="toggleVoiceMode()" aria-label="Modo voz">🎤</button>
+<div id="voiceBanner"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
@@ -896,6 +909,7 @@ const L={
     ageErrorPed:"Edad invalida para paciente pediatrico. El rango valido es 0 a 12 anos.",ageErrorTeen:"Edad invalida para adolescente. El rango valido es 13 a 17 anos.",
     rememberMe:"Recordarme en este dispositivo",rememberWarn:"Las credenciales se guardaran en este dispositivo. No uses esta opcion en dispositivos compartidos o publicos.",rememberConfirm:"Entendido, guardar",rememberCancel:"Cancelar",
     inactWarn:"Tu sesion se cerrara pronto por inactividad.",stayActive:"Seguir activo",sessionOut:"Sesion cerrada por inactividad.",
+    voiceMode:"Modo Voz",voiceListening:"Escuchando...",voiceHeard:"Entendido:",voiceNotUnderstood:"No entendi, repite por favor.",voiceNotSupported:"Tu navegador no soporta comandos de voz.",voiceSayNumber:"Di el numero de tu opcion.",voiceSayScale:"Di un numero del cero al diez.",voiceSelectMulti:"Di el numero de otra opcion o di siguiente para continuar.",voiceConfirmed:"Seleccionado:",voiceNext:"Siguiente.",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -979,6 +993,7 @@ const L={
     ageErrorPed:"Invalid age for pediatric patient. Valid range is 0 to 12 years.",ageErrorTeen:"Invalid age for adolescent. Valid range is 13 to 17 years.",
     rememberMe:"Remember me on this device",rememberWarn:"Credentials will be saved on this device. Do not use this option on shared or public devices.",rememberConfirm:"Got it, save",rememberCancel:"Cancel",
     inactWarn:"Your session will close soon due to inactivity.",stayActive:"Stay active",sessionOut:"Session closed due to inactivity.",
+    voiceMode:"Voice Mode",voiceListening:"Listening...",voiceHeard:"Got it:",voiceNotUnderstood:"Didn't catch that, please repeat.",voiceNotSupported:"Your browser does not support voice commands.",voiceSayNumber:"Say the number of your option.",voiceSayScale:"Say a number from zero to ten.",voiceSelectMulti:"Say another option number or say next to continue.",voiceConfirmed:"Selected:",voiceNext:"Next.",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -1062,6 +1077,7 @@ const L={
     ageErrorPed:"Idade invalida para paciente pediatrico. Faixa valida: 0 a 12 anos.",ageErrorTeen:"Idade invalida para adolescente. Faixa valida: 13 a 17 anos.",
     rememberMe:"Lembrar neste dispositivo",rememberWarn:"As credenciais serao salvas neste dispositivo. Nao use esta opcao em dispositivos compartilhados.",rememberConfirm:"Entendido, salvar",rememberCancel:"Cancelar",
     inactWarn:"Sua sessao sera encerrada em breve por inatividade.",stayActive:"Continuar ativo",sessionOut:"Sessao encerrada por inatividade.",
+    voiceMode:"Modo Voz",voiceListening:"Ouvindo...",voiceHeard:"Entendido:",voiceNotUnderstood:"Nao entendi, repita por favor.",voiceNotSupported:"Seu navegador nao suporta comandos de voz.",voiceSayNumber:"Diga o numero da sua opcao.",voiceSayScale:"Diga um numero de zero a dez.",voiceSelectMulti:"Diga o numero de outra opcao ou diga proximo para continuar.",voiceConfirmed:"Selecionado:",voiceNext:"Proximo.",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -1145,6 +1161,7 @@ const L={
     ageErrorPed:"Age invalide pour patient pediatrique. Plage valide: 0 a 12 ans.",ageErrorTeen:"Age invalide pour adolescent. Plage valide: 13 a 17 ans.",
     rememberMe:"Se souvenir sur cet appareil",rememberWarn:"Les identifiants seront sauvegardes sur cet appareil. N utilisez pas cette option sur des appareils partages.",rememberConfirm:"Compris, sauvegarder",rememberCancel:"Annuler",
     inactWarn:"Votre session se fermera bientot par inactivite.",stayActive:"Rester actif",sessionOut:"Session fermee par inactivite.",
+    voiceMode:"Mode Vocal",voiceListening:"J ecoute...",voiceHeard:"Compris:",voiceNotUnderstood:"Je n ai pas compris, repetez.",voiceNotSupported:"Votre navigateur ne supporte pas les commandes vocales.",voiceSayNumber:"Dites le numero de votre option.",voiceSayScale:"Dites un nombre de zero a dix.",voiceSelectMulti:"Dites un autre numero ou dites suivant pour continuer.",voiceConfirmed:"Selectionne:",voiceNext:"Suivant.",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -1228,6 +1245,7 @@ const L={
     ageErrorPed:"Ungultiges Alter fur padiatrischen Patienten. Gultig: 0 bis 12 Jahre.",ageErrorTeen:"Ungultiges Alter fur Jugendlichen. Gultig: 13 bis 17 Jahre.",
     rememberMe:"Auf diesem Gerat merken",rememberWarn:"Anmeldedaten werden auf diesem Gerat gespeichert. Nicht auf gemeinsam genutzten Geraten verwenden.",rememberConfirm:"Verstanden, speichern",rememberCancel:"Abbrechen",
     inactWarn:"Ihre Sitzung wird bald wegen Inaktivitat geschlossen.",stayActive:"Aktiv bleiben",sessionOut:"Sitzung wegen Inaktivitat beendet.",
+    voiceMode:"Sprachmodus",voiceListening:"Ich hore...",voiceHeard:"Verstanden:",voiceNotUnderstood:"Nicht verstanden, bitte wiederholen.",voiceNotSupported:"Ihr Browser unterstutzt keine Sprachbefehle.",voiceSayNumber:"Sagen Sie die Nummer Ihrer Option.",voiceSayScale:"Sagen Sie eine Zahl von null bis zehn.",voiceSelectMulti:"Sagen Sie eine weitere Nummer oder weiter um fortzufahren.",voiceConfirmed:"Ausgewahlt:",voiceNext:"Weiter.",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE"};
@@ -1461,6 +1479,8 @@ async function doSignOut(){
 }
 
 function showAuthScreen(){
+  _voiceMode=false;_vStop();
+  const fab=document.getElementById('voiceFab');if(fab){fab.classList.remove('on','vis');}
   document.getElementById("authScreen").style.display="flex";
   document.getElementById("mainApp").classList.remove("on");
   showPatientView();CU=null;CR=null;CUName=null;
@@ -1550,6 +1570,165 @@ function stopInactivityTimer(){
 ["touchstart","touchmove","mousedown","keydown"].forEach(ev=>{
   document.addEventListener(ev,resetActivity,{passive:true});
 });
+
+// ── VOICE MODE ──
+let _voiceMode=false,_voiceRecog=null;
+const _vLang={es:'es-ES',en:'en-US',pt:'pt-BR',fr:'fr-FR',de:'de-DE'};
+const _vNums={
+  es:['uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','siguiente'],
+  en:['one','two','three','four','five','six','seven','eight','nine','ten','next'],
+  pt:['um','dois','tres','quatro','cinco','seis','sete','oito','nove','dez','proximo'],
+  fr:['un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','suivant'],
+  de:['eins','zwei','drei','vier','funf','sechs','sieben','acht','neun','zehn','weiter']
+};
+
+function toggleVoiceMode(){
+  if(!('speechSynthesis' in window)){toast(t('voiceNotSupported'));return;}
+  _voiceMode=!_voiceMode;
+  const fab=document.getElementById('voiceFab');
+  if(fab)fab.classList.toggle('on',_voiceMode);
+  if(_voiceMode){_vSpeakStep();}
+  else{_vStop();}
+}
+
+function _vStop(){
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  if(_voiceRecog){try{_voiceRecog.abort();}catch(e){}_voiceRecog=null;}
+  _vHideBanner();
+}
+
+function _vSpeak(text,cb){
+  if(!_voiceMode)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang=_vLang[CL]||'es-ES';u.rate=0.88;
+  if(cb)u.onend=cb;
+  speechSynthesis.speak(u);
+}
+
+function _vSpeakStep(){
+  if(!_voiceMode)return;
+  const steps=aSteps();
+  if(TS>=steps.length)return;
+  const s=steps[TS];
+  const nums=_vNums[CL]||_vNums.es;
+  let text=s.title+'. ';
+  if(s.sub)text+=s.sub+'. ';
+  if(s.t==='opts'){
+    s.opts.forEach((o,i)=>{text+=`${nums[i]||i+1}: ${o.l}. `;});
+    text+=t('voiceSayNumber');
+  }else if(s.t==='multi'){
+    s.opts.forEach((o,i)=>{text+=`${nums[i]||i+1}: ${o.l}. `;});
+    text+=t('voiceSelectMulti');
+  }else if(s.t==='scale'||s.t==='scale_enhanced'){
+    text+=t('voiceSayScale');
+  }else if(s.t==='num'){
+    text+=t('voiceSayNumber');
+  }else{
+    text+=t('voiceNext');
+  }
+  _vSpeak(text,()=>_vListen(s));
+}
+
+function _vListen(s){
+  if(!_voiceMode)return;
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!R){toast(t('voiceNotSupported'));return;}
+  _vShowBanner();
+  _voiceRecog=new R();
+  _voiceRecog.lang=_vLang[CL]||'es-ES';
+  _voiceRecog.interimResults=false;
+  _voiceRecog.maxAlternatives=3;
+  _voiceRecog.onresult=e=>{
+    const heard=e.results[0][0].transcript.toLowerCase().trim();
+    _voiceRecog=null;_vHideBanner();
+    _vProcess(s,heard);
+  };
+  _voiceRecog.onerror=e=>{
+    if(e.error!=='aborted'&&_voiceMode){_vHideBanner();setTimeout(()=>_vListen(s),700);}
+  };
+  try{_voiceRecog.start();}catch(e){}
+}
+
+function _vAdvance(){
+  TS++;TM=[];rTriage();
+  requestAnimationFrame(()=>{if(_voiceMode)_vSpeakStep();});
+}
+
+function _vProcess(s,heard){
+  if(!_voiceMode)return;
+  const nums=_vNums[CL]||_vNums.es;
+
+  if(s.t==='opts'){
+    let idx=-1;
+    nums.slice(0,10).some((n,i)=>{if(heard.includes(n)){idx=i;return true;}});
+    if(idx===-1){const m=heard.match(/\d+/);if(m)idx=parseInt(m[0])-1;}
+    let match=idx>=0&&idx<s.opts.length?s.opts[idx]:null;
+    if(!match)match=s.opts.find(o=>o.l.toLowerCase().split(' ').some(w=>w.length>3&&heard.includes(w)));
+    if(match){
+      TD[s.id]=match.v;
+      _vSpeak(`${t('voiceConfirmed')} ${match.l}.`,()=>setTimeout(()=>_vAdvance(),500));
+    }else{
+      _vSpeak(t('voiceNotUnderstood'),()=>_vListen(s));
+    }
+
+  }else if(s.t==='multi'){
+    // "siguiente" / "next" / "weiter" → advance
+    if(heard.includes(nums[10])||heard.includes('next')||heard.includes('suivant')||heard.includes('weiter')||heard.includes('proximo')){
+      if(TM.length>0||( TD[s.id]&&TD[s.id].length>0)){
+        _vSpeak(t('voiceNext'),()=>setTimeout(()=>_vAdvance(),400));
+      }else{_vListen(s);}
+      return;
+    }
+    let idx=-1;
+    nums.slice(0,10).some((n,i)=>{if(heard.includes(n)){idx=i;return true;}});
+    if(idx===-1){const m=heard.match(/\d+/);if(m)idx=parseInt(m[0])-1;}
+    let match=idx>=0&&idx<s.opts.length?s.opts[idx]:null;
+    if(!match)match=s.opts.find(o=>o.l.toLowerCase().split(' ').some(w=>w.length>3&&heard.includes(w)));
+    if(match){
+      if(match.v==='ninguno'){TM=['ninguno'];}
+      else{TM=TM.filter(x=>x!=='ninguno');TM.includes(match.v)?TM=TM.filter(x=>x!==match.v):TM.push(match.v);}
+      TD[s.id]=[...TM];rTriage();
+      _vSpeak(`${t('voiceConfirmed')} ${match.l}. ${t('voiceSelectMulti')}`,()=>_vListen(s));
+    }else{
+      _vSpeak(t('voiceNotUnderstood'),()=>_vListen(s));
+    }
+
+  }else if(s.t==='scale'||s.t==='scale_enhanced'){
+    const m=heard.match(/\d+/);
+    if(m){
+      const v=parseInt(m[0]);
+      if(v>=0&&v<=10){
+        TD[s.id]=v;
+        _vSpeak(`${t('voiceConfirmed')} ${v}.`,()=>setTimeout(()=>_vAdvance(),500));
+      }else{_vSpeak(t('voiceNotUnderstood'),()=>_vListen(s));}
+    }else{_vSpeak(t('voiceNotUnderstood'),()=>_vListen(s));}
+
+  }else if(s.t==='num'){
+    const m=heard.replace(/[^0-9]/g,'');
+    if(m){
+      const inp=document.querySelector('#trc input.fi');
+      if(inp){inp.value=m;inp.dispatchEvent(new Event('input'));}
+      if(canAdv(s)){
+        _vSpeak(`${t('voiceConfirmed')} ${m}.`,()=>setTimeout(()=>_vAdvance(),500));
+      }else{_vSpeak(t('voiceNotUnderstood'),()=>_vListen(s));}
+    }else{_vSpeak(t('voiceNotUnderstood'),()=>_vListen(s));}
+
+  }else{
+    // vitals / symptom_detail / otros — avanza directo
+    _vSpeak(t('voiceNext'),()=>setTimeout(()=>_vAdvance(),400));
+  }
+}
+
+function _vShowBanner(){
+  const el=document.getElementById('voiceBanner');
+  if(!el)return;
+  el.innerHTML=`<span class="vb-dot"></span>${t('voiceListening')}`;
+  el.classList.add('on');
+}
+function _vHideBanner(){
+  document.getElementById('voiceBanner')?.classList.remove('on');
+}
 
 function showApp(){
   document.getElementById("authScreen").style.display="none";
@@ -1664,6 +1843,9 @@ function navigateTo(id,idx){
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
   document.getElementById("mainBody").scrollTop=0;
+  // Show voice FAB only on triage tab
+  const fab=document.getElementById('voiceFab');
+  if(fab){fab.classList.toggle('vis',id==='triage');if(id!=='triage'&&_voiceMode){_voiceMode=false;fab.classList.remove('on');_vStop();}}
 }
 
 function updateUI(){
@@ -2206,7 +2388,15 @@ function renderScaleEnhanced(card, stepId){
   for(let i=0;i<=10;i++){
     const b=document.createElement('button'); const hi=i>=7;
     b.className='sb'+(TD[stepId]==i?(hi?' selh':' sel'):'');
-    b.textContent=i; b.onclick=()=>{TD[stepId]=i; rTriage();};
+    b.textContent=i; b.onclick=()=>{
+      TD[stepId]=i;
+      // Highlight buttons inline — no full re-render
+      document.querySelectorAll('#trc .sb').forEach(bb=>{const v2=+bb.textContent;bb.className='sb'+(v2===i?(i>=7?' selh':' sel'):'');});
+      // Sync face carousel to nearest face without overriding the numeric value
+      const ni=faces.reduce((best,f,fi)=>Math.abs(f.score-i)<Math.abs(faces[best].score-i)?fi:best,0);
+      buildFC(ni,ni>cIdx?1:-1,true);
+      const nx=document.querySelector('#trc .bnxt');if(nx)nx.disabled=false;
+    };
     sg.appendChild(b);
   }
   const lb=document.createElement('div'); lb.className='slabs';
@@ -2236,15 +2426,15 @@ function renderScaleEnhanced(card, stepId){
 
   // CAROUSEL
   const cWrap = document.createElement('div');
-  let cIdx = TD[stepId]!==undefined ? Math.max(0,faces.findIndex(f=>f.score===TD[stepId])) : 0;
+  let cIdx = TD[stepId]!==undefined ? faces.reduce((b,f,i)=>Math.abs(f.score-TD[stepId])<Math.abs(faces[b].score-TD[stepId])?i:b,0) : 0;
 
-  function buildFC(idx, dir){
+  function buildFC(idx, dir, keepScore=false){
     cIdx = Math.max(0, Math.min(idx, faces.length-1));
     const f = faces[cIdx];
-    TD[stepId] = f.score;
-    // Sync numeric grid selection
+    if(!keepScore) TD[stepId] = f.score;
+    // Sync numeric grid — highlight actual TD value, not necessarily the face score
     document.querySelectorAll('#trc .sb').forEach(b=>{
-      const v=+b.textContent;b.className='sb'+(v===f.score?(v>=7?' selh':' sel'):'');
+      const v=+b.textContent;b.className='sb'+(v===TD[stepId]?(v>=7?' selh':' sel'):'');
     });
     const bnxt=document.querySelector('#trc .bnxt');
     if(bnxt) bnxt.disabled=false;
@@ -2280,7 +2470,7 @@ function renderScaleEnhanced(card, stepId){
       if(Math.abs(dx)>40){if(dx<0&&cIdx<faces.length-1)buildFC(cIdx+1,1);else if(dx>0&&cIdx>0)buildFC(cIdx-1,-1);}
     },{passive:true});
   }
-  buildFC(cIdx, 0);
+  buildFC(cIdx, 0, TD[stepId]!==undefined);
   card.appendChild(cWrap);
 }
 
