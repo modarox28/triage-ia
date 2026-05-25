@@ -408,6 +408,27 @@ select option{background:var(--bg3);}
 .int-explain-btn{padding:6px 13px;border-radius:8px;border:1.5px solid currentColor;background:transparent;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Familjen Grotesk",sans-serif;}
 .int-explain{display:none;margin-top:9px;padding:9px 11px;background:rgba(0,0,0,.15);border-radius:8px;font-size:.77rem;line-height:1.6;color:var(--tx);}
 .int-explain.open{display:block;animation:fadeUp .2s ease;}
+/* NOTES FAB */
+#notesFab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 140px);right:16px;width:48px;height:48px;border-radius:50%;border:none;background:var(--bg2);color:var(--tx);font-size:1.2rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);transition:all .28s cubic-bezier(.34,1.4,.64,1);z-index:200;opacity:0;pointer-events:none;touch-action:manipulation;user-select:none;}
+#notesFab.vis{opacity:1;pointer-events:auto;}
+#notesFab.has-notes{background:var(--gn);color:#000;box-shadow:0 4px 18px rgba(0,224,122,.45);}
+#notesFab:active{transform:scale(.88);}
+/* NOTES PANEL */
+#notesPanel{position:fixed;bottom:-105%;left:0;right:0;background:var(--bg2);border-top:1px solid var(--bd);border-radius:22px 22px 0 0;z-index:310;transition:bottom .32s cubic-bezier(.34,1.2,.64,1);padding:0;box-shadow:0 -8px 40px rgba(0,0,0,.4);}
+#notesPanel.on{bottom:0;}
+.notes-handle{width:36px;height:4px;background:var(--bd);border-radius:2px;margin:12px auto 0;}
+.notes-body{padding:16px 18px calc(env(safe-area-inset-bottom,0px) + 18px);}
+.notes-title{font-size:.78rem;font-family:"JetBrains Mono",monospace;letter-spacing:2px;color:var(--mu);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.notes-close{background:none;border:none;color:var(--mu);font-size:1.1rem;cursor:pointer;padding:4px 6px;}
+#notesTA{width:100%;min-height:120px;max-height:240px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;color:var(--tx);font-family:"JetBrains Mono",monospace;font-size:.82rem;line-height:1.6;padding:12px 14px;resize:none;box-sizing:border-box;outline:none;transition:border-color .2s;}
+#notesTA:focus{border-color:var(--cy);}
+.notes-footer{display:flex;gap:10px;margin-top:12px;align-items:center;}
+.notes-counter{font-size:.7rem;color:var(--mu);font-family:"JetBrains Mono",monospace;flex:1;}
+#notesSaveBtn{padding:9px 22px;background:var(--cy);color:#000;border:none;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;touch-action:manipulation;}
+#notesSaveBtn:active{opacity:.75;}
+/* NOTES OVERLAY */
+#notesOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:309;opacity:0;pointer-events:none;transition:opacity .28s;}
+#notesOverlay.on{opacity:1;pointer-events:auto;}
 /* VOICE MODE FAB */
 #voiceFab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);right:16px;width:52px;height:52px;border-radius:50%;border:none;background:var(--cy);color:#000;font-size:1.35rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(0,200,240,.45);transition:all .28s cubic-bezier(.34,1.4,.64,1);z-index:200;opacity:0;pointer-events:none;touch-action:manipulation;user-select:none;}
 #voiceFab.vis{opacity:1;pointer-events:auto;}
@@ -799,8 +820,25 @@ select option{background:var(--bg3);}
     <nav class="bottom-nav" id="bnav"><div class="nind" id="nind"></div></nav>
   </div>
 </div>
+<button id="notesFab" onclick="openNotes()" aria-label="Anotaciones clínicas">📝</button>
 <button id="voiceFab" onclick="toggleVoiceMode()" aria-label="Modo voz">🎤</button>
 <div id="voiceBanner"></div>
+<div id="notesOverlay" onclick="closeNotes()"></div>
+<div id="notesPanel">
+  <div class="notes-handle"></div>
+  <div class="notes-body">
+    <div class="notes-title">
+      <span id="notesLabelEl"></span>
+      <button class="notes-close" onclick="closeNotes()">✕</button>
+    </div>
+    <textarea id="notesTA" oninput="onNotesInput(this)"></textarea>
+    <div id="notesErr" style="font-size:.72rem;color:var(--rd);font-family:'JetBrains Mono',monospace;min-height:18px;margin-top:6px;animation:fadeUp .2s ease;"></div>
+    <div class="notes-footer">
+      <span class="notes-counter" id="notesCounter">0 <span id="notesCharsLbl"></span></span>
+      <button id="notesSaveBtn" onclick="saveNotes()"></button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
@@ -910,6 +948,7 @@ const L={
     rememberMe:"Recordarme en este dispositivo",rememberWarn:"Las credenciales se guardaran en este dispositivo. No uses esta opcion en dispositivos compartidos o publicos.",rememberConfirm:"Entendido, guardar",rememberCancel:"Cancelar",
     inactWarn:"Tu sesion se cerrara pronto por inactividad.",stayActive:"Seguir activo",sessionOut:"Sesion cerrada por inactividad.",
     voiceMode:"Modo Voz",voiceListening:"Escuchando...",voiceHeard:"Entendido:",voiceNotUnderstood:"No entendi, repite por favor.",voiceNotSupported:"Tu navegador no soporta comandos de voz.",voiceSayNumber:"Di el numero de tu opcion.",voiceSayScale:"Di un numero del cero al diez.",voiceSelectMulti:"Di el numero de otra opcion o di siguiente para continuar.",voiceConfirmed:"Seleccionado:",voiceNext:"Siguiente.",
+    notesFabTitle:"Anotaciones",notesPh:"Escribe observaciones clinicas relevantes (antecedentes, alergias, medicacion actual, contexto especial)...",notesSave:"Guardar notas",notesIncluded:"Notas incluidas en el analisis",notesLabel:"ANOTACIONES CLINICAS",notesChars:"caracteres",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -994,6 +1033,7 @@ const L={
     rememberMe:"Remember me on this device",rememberWarn:"Credentials will be saved on this device. Do not use this option on shared or public devices.",rememberConfirm:"Got it, save",rememberCancel:"Cancel",
     inactWarn:"Your session will close soon due to inactivity.",stayActive:"Stay active",sessionOut:"Session closed due to inactivity.",
     voiceMode:"Voice Mode",voiceListening:"Listening...",voiceHeard:"Got it:",voiceNotUnderstood:"Didn't catch that, please repeat.",voiceNotSupported:"Your browser does not support voice commands.",voiceSayNumber:"Say the number of your option.",voiceSayScale:"Say a number from zero to ten.",voiceSelectMulti:"Say another option number or say next to continue.",voiceConfirmed:"Selected:",voiceNext:"Next.",
+    notesFabTitle:"Notes",notesPh:"Write relevant clinical observations (history, allergies, current medication, special context)...",notesSave:"Save notes",notesIncluded:"Notes included in analysis",notesLabel:"CLINICAL NOTES",notesChars:"chars",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -1078,6 +1118,7 @@ const L={
     rememberMe:"Lembrar neste dispositivo",rememberWarn:"As credenciais serao salvas neste dispositivo. Nao use esta opcao em dispositivos compartilhados.",rememberConfirm:"Entendido, salvar",rememberCancel:"Cancelar",
     inactWarn:"Sua sessao sera encerrada em breve por inatividade.",stayActive:"Continuar ativo",sessionOut:"Sessao encerrada por inatividade.",
     voiceMode:"Modo Voz",voiceListening:"Ouvindo...",voiceHeard:"Entendido:",voiceNotUnderstood:"Nao entendi, repita por favor.",voiceNotSupported:"Seu navegador nao suporta comandos de voz.",voiceSayNumber:"Diga o numero da sua opcao.",voiceSayScale:"Diga um numero de zero a dez.",voiceSelectMulti:"Diga o numero de outra opcao ou diga proximo para continuar.",voiceConfirmed:"Selecionado:",voiceNext:"Proximo.",
+    notesFabTitle:"Anotacoes",notesPh:"Escreva observacoes clinicas relevantes (historico, alergias, medicacao atual, contexto especial)...",notesSave:"Salvar notas",notesIncluded:"Notas incluidas na analise",notesLabel:"ANOTACOES CLINICAS",notesChars:"caracteres",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -1162,6 +1203,7 @@ const L={
     rememberMe:"Se souvenir sur cet appareil",rememberWarn:"Les identifiants seront sauvegardes sur cet appareil. N utilisez pas cette option sur des appareils partages.",rememberConfirm:"Compris, sauvegarder",rememberCancel:"Annuler",
     inactWarn:"Votre session se fermera bientot par inactivite.",stayActive:"Rester actif",sessionOut:"Session fermee par inactivite.",
     voiceMode:"Mode Vocal",voiceListening:"J ecoute...",voiceHeard:"Compris:",voiceNotUnderstood:"Je n ai pas compris, repetez.",voiceNotSupported:"Votre navigateur ne supporte pas les commandes vocales.",voiceSayNumber:"Dites le numero de votre option.",voiceSayScale:"Dites un nombre de zero a dix.",voiceSelectMulti:"Dites un autre numero ou dites suivant pour continuer.",voiceConfirmed:"Selectionne:",voiceNext:"Suivant.",
+    notesFabTitle:"Annotations",notesPh:"Ecrivez les observations cliniques pertinentes (antecedents, allergies, medicaments actuels, contexte special)...",notesSave:"Enregistrer",notesIncluded:"Notes incluses dans l analyse",notesLabel:"NOTES CLINIQUES",notesChars:"caracteres",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -1246,6 +1288,7 @@ const L={
     rememberMe:"Auf diesem Gerat merken",rememberWarn:"Anmeldedaten werden auf diesem Gerat gespeichert. Nicht auf gemeinsam genutzten Geraten verwenden.",rememberConfirm:"Verstanden, speichern",rememberCancel:"Abbrechen",
     inactWarn:"Ihre Sitzung wird bald wegen Inaktivitat geschlossen.",stayActive:"Aktiv bleiben",sessionOut:"Sitzung wegen Inaktivitat beendet.",
     voiceMode:"Sprachmodus",voiceListening:"Ich hore...",voiceHeard:"Verstanden:",voiceNotUnderstood:"Nicht verstanden, bitte wiederholen.",voiceNotSupported:"Ihr Browser unterstutzt keine Sprachbefehle.",voiceSayNumber:"Sagen Sie die Nummer Ihrer Option.",voiceSayScale:"Sagen Sie eine Zahl von null bis zehn.",voiceSelectMulti:"Sagen Sie eine weitere Nummer oder weiter um fortzufahren.",voiceConfirmed:"Ausgewahlt:",voiceNext:"Weiter.",
+    notesFabTitle:"Anmerkungen",notesPh:"Klinische Beobachtungen (Vorgeschichte, Allergien, aktuelle Medikation, besonderer Kontext)...",notesSave:"Speichern",notesIncluded:"Notizen in der Analyse enthalten",notesLabel:"KLINISCHE ANMERKUNGEN",notesChars:"Zeichen",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE"};
@@ -1479,8 +1522,9 @@ async function doSignOut(){
 }
 
 function showAuthScreen(){
-  _voiceMode=false;_vStop();
+  _voiceMode=false;_vStop();closeNotes();
   const fab=document.getElementById('voiceFab');if(fab){fab.classList.remove('on','vis');}
+  _notesShowFab(false);
   document.getElementById("authScreen").style.display="flex";
   document.getElementById("mainApp").classList.remove("on");
   showPatientView();CU=null;CR=null;CUName=null;
@@ -1720,7 +1764,65 @@ function _vProcess(s,heard){
   }
 }
 
-function _vShowBanner(){
+// ── CLINICAL NOTES ──
+// Keywords that must appear for the text to be considered clinical
+const _CLINICAL_KW=['paciente','patient','patientin','dolor','pain','schmerz','presion','tension','sangrado','fiebre','fever','fieber','nausea','vomit','disnea','trauma','fractura','herida','wound','alergia','allergy','allergie','medicacion','medication','medikament','antecedente','histor','diagnos','sintoma','symptom','frecuencia','cardiaca','respiratoria','saturacion','temperatura','temperatura','cirugía','cirugia','surgery','operacion','embaraz','pregnan','schwanger','convulsion','seizure','perdida','inconsciente','mareo','dizziness','cefalea','headache','kopfschmerz','infarto','stroke','escala','escala','dosis','dose','cronica','chronicl','agudo','acute','akut'];
+
+function _isClinical(text){
+  const low=text.toLowerCase();
+  return _CLINICAL_KW.some(k=>low.includes(k))||/\d+\s*(mg|ml|lpm|mmhg|rpm|bpm|°c|%|años|anos|years|meses|weeks)/i.test(low);
+}
+
+function openNotes(){
+  document.getElementById('notesLabelEl').textContent=t('notesLabel');
+  document.getElementById('notesCharsLbl').textContent=t('notesChars');
+  document.getElementById('notesSaveBtn').textContent=t('notesSave');
+  document.getElementById('notesTA').placeholder=t('notesPh');
+  document.getElementById('notesTA').value=TD.notas||'';
+  document.getElementById('notesErr').textContent='';
+  document.getElementById('notesCounter').innerHTML=`${(TD.notas||'').length} <span id="notesCharsLbl">${t('notesChars')}</span>`;
+  document.getElementById('notesPanel').classList.add('on');
+  document.getElementById('notesOverlay').classList.add('on');
+  setTimeout(()=>document.getElementById('notesTA').focus(),350);
+}
+
+function closeNotes(){
+  document.getElementById('notesPanel').classList.remove('on');
+  document.getElementById('notesOverlay').classList.remove('on');
+}
+
+function onNotesInput(el){
+  const len=el.value.length;
+  document.getElementById('notesCounter').innerHTML=`${len} <span>${t('notesChars')}</span>`;
+  if(len>0&&!_isClinical(el.value)){
+    document.getElementById('notesErr').textContent='Las anotaciones deben contener informacion clinica relevante (sintomas, medicacion, antecedentes, signos vitales, etc.).';
+  }else{
+    document.getElementById('notesErr').textContent='';
+  }
+}
+
+function saveNotes(){
+  const val=document.getElementById('notesTA').value.trim();
+  if(val&&!_isClinical(val)){
+    document.getElementById('notesErr').textContent='Las anotaciones deben contener informacion clinica relevante (sintomas, medicacion, antecedentes, signos vitales, etc.).';
+    document.getElementById('notesTA').focus();
+    return;
+  }
+  TD.notas=val;
+  const fab=document.getElementById('notesFab');
+  if(fab)fab.classList.toggle('has-notes',!!val);
+  closeNotes();
+  if(val)toast(t('notesIncluded'));
+}
+
+function _notesShowFab(show){
+  const fab=document.getElementById('notesFab');
+  if(!fab)return;
+  fab.classList.toggle('vis',show&&(CR==='medico'||CR==='admin'||CR==='admin_hosp'));
+  if(!show){closeNotes();}
+}
+
+
   const el=document.getElementById('voiceBanner');
   if(!el)return;
   el.innerHTML=`<span class="vb-dot"></span>${t('voiceListening')}`;
@@ -1843,9 +1945,10 @@ function navigateTo(id,idx){
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
   document.getElementById("mainBody").scrollTop=0;
-  // Show voice FAB only on triage tab
+  // Show FABs only on triage tab
   const fab=document.getElementById('voiceFab');
   if(fab){fab.classList.toggle('vis',id==='triage');if(id!=='triage'&&_voiceMode){_voiceMode=false;fab.classList.remove('on');_vStop();}}
+  _notesShowFab(id==='triage');
 }
 
 function updateUI(){
@@ -2244,14 +2347,14 @@ async function callAI(){
   const sx=TD.sint?TD.sint.map(s=>sM[s]||s).join(", "):"No indicados";
   const pedN=TD.tipo==="nino"?`
 NINO: ${TD.enino||"?"} anos. Usa rangos pediatricos.`:"";
+  const notasExtra=TD.notas&&TD.notas.trim()?`\nAnotaciones clinicas del profesional: ${TD.notas.trim()}`:"";
   const prompt=`Experto triage hospitalario ESI/Manchester.${pedN}
 PACIENTE: ${tM[TD.tipo]||TD.tipo}
 Motivo: ${mM[TD.motivo]||TD.motivo}
 Consciencia: ${cM[TD.consc]||TD.consc}
 Vitales: ${vtx}
 Dolor: ${TD.dolor!==undefined?TD.dolor:"N/A"}/10
-Sintomas: ${sx}${TD.semanas?`
-Semanas: ${TD.semanas}`:""}
+Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${notasExtra}
 SOLO JSON sin backticks:
 {"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"..."}`;
   try{
@@ -2260,7 +2363,7 @@ SOLO JSON sin backticks:
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const res=JSON.parse(txt);
     if(FB&&CU&&CR!=="paciente"){
-      try{await FB.addDoc(FB.collection(FB.db,"triages"),{...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,userEmail:CU?.email||"",userId:CU?.uid||"",createdAt:FB.serverTimestamp()});}catch(e){}
+      try{await FB.addDoc(FB.collection(FB.db,"triages"),{...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userEmail:CU?.email||"",userId:CU?.uid||"",createdAt:FB.serverTimestamp()});}catch(e){}
     }
     rResult(res);
   }catch(e){
@@ -2291,7 +2394,7 @@ function rResult(r){
     <button class="bsec" onclick="resetT()">← ${t("newPatient")||"Nuevo paciente"}</button>`;
 }
 
-function resetT(){TS=0;TD={};TM=[];rTriage();}
+function resetT(){TS=0;TD={};TM=[];const fab=document.getElementById('notesFab');if(fab)fab.classList.remove('has-notes');rTriage();}
 function chkPA(s){s=parseFloat(s);return s<90||s>180?"critical":s<100||s>150?"warning":"normal";}
 function chkFC(f){f=parseFloat(f);return f<50||f>130?"critical":f<60||f>100?"warning":"normal";}
 function chkSat(s){s=parseFloat(s);return s<90?"critical":s<95?"warning":"normal";}
