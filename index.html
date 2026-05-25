@@ -13,13 +13,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
 const auth=getAuth(fbapp);const db=getFirestore(fbapp);const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
-window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc};
+window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc};
 window.dispatchEvent(new Event("fbready"));
 </script>
 <style>
@@ -310,6 +310,68 @@ select option{background:var(--bg3);}
 .setting-row:last-child{border-bottom:none;}
 .setting-label{font-size:.88rem;font-weight:600;}
 .setting-sub{font-size:.72rem;color:var(--mu);margin-top:2px;}
+
+/* SYMPTOM DETAIL */
+.symptom-q{background:var(--bg3);border:1px solid var(--bd);border-left:3px solid var(--cy);border-radius:11px;padding:12px 14px;margin-bottom:9px;animation:fadeUp .35s cubic-bezier(.4,0,.2,1) both;}
+.symptom-q:nth-child(1){animation-delay:.04s}.symptom-q:nth-child(2){animation-delay:.11s}.symptom-q:nth-child(3){animation-delay:.18s}
+.symptom-q-title{font-size:.72rem;font-family:"JetBrains Mono",monospace;color:var(--cy);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
+.symptom-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.symptom-opt{padding:10px 11px;border-radius:9px;border:1.5px solid var(--bd);background:var(--bg2);font-size:.8rem;color:var(--tx);cursor:pointer;transition:all .18s;font-family:"Familjen Grotesk",sans-serif;text-align:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+.symptom-opt:hover{border-color:var(--cy);color:var(--cy);background:var(--cy-a);}
+.symptom-opt:active{transform:scale(.95);}
+.symptom-opt.sel{background:linear-gradient(135deg,var(--cy-a),rgba(0,200,240,.15));border-color:var(--cy);color:var(--cy);font-weight:700;box-shadow:0 0 0 1px var(--cy),0 2px 8px rgba(0,200,240,.15);}
+
+/* WELCOME OVERLAY */
+@keyframes welcomeIn{from{opacity:0;transform:scale(.92) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes welcomeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.04)}}
+.welcome-overlay{position:fixed;inset:0;z-index:3000;background:rgba(11,17,32,.92);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.welcome-box{text-align:center;animation:welcomeIn .55s cubic-bezier(.34,1.4,.64,1);}
+.welcome-box.out{animation:welcomeOut .4s cubic-bezier(.4,0,.6,1) forwards;}
+.welcome-av{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;margin:0 auto 16px;box-shadow:0 0 0 3px rgba(255,255,255,.12),0 0 32px rgba(0,200,240,.3);}
+.welcome-hello{font-size:.78rem;font-family:"JetBrains Mono",monospace;color:var(--cy);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.welcome-name{font-size:1.8rem;font-weight:700;color:var(--tx);margin-bottom:6px;line-height:1.1;}
+.welcome-role{font-size:.72rem;color:var(--mu);font-family:"JetBrains Mono",monospace;letter-spacing:1px;text-transform:uppercase;}
+.welcome-dots{display:flex;gap:8px;justify-content:center;margin-top:24px;}
+.welcome-dot{width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s infinite;}
+.welcome-dot:nth-child(2){animation-delay:.2s}.welcome-dot:nth-child(3){animation-delay:.4s}
+
+/* PROFILE PHOTO */
+.prof-photo-wrap{position:relative;width:80px;height:80px;margin:0 auto 14px;cursor:pointer;}
+.prof-photo-wrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.prof-photo-av{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;overflow:hidden;box-shadow:0 0 0 3px rgba(255,255,255,.1);}
+.prof-photo-av img{width:100%;height:100%;object-fit:cover;}
+.prof-photo-badge{position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--cy);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#000;border:2px solid var(--bg2);}
+
+/* PASSWORD CHANGE */
+.pass-form{margin-top:12px;display:none;}
+.pass-form.open{display:block;}
+
+/* ANTECEDENTES CHIP */
+.ant-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(168,85,247,.1);color:#c084fc;border:1px solid rgba(168,85,247,.25);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:3px;}
+.ant-chip .ax{margin-left:3px;opacity:.6;cursor:pointer;font-size:.7rem;}
+.ant-chip .ax:hover{opacity:1;color:var(--rd);}
+
+/* HISTORIA CLINICA CARDS */
+.hc-card{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:9px;cursor:pointer;transition:all .22s;}
+.hc-card:hover{border-color:var(--cy);transform:translateY(-1px);}
+.hc-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;color:#000;flex-shrink:0;}
+.hc-name{font-weight:700;font-size:.88rem;}
+.hc-detail{font-size:.7rem;color:var(--mu);margin-top:2px;}
+.hc-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.6rem;font-family:"JetBrains Mono",monospace;font-weight:700;margin-top:4px;}
+.photo-upload{border:2px dashed var(--bd);border-radius:11px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:9px;}
+.photo-upload:hover{border-color:var(--cy);background:var(--cy-a);}
+.photo-preview{width:100%;border-radius:9px;margin-bottom:9px;max-height:180px;object-fit:cover;}
+
+/* INTERACTION ALERTS */
+.int-alert{border-radius:11px;padding:13px;margin-bottom:8px;animation:fadeUp .3s ease;}
+.int-alert.danger{background:var(--rd-a);border:1.5px solid var(--rd);}
+.int-alert.warn{background:var(--yw-a);border:1.5px solid var(--yw);}
+.int-alert.ok{background:var(--gn-a);border:1.5px solid var(--gn);}
+.int-alert-title{font-weight:700;font-size:.88rem;margin-bottom:5px;display:flex;align-items:center;gap:7px;}
+.int-alert-sub{font-size:.79rem;color:var(--mu);line-height:1.5;margin-bottom:9px;}
+.int-explain-btn{padding:6px 13px;border-radius:8px;border:1.5px solid currentColor;background:transparent;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Familjen Grotesk",sans-serif;}
+.int-explain{display:none;margin-top:9px;padding:9px 11px;background:rgba(0,0,0,.15);border-radius:8px;font-size:.77rem;line-height:1.6;color:var(--tx);}
+.int-explain.open{display:block;animation:fadeUp .2s ease;}
 </style>
 </head>
 <body>
@@ -336,8 +398,19 @@ select option{background:var(--bg3);}
   <div class="modal-box">
     <div class="modal-title">📱 Codigo de acceso</div>
     <div class="modal-sub">Muestra este QR en recepcion para acceso de pacientes</div>
-    <canvas id="qrCanvas" width="180" height="180" style="border-radius:10px;margin:0 auto 12px;display:block"></canvas>
+    <div id="qrDisplay" style="border-radius:10px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;min-height:180px;"></div>
     <button class="bpri" onclick="document.getElementById('qrShowModal').classList.remove('on')">Cerrar</button>
+  </div>
+</div>
+
+<!-- WELCOME OVERLAY -->
+<div id="welcomeOverlay" style="display:none" class="welcome-overlay">
+  <div class="welcome-box" id="welcomeBox">
+    <div class="welcome-av" id="welcomeAv">?</div>
+    <div class="welcome-hello" id="welcomeHello">Bienvenido</div>
+    <div class="welcome-name" id="welcomeName">—</div>
+    <div class="welcome-role" id="welcomeRole"></div>
+    <div class="welcome-dots"><div class="welcome-dot"></div><div class="welcome-dot"></div><div class="welcome-dot"></div></div>
   </div>
 </div>
 
@@ -614,17 +687,38 @@ select option{background:var(--bg3);}
         </div>
         <div class="card">
           <div class="clabel" id="lbAccount">Cuenta</div>
+          <div style="text-align:center;margin-bottom:14px">
+            <div class="prof-photo-wrap" onclick="document.getElementById('configPhotoInput').click()" style="cursor:pointer">
+              <div class="prof-photo-av" id="configPhotoAv" style="background:var(--cy)">?</div>
+              <div class="prof-photo-badge">📷</div>
+              <input type="file" id="configPhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhoto(this,'config')">
+            </div>
+          </div>
           <div class="setting-row">
             <div><div class="setting-label" id="profName">—</div><div class="setting-sub" id="profEmail">—</div></div>
             <span class="role-badge" id="profRole"></span>
           </div>
-          <button class="bsec" onclick="doSignOut()" style="margin-top:4px">⬅ <span id="signOutTxt2">Cerrar sesion</span></button>
+          <div id="changePassSection" style="display:none">
+            <button class="bsec" style="margin-top:10px;width:100%" onclick="togglePassForm()">🔐 <span id="changePassLbl">Cambiar contrasena</span></button>
+            <div class="pass-form" id="passForm">
+              <div class="fg" style="margin-top:10px"><label class="fl" id="lbCurPass">Contrasena actual</label><input class="fi" id="curPassInput" type="password" placeholder="••••••••"></div>
+              <div class="fg"><label class="fl" id="lbNewPass">Nueva contrasena</label><input class="fi" id="newPassInput" type="password" placeholder="••••••••"></div>
+              <div class="fg"><label class="fl" id="lbConfirmPass">Confirmar contrasena</label><input class="fi" id="confirmPassInput" type="password" placeholder="••••••••"></div>
+              <div class="auth-err" id="passErr"></div>
+              <button class="bpri" style="margin-top:6px;width:100%" onclick="doChangePass()"><span id="savePassLbl">Guardar</span></button>
+            </div>
+          </div>
+          <button class="bsec" onclick="doSignOut()" style="margin-top:10px">⬅ <span id="signOutTxt2">Cerrar sesion</span></button>
         </div>
       </div>
       <!-- PERFIL (paciente) -->
       <div class="sc" id="sc-prof">
         <div class="card" style="text-align:center;padding:24px">
-          <div id="profAv2" style="width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:#000;margin:0 auto 10px;background:var(--cy)">?</div>
+          <div class="prof-photo-wrap" onclick="document.getElementById('profPhotoInput').click()" style="cursor:pointer;margin-bottom:10px">
+            <div class="prof-photo-av" id="profAv2" style="background:var(--cy)">?</div>
+            <div class="prof-photo-badge">📷</div>
+            <input type="file" id="profPhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhoto(this,'prof')">
+          </div>
           <div style="font-weight:700;font-size:1rem;margin-bottom:3px" id="profName2">—</div>
           <div style="font-size:.78rem;color:var(--mu);margin-bottom:10px" id="profEmail2">—</div>
           <button class="bpri" onclick="doSignOut()"><span id="signOutTxt3">Cerrar sesion</span></button>
@@ -736,6 +830,7 @@ const L={
     consc1:"Alerta — responde normalmente",consc2:"Responde solo a voz",consc3:"Responde solo al dolor",consc4:"No responde (inconsciente)",
     sym1:"Sangrado activo",sym2:"Palidez / sudoracion fria",sym3:"Mareo / perdida de equilibrio",sym4:"Cianosis (labios o unas azulados)",sym5:"Temperatura >39C",sym6:"Debilidad muscular intensa",sym7:"Ninguno de los anteriores",
     vSysBP:"P. sistolica (mmHg)",vDiaBP:"P. diastolica (mmHg)",vHR:"Frec. cardiaca (lpm)",vSpO2:"Saturacion O2 (%)",vTemp:"Temperatura (C)",vRR:"Frec. respiratoria (rpm)",
+    welcomeHello:"Bienvenido",changePass:"Cambiar contrasena",curPass:"Contrasena actual",newPass:"Nueva contrasena",confirmPass:"Confirmar contrasena",savePass:"Guardar",passChanged:"Contrasena actualizada.",passError:"Error al cambiar contrasena.",passMatch:"Las contrasenas no coinciden.",passShort:"Minimo 6 caracteres.",reauth:"Contrasena actual incorrecta.",photoUpdated:"Foto actualizada.",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
     ptnTitle:"Patient access",ptnSub:"Scan clinic QR code",staffLink:"Medical staff / Administrator",
@@ -814,6 +909,7 @@ const L={
     consc1:"Alert — responds normally",consc2:"Responds only to voice",consc3:"Responds only to pain",consc4:"Unresponsive (unconscious)",
     sym1:"Active bleeding",sym2:"Pallor / cold sweating",sym3:"Dizziness / loss of balance",sym4:"Cyanosis (blue lips or nails)",sym5:"Temperature >39C",sym6:"Severe muscle weakness",sym7:"None of the above",
     vSysBP:"Systolic BP (mmHg)",vDiaBP:"Diastolic BP (mmHg)",vHR:"Heart rate (bpm)",vSpO2:"O2 saturation (%)",vTemp:"Temperature (C)",vRR:"Resp. rate (rpm)",
+    welcomeHello:"Welcome",changePass:"Change password",curPass:"Current password",newPass:"New password",confirmPass:"Confirm password",savePass:"Save",passChanged:"Password updated.",passError:"Error changing password.",passMatch:"Passwords do not match.",passShort:"Minimum 6 characters.",reauth:"Current password is incorrect.",photoUpdated:"Photo updated.",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
     ptnTitle:"Acesso como paciente",ptnSub:"Escanear codigo QR da clinica",staffLink:"Equipe medica / Administrador",
@@ -892,6 +988,7 @@ const L={
     consc1:"Alerta — responde normalmente",consc2:"Responde apenas a voz",consc3:"Responde apenas a dor",consc4:"Nao responde (inconsciente)",
     sym1:"Sangramento ativo",sym2:"Palidez / sudoracao fria",sym3:"Tontura / perda de equilibrio",sym4:"Cianose (labios ou unhas azulados)",sym5:"Temperatura >39C",sym6:"Fraqueza muscular intensa",sym7:"Nenhum dos anteriores",
     vSysBP:"PA sistolica (mmHg)",vDiaBP:"PA diastolica (mmHg)",vHR:"Frec. cardiaca (bpm)",vSpO2:"Saturacao O2 (%)",vTemp:"Temperatura (C)",vRR:"Frec. respiratoria (rpm)",
+    welcomeHello:"Bem-vindo",changePass:"Alterar senha",curPass:"Senha atual",newPass:"Nova senha",confirmPass:"Confirmar senha",savePass:"Salvar",passChanged:"Senha atualizada.",passError:"Erro ao alterar senha.",passMatch:"As senhas nao coincidem.",passShort:"Minimo 6 caracteres.",reauth:"Senha atual incorreta.",photoUpdated:"Foto atualizada.",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
     ptnTitle:"Acces patient",ptnSub:"Scanner le code QR de la clinique",staffLink:"Personnel medical / Administrateur",
@@ -970,6 +1067,7 @@ const L={
     consc1:"Alerte — repond normalement",consc2:"Repond uniquement a la voix",consc3:"Repond uniquement a la douleur",consc4:"Ne repond pas (inconscient)",
     sym1:"Saignement actif",sym2:"Paleur / sudation froide",sym3:"Vertige / perte d equilibre",sym4:"Cyanose (levres ou ongles bleus)",sym5:"Temperature >39C",sym6:"Faiblesse musculaire intense",sym7:"Aucun des precedents",
     vSysBP:"PA systolique (mmHg)",vDiaBP:"PA diastolique (mmHg)",vHR:"Freq. cardiaque (bpm)",vSpO2:"Saturation O2 (%)",vTemp:"Temperature (C)",vRR:"Freq. respiratoire (rpm)",
+    welcomeHello:"Bienvenue",changePass:"Changer mot de passe",curPass:"Mot de passe actuel",newPass:"Nouveau mot de passe",confirmPass:"Confirmer mot de passe",savePass:"Enregistrer",passChanged:"Mot de passe mis a jour.",passError:"Erreur lors du changement.",passMatch:"Les mots de passe ne correspondent pas.",passShort:"Minimum 6 caracteres.",reauth:"Mot de passe actuel incorrect.",photoUpdated:"Photo mise a jour.",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
     ptnTitle:"Patientenzugang",ptnSub:"QR-Code der Klinik scannen",staffLink:"Medizinisches Personal / Administrator",
@@ -1048,6 +1146,7 @@ const L={
     consc1:"Wach — reagiert normal",consc2:"Reagiert nur auf Sprache",consc3:"Reagiert nur auf Schmerz",consc4:"Reagiert nicht (bewusstlos)",
     sym1:"Aktive Blutung",sym2:"Blasse / kalter Schweiss",sym3:"Schwindel / Gleichgewichtsverlust",sym4:"Zyanose (blaue Lippen oder Nagel)",sym5:"Temperatur >39C",sym6:"Starke Muskelschwache",sym7:"Keines der oben genannten",
     vSysBP:"Syst. Blutdruck (mmHg)",vDiaBP:"Diast. Blutdruck (mmHg)",vHR:"Herzfrequenz (bpm)",vSpO2:"O2-Sattigung (%)",vTemp:"Temperatur (C)",vRR:"Atemfrequenz (rpm)",
+    welcomeHello:"Willkommen",changePass:"Passwort andern",curPass:"Aktuelles Passwort",newPass:"Neues Passwort",confirmPass:"Passwort bestatigen",savePass:"Speichern",passChanged:"Passwort aktualisiert.",passError:"Fehler beim Andern.",passMatch:"Passworter stimmen nicht uberein.",passShort:"Mindestens 6 Zeichen.",reauth:"Aktuelles Passwort falsch.",photoUpdated:"Foto aktualisiert.",
   }
 };
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE"};
@@ -1204,14 +1303,21 @@ async function doAuth(){
 }
 
 async function doGoogle(){
+  const err=document.getElementById("authErr");
+  err.className="auth-err";err.textContent="";
   try{
     FB.gProvider.setCustomParameters({prompt:"select_account"});
     await FB.signInWithPopup(FB.auth,FB.gProvider);
   }catch(e){
-    if(e.code!=="auth/popup-closed-by-user"){
-      const err=document.getElementById("authErr");
-      err.className="auth-err er";err.textContent=e.message;
-    }
+    if(e.code==="auth/popup-closed-by-user"||e.code==="auth/cancelled-popup-request")return;
+    err.className="auth-err er";
+    const gMsgs={
+      "auth/popup-blocked":"El navegador bloqueo la ventana emergente. Permite ventanas emergentes para este sitio.",
+      "auth/unauthorized-domain":"Este dominio no esta autorizado en Firebase. Contacta al administrador.",
+      "auth/operation-not-allowed":"Google Sign-In no esta habilitado. Contacta al administrador.",
+      "auth/network-request-failed":"Error de conexion. Verifica tu internet."
+    };
+    err.textContent=gMsgs[e.code]||("Error: "+e.message);
   }
 }
 
@@ -1242,6 +1348,35 @@ function showApp(){
   buildNav();updateUI();
   const def={admin:"dash",admin_hosp:"dash",medico:"triage",paciente:"meds"}[CR]||"triage";
   navigateTo(def);
+  showWelcome();
+}
+
+function showWelcome(){
+  const name=CU?.displayName||CU?.email?.split("@")[0]||"Usuario";
+  const av=name[0].toUpperCase();
+  const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];
+  const col=cols[av.charCodeAt(0)%cols.length];
+  const RL={admin:"ADMIN",admin_hosp:"ADM. HOSP",medico:"MEDICO",paciente:"PACIENTE"};
+  const ov=document.getElementById("welcomeOverlay");
+  const box=document.getElementById("welcomeBox");
+  const avEl=document.getElementById("welcomeAv");
+  const saved=localStorage.getItem("ms_photo_"+CU?.uid);
+  if(saved){
+    avEl.innerHTML=`<img src="${saved}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    avEl.style.background="transparent";
+  } else {
+    avEl.innerHTML=av;
+    avEl.style.background=col;
+  }
+  document.getElementById("welcomeHello").textContent=t("welcomeHello");
+  document.getElementById("welcomeName").textContent=name;
+  document.getElementById("welcomeRole").textContent=RL[CR]||CR;
+  box.classList.remove("out");
+  ov.style.display="flex";
+  setTimeout(()=>{
+    box.classList.add("out");
+    setTimeout(()=>{ov.style.display="none";},420);
+  },2200);
 }
 
 // NAV
@@ -1372,24 +1507,99 @@ function loadConfig(){
   const RC={admin:"admin",admin_hosp:"admin_hosp",medico:"medico",paciente:"paciente"};
   const pr=document.getElementById("profRole");if(pr){pr.textContent=RL[CR]||CR;pr.className="role-badge "+(RC[CR]||"medico");}
   ["es","en","pt","fr","de"].forEach(l=>{const b=document.getElementById("lng-"+l);if(b)b.classList.toggle("sel",l===CL);});
+  // Photo
+  const av=name[0].toUpperCase();const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];const col=cols[av.charCodeAt(0)%cols.length];
+  const photoEl=document.getElementById("configPhotoAv");
+  const saved=localStorage.getItem("ms_photo_"+CU?.uid);
+  if(photoEl){
+    if(saved){photoEl.innerHTML=`<img src="${saved}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+    else{photoEl.textContent=av;photoEl.style.background=col;}
+  }
+  // Password change section (only for email-based staff accounts)
+  const pSection=document.getElementById("changePassSection");
+  if(pSection)pSection.style.display=(CR!=="paciente"&&CU?.email&&!CU?.providerData?.some(p=>p.providerId==="google.com"))?"block":"none";
+  // Labels
+  const lbCP=document.getElementById("changePassLbl");if(lbCP)lbCP.textContent=t("changePass");
+  const lbCur=document.getElementById("lbCurPass");if(lbCur)lbCur.textContent=t("curPass");
+  const lbNew=document.getElementById("lbNewPass");if(lbNew)lbNew.textContent=t("newPass");
+  const lbConf=document.getElementById("lbConfirmPass");if(lbConf)lbConf.textContent=t("confirmPass");
+  const lbSave=document.getElementById("savePassLbl");if(lbSave)lbSave.textContent=t("savePass");
 }
 
 function loadProf(){
   const name=CU?.displayName||CU?.email?.split("@")[0]||"Paciente";
   const av=name[0].toUpperCase();const cols=["#00c8f0","#00e07a","#a855f7","#ffb830"];
   const col=cols[av.charCodeAt(0)%cols.length];
-  document.getElementById("profAv2").textContent=av;document.getElementById("profAv2").style.background=col;
+  const profEl=document.getElementById("profAv2");
+  const saved=localStorage.getItem("ms_photo_"+CU?.uid);
+  if(profEl){
+    if(saved){profEl.innerHTML=`<img src="${saved}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+    else{profEl.textContent=av;profEl.style.background=col;}
+  }
   document.getElementById("profName2").textContent=name;
   document.getElementById("profEmail2").textContent=CU?.email||"Acceso QR";
+}
+
+function togglePassForm(){
+  const f=document.getElementById("passForm");
+  f.classList.toggle("open");
+  if(!f.classList.contains("open")){
+    document.getElementById("curPassInput").value="";
+    document.getElementById("newPassInput").value="";
+    document.getElementById("confirmPassInput").value="";
+    document.getElementById("passErr").textContent="";
+  }
+}
+
+async function doChangePass(){
+  const cur=document.getElementById("curPassInput").value;
+  const np=document.getElementById("newPassInput").value;
+  const conf=document.getElementById("confirmPassInput").value;
+  const errEl=document.getElementById("passErr");
+  errEl.className="auth-err";errEl.textContent="";
+  if(np!==conf){errEl.className="auth-err er";errEl.textContent=t("passMatch");return;}
+  if(np.length<6){errEl.className="auth-err er";errEl.textContent=t("passShort");return;}
+  try{
+    const cred=FB.EmailAuthProvider.credential(CU.email,cur);
+    await FB.reauthenticateWithCredential(CU,cred);
+    await FB.updatePassword(CU,np);
+    errEl.className="auth-err ok";errEl.textContent=t("passChanged");
+    setTimeout(()=>{togglePassForm();},1500);
+  }catch(e){
+    errEl.className="auth-err er";
+    errEl.textContent=e.code==="auth/wrong-password"?t("reauth"):t("passError");
+  }
+}
+
+function handleProfilePhoto(input,ctx){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const data=e.target.result;
+    localStorage.setItem("ms_photo_"+CU?.uid,data);
+    if(ctx==="config"){
+      const el=document.getElementById("configPhotoAv");
+      if(el)el.innerHTML=`<img src="${data}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else if(ctx==="prof"){
+      const el=document.getElementById("profAv2");
+      if(el)el.innerHTML=`<img src="${data}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    }
+    toast(t("photoUpdated"));
+  };
+  reader.readAsDataURL(file);
 }
 
 // QR SHOW
 function showQR(){
   document.getElementById("qrShowModal").classList.add("on");
-  const c=document.getElementById("qrCanvas");const ctx=c.getContext("2d");ctx.clearRect(0,0,180,180);
-  const tmp=document.createElement("div");
-  new QRCode(tmp,{text:QR_SECRET,width:180,height:180,colorDark:isDark?"#00c8f0":"#0099bb",colorLight:isDark?"#0b1120":"#fff"});
-  setTimeout(()=>{const img=tmp.querySelector("img");if(img){const i=new Image();i.onload=()=>ctx.drawImage(i,0,0,180,180);i.src=img.src;}},200);
+  const wrap=document.getElementById("qrDisplay");
+  wrap.innerHTML="";
+  if(typeof QRCode!=="undefined"){
+    new QRCode(wrap,{text:QR_SECRET,width:180,height:180,correctLevel:QRCode.CorrectLevel.M,colorDark:isDark?"#00c8f0":"#0099bb",colorLight:isDark?"#0b1120":"#ffffff"});
+    setTimeout(()=>{const img=wrap.querySelector("img");if(img){img.style.borderRadius="10px";img.style.display="block";}},80);
+  }else{
+    wrap.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(QR_SECRET)}&bgcolor=${isDark?"0b1120":"ffffff"}&color=${isDark?"00c8f0":"0099bb"}" style="border-radius:10px;width:180px;height:180px;display:block">`;
+  }
 }
 
 // QR SCAN CAMERA
@@ -1572,52 +1782,7 @@ function rAnalyzing(){
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .2s infinite;display:inline-block"></span>
       <span style="width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s .4s infinite;display:inline-block"></span>
     </div>
-    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
-/* ── ANTECEDENTES ── */
-.ant-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(168,85,247,.1);color:#c084fc;border:1px solid rgba(168,85,247,.25);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:3px;}
-.ant-chip .ax{margin-left:3px;opacity:.6;cursor:pointer;font-size:.7rem;}
-.ant-chip .ax:hover{opacity:1;color:var(--rd);}
-.symptom-q{background:var(--bg3);border:1px solid var(--bd);border-left:3px solid var(--cy);border-radius:11px;padding:12px 14px;margin-bottom:9px;animation:fadeUp .35s cubic-bezier(.4,0,.2,1) both;}
-.symptom-q:nth-child(1){animation-delay:.04s}.symptom-q:nth-child(2){animation-delay:.11s}.symptom-q:nth-child(3){animation-delay:.18s}
-.symptom-q-title{font-size:.72rem;font-family:"JetBrains Mono",monospace;color:var(--cy);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
-.symptom-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.symptom-opt{padding:10px 11px;border-radius:9px;border:1.5px solid var(--bd);background:var(--bg2);font-size:.8rem;color:var(--tx);cursor:pointer;transition:all .18s;font-family:"Familjen Grotesk",sans-serif;text-align:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
-.symptom-opt:hover{border-color:var(--cy);color:var(--cy);background:var(--cy-a);}
-.symptom-opt:active{transform:scale(.95);}
-.symptom-opt.sel{background:linear-gradient(135deg,var(--cy-a),rgba(0,200,240,.15));border-color:var(--cy);color:var(--cy);font-weight:700;box-shadow:0 0 0 1px var(--cy),0 2px 8px rgba(0,200,240,.15);}
-/* ── FACIAL PAIN ── */
-.pain-face-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;}
-@media(min-width:360px){.pain-face-grid{grid-template-columns:repeat(6,1fr);gap:6px;}}
-.pain-face{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:10px 6px 8px;border-radius:14px;border:2px solid var(--bd);background:var(--bg3);transition:all .2s cubic-bezier(.34,1.4,.64,1);}
-.pain-face:hover{border-color:var(--cy);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,200,240,.15);}
-.pain-face.sel{border-color:var(--cy);background:var(--cy-a);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,200,240,.2);}
-.pain-face svg{width:44px;height:44px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));transition:transform .2s;}
-.pain-face:hover svg{transform:scale(1.1);}
-.pain-face.sel svg{transform:scale(1.1);}
-.pain-face-label{font-size:.55rem;font-family:"JetBrains Mono",monospace;color:var(--mu);text-align:center;line-height:1.3;font-weight:600;}
-.pain-face.sel .pain-face-label{color:var(--cy);}
-/* ── INTERACTIONS SIMPLE ── */
-.int-alert{border-radius:11px;padding:13px;margin-bottom:8px;animation:fadeUp .3s ease;}
-.int-alert.danger{background:var(--rd-a);border:1.5px solid var(--rd);}
-.int-alert.warn{background:var(--yw-a);border:1.5px solid var(--yw);}
-.int-alert.ok{background:var(--gn-a);border:1.5px solid var(--gn);}
-.int-alert-title{font-weight:700;font-size:.88rem;margin-bottom:5px;display:flex;align-items:center;gap:7px;}
-.int-alert-sub{font-size:.79rem;color:var(--mu);line-height:1.5;margin-bottom:9px;}
-.int-explain-btn{padding:6px 13px;border-radius:8px;border:1.5px solid currentColor;background:transparent;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Familjen Grotesk",sans-serif;}
-.int-explain{display:none;margin-top:9px;padding:9px 11px;background:rgba(0,0,0,.15);border-radius:8px;font-size:.77rem;line-height:1.6;color:var(--tx);}
-.int-explain.open{display:block;animation:fadeUp .2s ease;}
-/* ── HISTORIA CLINICA ── */
-.hc-card{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:9px;cursor:pointer;transition:all .22s;}
-.hc-card:hover{border-color:var(--cy);transform:translateY(-1px);}
-.hc-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;color:#000;flex-shrink:0;}
-.hc-name{font-weight:700;font-size:.88rem;}
-.hc-detail{font-size:.7rem;color:var(--mu);margin-top:2px;}
-.hc-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.6rem;font-family:"JetBrains Mono",monospace;font-weight:700;margin-top:4px;}
-.photo-upload{border:2px dashed var(--bd);border-radius:11px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:9px;}
-.photo-upload:hover{border-color:var(--cy);background:var(--cy-a);}
-.photo-preview{width:100%;border-radius:9px;margin-bottom:9px;max-height:180px;object-fit:cover;}
-
-</style>
+    <style>@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}</style>
     <div style="font-family:JetBrains Mono,monospace;font-size:.56rem;color:var(--mu);letter-spacing:2px" data-i18n="analyzing">${t("analyzingLabel")||"EVALUANDO RIESGO CLINICO"}</div>
   </div>`;
   callAI();
