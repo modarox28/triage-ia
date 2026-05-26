@@ -2490,6 +2490,7 @@ async function doSignOut(){
   _clearPresence();
   stopInactivityTimer();
   _patientHC=null;
+  if(_hcUnsub){_hcUnsub();_hcUnsub=null;}_hcCache={};
   if(CR==="paciente"){CR=null;CU=null;showAuthScreen();return;}
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
 }
@@ -3478,12 +3479,13 @@ function _showPatientLookup(){
         <div class="lookup-title">Identificar paciente</div>
         <div class="lookup-sub">Ingresa el número de identificación para cargar<br>la historia clínica automáticamente</div>
       </div>
-      <div class="lookup-input-row">
+      <div style="display:flex;gap:8px;margin-top:4px;animation:fadeUp .4s .2s both">
         <input class="fi" id="triagePatientId" type="text" inputmode="numeric"
                placeholder="Número de identificación"
-               style="flex:1;text-align:center;letter-spacing:2px;font-size:1rem;font-family:'JetBrains Mono',monospace"
+               style="flex:1;min-width:0;width:auto;text-align:center;letter-spacing:2px;font-size:1rem;font-family:'JetBrains Mono',monospace"
                onkeydown="if(event.key==='Enter')_searchPatientForTriage()">
-        <button class="bpri" id="triageSearchBtn" style="flex:0 0 auto;padding:0 18px;white-space:nowrap"
+        <button id="triageSearchBtn"
+                style="flex:0 0 auto;width:auto;padding:0 18px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.88rem;cursor:pointer;font-family:'Familjen Grotesk',sans-serif;white-space:nowrap;touch-action:manipulation;transition:all .22s"
                 onclick="_searchPatientForTriage()">Buscar</button>
       </div>
       <div id="triageLookupResult" style="margin-top:12px"></div>
@@ -4492,6 +4494,7 @@ function renderSymptomDetail(card){
 // HISTORIA CLINICA
 // ══════════════════════════════════════
 let hcAnts=[], hcAlers=[], hcMedActs=[], hcPhoto=null;
+let _hcUnsub=null, _hcCache={}; // {docId: docData} — avoids re-fetching on every tab visit
 
 function toggleAnt(val,btn){
   if(hcAnts.includes(val)){
@@ -4592,31 +4595,62 @@ async function saveHC(){
   }catch(e){toast('Error al guardar: '+e.message);}
 }
 
-async function loadHC(){
+function _hcSkeleton(n=3){
+  return Array(n).fill(0).map(()=>`<div class="hc-card" style="pointer-events:none">
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="skel" style="width:42px;height:42px;border-radius:50%;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div class="skel" style="height:13px;width:55%;margin-bottom:8px"></div>
+        <div class="skel" style="height:10px;width:35%;margin-bottom:6px"></div>
+        <div class="skel" style="height:10px;width:70%"></div>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+function _renderHCItem(id, dt){
+  const cols=['#00c8f0','#00e07a','#a855f7','#ffb830','#ff3a5c'];
+  const av=(dt.name||'?')[0].toUpperCase();const col=cols[av.charCodeAt(0)%cols.length];
+  const ants=dt.antecedentes?.length?dt.antecedentes.slice(0,3).join(', '):'Sin antecedentes';
+  const alers=dt.alergias?.length?`⚠️ ${dt.alergias.join(', ')}`:'';
+  return`<div class="hc-card" onclick="viewHC('${id}')">
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      ${dt.photo?`<img src="${dt.photo}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div class="hc-avatar" style="background:${col}">${av}</div>`}
+      <div style="flex:1;min-width:0">
+        <div class="hc-name">${dt.name||'—'}</div>
+        <div class="hc-detail">${dt.age?dt.age+' años · ':''}${dt.sex==='M'?'Masculino':dt.sex==='F'?'Femenino':'Otro'}${dt.doc?` · <span style="font-family:'JetBrains Mono',monospace;font-size:.65rem">${dt.doc}</span>`:''}</div>
+        <div class="hc-detail" style="margin-top:3px">${ants}</div>
+        ${alers?`<div class="hc-badge" style="background:var(--rd-a);color:var(--rd)">${alers}</div>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function loadHC(){
   const el=document.getElementById('hcList');
   if(!el)return;
-  el.innerHTML=`<div class="ldg"><div class="sp"></div>${t('loading')||'Cargando...'}</div>`;
-  try{
-    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,'historias'),FB.orderBy('createdAt','desc'),FB.limit(30)));
-    if(snap.empty){el.innerHTML=`<div class="empty"><div class="eic">🗂️</div><div class="etx">Sin historias clinicas aun.<br>Crea la primera arriba.</div></div>`;return;}
-    const cols=['#00c8f0','#00e07a','#a855f7','#ffb830','#ff3a5c'];
-    el.innerHTML=snap.docs.map(d=>{
-      const dt=d.data();const av=(dt.name||'?')[0].toUpperCase();const col=cols[av.charCodeAt(0)%cols.length];
-      const ants=dt.antecedentes?.length?dt.antecedentes.slice(0,3).join(', '):'Sin antecedentes';
-      const alers=dt.alergias?.length?`⚠️ ${dt.alergias.join(', ')}`:'';
-      return`<div class="hc-card" onclick="viewHC('${d.id}')">
-        <div style="display:flex;gap:12px;align-items:flex-start">
-          ${dt.photo?`<img src="${dt.photo}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div class="hc-avatar" style="background:${col}">${av}</div>`}
-          <div style="flex:1;min-width:0">
-            <div class="hc-name">${dt.name||'—'}</div>
-            <div class="hc-detail">${dt.age?dt.age+' anos · ':''}${dt.sex==='M'?'Masculino':dt.sex==='F'?'Femenino':'Otro'}</div>
-            <div class="hc-detail" style="margin-top:3px">${ants}</div>
-            ${alers?`<div class="hc-badge" style="background:var(--rd-a);color:var(--rd)">${alers}</div>`:''}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){el.innerHTML=`<div class="empty"><div class="etx">Error al cargar historias.</div></div>`;}
+  if(!FB||!CU){el.innerHTML=`<div class="empty"><div class="etx">Sin sesión activa</div></div>`;return;}
+  // Show skeletons immediately — instant perceived load
+  if(!Object.keys(_hcCache).length) el.innerHTML=_hcSkeleton(3);
+  else _refreshHCList(el); // re-render from cache with no delay
+  // Subscribe once; re-use on subsequent tab visits
+  if(_hcUnsub)return;
+  const q=FB.query(FB.collection(FB.db,'historias'),FB.orderBy('createdAt','desc'),FB.limit(30));
+  _hcUnsub=FB.onSnapshot(q,(snap)=>{
+    _hcCache={};
+    snap.docs.forEach(d=>{_hcCache[d.id]=d.data();});
+    const listEl=document.getElementById('hcList');
+    if(listEl)_refreshHCList(listEl);
+  },(e)=>{
+    const listEl=document.getElementById('hcList');
+    if(listEl)listEl.innerHTML=`<div class="empty"><div class="etx">Error: ${e.message}</div></div>`;
+  });
+}
+
+function _refreshHCList(el){
+  const ids=Object.keys(_hcCache);
+  if(!ids.length){el.innerHTML=`<div class="empty"><div class="eic">🗂️</div><div class="etx">Sin historias clínicas aún.<br>Crea la primera arriba.</div></div>`;return;}
+  el.innerHTML=ids.map(id=>_renderHCItem(id,_hcCache[id])).join('');
 }
 
 function showNewHC(){
@@ -4629,38 +4663,43 @@ function showNewHC(){
   navigateTo('hc-new');
 }
 
+function _renderHCDetail(el, id, d){
+  const ants=(d.antecedentes||[]).map(a=>`<span class="chip">${a}</span>`).join('');
+  const alers=(d.alergias||[]).map(a=>`<span class="chip" style="background:var(--rd-a);color:var(--rd)">${a}</span>`).join('');
+  const meds=(d.medicacion||[]).map(m=>`<span class="chip" style="background:var(--cy-a);color:var(--cy)">${m}</span>`).join('');
+  const date=d.createdAt?.toDate?.()?.toLocaleDateString('es-ES')||'';
+  const av=(d.name||'?')[0].toUpperCase();
+  el.innerHTML=`
+    <div class="card" style="display:flex;gap:12px;align-items:center;animation:fadeUp .3s both">
+      ${d.photo?`<img src="${d.photo}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0">`:
+        `<div style="width:56px;height:56px;border-radius:50%;background:var(--cy-a);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:var(--cy);flex-shrink:0">${av}</div>`}
+      <div>
+        <div style="font-size:1.05rem;font-weight:700">${d.name||'Sin nombre'}</div>
+        <div class="hc-detail">${d.age?d.age+' años · ':''}${d.sex==='M'?'Masculino':d.sex==='F'?'Femenino':'Otro'}${d.doc?` · <span style="font-family:'JetBrains Mono',monospace">${d.doc}</span>`:''}</div>
+        <div style="font-size:.68rem;color:var(--mu);margin-top:2px">${date}</div>
+      </div>
+    </div>
+    ${ants?`<div class="card" style="animation:fadeUp .3s .05s both"><div class="clabel">Antecedentes</div><div style="display:flex;flex-wrap:wrap;gap:6px">${ants}</div></div>`:''}
+    ${alers?`<div class="card" style="animation:fadeUp .3s .1s both"><div class="clabel">Alergias</div><div style="display:flex;flex-wrap:wrap;gap:6px">${alers}</div></div>`:''}
+    ${meds?`<div class="card" style="animation:fadeUp .3s .15s both"><div class="clabel">Medicación actual</div><div style="display:flex;flex-wrap:wrap;gap:6px">${meds}</div></div>`:''}
+    ${d.notes?`<div class="card" style="animation:fadeUp .3s .2s both"><div class="clabel">Notas</div><div style="font-size:.84rem;line-height:1.55">${d.notes}</div></div>`:''}
+  `;
+}
+
 async function viewHC(id){
   navigateTo('hc-detail');
   const el=document.getElementById('hcDetailContent');
   if(!el)return;
-  el.innerHTML=`<div class="ldg"><div class="sp"></div>Cargando...</div>`;
+  // Render from cache instantly — no spinner at all for cached records
+  if(_hcCache[id]){_renderHCDetail(el,id,_hcCache[id]);return;}
+  // Fallback skeleton + fetch for uncached records
+  el.innerHTML=`<div class="card">${_hcSkeleton(1)}<div class="skel" style="height:13px;width:100%;margin-top:14px"></div><div class="skel" style="height:60px;width:100%;margin-top:8px"></div></div>`;
   try{
     const snap=await FB.getDoc(FB.doc(FB.db,'historias',id));
     if(!snap.exists()){el.innerHTML=`<div class="card" style="color:var(--rd)">Historia no encontrada</div>`;return;}
-    const d=snap.data();
-    const ants=(d.antecedentes||[]).map(a=>`<span class="chip">${a}</span>`).join('');
-    const alers=(d.alergias||[]).map(a=>`<span class="chip" style="background:var(--rd-a);color:var(--rd)">${a}</span>`).join('');
-    const meds=(d.medicacion||[]).map(m=>`<span class="chip" style="background:var(--cy-a);color:var(--cy)">${m}</span>`).join('');
-    const date=d.createdAt?.toDate?.()?.toLocaleDateString('es-ES')||'';
-    const av=(d.name||'?')[0].toUpperCase();
-    el.innerHTML=`
-      <div class="card" style="display:flex;gap:12px;align-items:center">
-        ${d.photo?`<img src="${d.photo}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0">`:
-          `<div style="width:56px;height:56px;border-radius:50%;background:var(--cy-a);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:var(--cy);flex-shrink:0">${av}</div>`}
-        <div>
-          <div style="font-size:1.05rem;font-weight:700">${d.name||'Sin nombre'}</div>
-          <div class="hc-detail">${d.age?d.age+' años · ':''}${d.sex==='M'?'Masculino':d.sex==='F'?'Femenino':'Otro'}${d.doc?' · '+d.doc:''}</div>
-          <div style="font-size:.68rem;color:var(--mu);margin-top:2px">${date}</div>
-        </div>
-      </div>
-      ${ants?`<div class="card"><div class="clabel">Antecedentes</div><div style="display:flex;flex-wrap:wrap;gap:6px">${ants}</div></div>`:''}
-      ${alers?`<div class="card"><div class="clabel">Alergias</div><div style="display:flex;flex-wrap:wrap;gap:6px">${alers}</div></div>`:''}
-      ${meds?`<div class="card"><div class="clabel">Medicación actual</div><div style="display:flex;flex-wrap:wrap;gap:6px">${meds}</div></div>`:''}
-      ${d.notas?`<div class="card"><div class="clabel">Notas</div><div style="font-size:.84rem;line-height:1.55">${d.notas}</div></div>`:''}
-    `;
-  }catch(e){
-    el.innerHTML=`<div class="card" style="color:var(--rd)">Error: ${e.message}</div>`;
-  }
+    const d=snap.data();_hcCache[id]=d;
+    _renderHCDetail(el,id,d);
+  }catch(e){el.innerHTML=`<div class="card" style="color:var(--rd)">Error: ${e.message}</div>`;}
 }
 
 
