@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=3,user-scalable=yes,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>MedIA Suite</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -139,7 +139,7 @@ button{border-radius:0;}
 
 /* APP SHELL — position:fixed fills viewport; height set by JS on iOS via --vh */
 .app{display:none;width:100%;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;}
-.app.on{display:flex;flex-direction:column;width:100%;}
+.app.on{display:flex;flex-direction:column;width:100%;height:100%;}
 @media(min-width:768px){
   .app.on{flex-direction:row;}
   .sidebar{width:230px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:18px 0;overflow:hidden;}
@@ -183,7 +183,7 @@ button{border-radius:0;}
 .sc.on{display:block;animation:pageSlideIn .3s cubic-bezier(.34,1.4,.64,1);}
 
 /* BOTTOM NAV — iOS 26 Liquid Glass */
-.bottom-nav{display:flex;background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-top:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -10px 36px rgba(0,0,0,.28);flex-shrink:0;position:relative;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
+.bottom-nav{display:flex;background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-top:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -10px 36px rgba(0,0,0,.28);position:fixed;bottom:0;left:0;right:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
 .light .bottom-nav{background:rgba(240,244,248,.78);border-top:1px solid rgba(0,0,0,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 -4px 20px rgba(0,0,0,.07);}
 .bottom-nav::after{content:"";position:fixed;bottom:0;left:0;right:0;height:env(safe-area-inset-bottom,0px);background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);z-index:49;pointer-events:none;}
 .light .bottom-nav::after{background:rgba(240,244,248,.78);}
@@ -4986,6 +4986,11 @@ function applyGCS(){
   rTriage();
   toast("🧠 GCS "+total+"/15 aplicado");
 }
+
+// Block pinch zoom on iOS (viewport user-scalable=no is ignored by iOS 10+)
+document.addEventListener('gesturestart', e => e.preventDefault(), {passive:false});
+document.addEventListener('gesturechange', e => e.preventDefault(), {passive:false});
+document.addEventListener('touchmove', e => { if(e.touches.length > 1) e.preventDefault(); }, {passive:false});
 </script>
 </body>
 </html>
