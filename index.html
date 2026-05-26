@@ -1691,7 +1691,7 @@ function calcShockIndex(hr,sbp){
 // COPILOT HINTS — deterministic red flags, questions, protocols per chief complaint (P6 layer 1)
 function _getCopilotHints(){
   const m=TD.motivo;
-  if(!m||m==="otro")return null;
+  if(!m)return null;
   const vt=TD.vit||{};
   const sint=TD.sint||[];
   const consc=TD.consc;
@@ -1732,6 +1732,18 @@ function _getCopilotHints(){
     if(sint.includes("sangrado"))h.flags.push("Sangrado activo — potencialmente quirúrgico");
     h.questions=["¿Inicio súbito o gradual?","¿Signos peritoneales (rebote, defensa)?","¿Última menstruación?","¿Cirugías abdominales previas?"];
     h.protocols=["Analítica urgente: PCR, leucocitos, amilasa, lipasa","Ecografía abdominal","Dieta absoluta hasta valoración quirúrgica","Acceso venoso + analgesia IV"];
+  }else if(m==="otro"){
+    const conscAlt=consc&&consc!=="alerta";
+    const desc=(TD.otraDesc||"").trim();
+    if(conscAlt)h.flags.push("Alteración de consciencia — evaluación urgente");
+    if(fc&&fc>100&&ps&&ps<90)h.flags.push("Taquicardia + hipotensión — posible shock");
+    if(sint.includes("cianosis"))h.flags.push("Cianosis presente — descartar hipoxia");
+    if(sint.includes("sangrado"))h.flags.push("Sangrado activo — determinar origen");
+    if(!h.flags.length)h.flags=["Síntomas generales: monitorizar evolución","Confirmar signos vitales completos"];
+    if(desc)h.flags.unshift(`Síntoma referido: "${desc.length>70?desc.slice(0,67)+"…":desc}"`);
+    h.questions=["¿Cuándo comenzaron los síntomas y cómo han evolucionado?","¿Síntomas asociados: náuseas, fiebre, mareo?","¿Medicación habitual o alergias conocidas?","¿Enfermedades crónicas o cirugías previas?","¿Consultas de urgencias recientes?"];
+    h.protocols=["Signos vitales completos","Analítica básica si ingreso probable","Anamnesis detallada","Vigilar signos de deterioro clínico"];
+    h.urgency=conscAlt||(fc&&fc>100&&ps&&ps<90)?"high":sint.includes("cianosis")||sint.includes("sangrado")?"medium":"low";
   }
   return h.flags.length?h:null;
 }
@@ -1741,12 +1753,12 @@ function _renderCopilotCard(hints){
   const urgLabel={high:"Alta prioridad",medium:"Atención moderada",low:"Observación"}[hints.urgency]||"";
   const div=document.createElement("div");
   div.style.cssText="border:1.5px solid rgba(0,200,240,.3);border-radius:14px;padding:12px 14px;margin-top:8px;background:rgba(0,200,240,.04);animation:fadeUp .3s both";
-  let expanded=false;
+  let expanded=true;
   const header=document.createElement("div");
   header.style.cssText="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none";
-  header.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.82rem">🤖</span><span style="font-size:.76rem;font-weight:700;color:var(--cy)">Asistente clínico</span><span style="font-size:.58rem;padding:2px 7px;border-radius:20px;background:${urgColor}22;color:${urgColor};font-weight:700">${urgLabel}</span></div><span id="_cp_toggle" style="font-size:.62rem;color:var(--mu)">▸ Ver sugerencias</span>`;
+  header.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.82rem">🤖</span><span style="font-size:.76rem;font-weight:700;color:var(--cy)">Asistente clínico</span><span style="font-size:.58rem;padding:2px 7px;border-radius:20px;background:${urgColor}22;color:${urgColor};font-weight:700">${urgLabel}</span></div><span id="_cp_toggle" style="font-size:.62rem;color:var(--mu)">▾ Ocultar</span>`;
   const body=document.createElement("div");
-  body.id="_cp_body";body.style.cssText="display:none;margin-top:10px";
+  body.id="_cp_body";body.style.cssText="display:block;margin-top:10px";
   if(hints.flags.length){
     const fl=document.createElement("div");fl.style.cssText="margin-bottom:10px";
     fl.innerHTML=`<div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--rd);letter-spacing:1px;margin-bottom:4px">⚠ RED FLAGS</div>${hints.flags.map(f=>`<div style="font-size:.74rem;color:var(--rd);margin-bottom:3px;font-weight:600">• ${f}</div>`).join("")}`;
@@ -4054,6 +4066,7 @@ function getSteps(){
       {ic:"🧠",l:tx.neuroL||"Convulsion / perdida de consciencia",v:"neuro"},
       {ic:"🌡️",l:tx.feverL||"Fiebre alta",v:"fiebre"},
       {ic:"😰",l:tx.otherL||"Otro / sintomas generales",v:"otro"}]},
+    {id:"otraDesc",title:"Describe el síntoma principal",sub:"Breve descripción del motivo de consulta para el asistente de IA.",t:"freetext",placeholder:"Ej: dolor de cabeza desde ayer, erupciones en la piel, cansancio extremo...",hint:"Este texto ayuda al Copilot y a la IA a dar sugerencias más precisas. Puede dejarse vacío.",skip:d=>d.motivo!=="otro"},
     {id:"consc",title:tx.consciousness||"Nivel de consciencia",sub:tx.evalAlert||"Evalua el estado de alerta.",t:"opts",opts:[
       {ic:"👁️",l:tx.consc1||"Alerta — responde normalmente",v:"alerta"},
       {ic:"🗣️",l:tx.consc2||"Responde solo a voz",v:"voz"},
@@ -4163,6 +4176,15 @@ function rTriage(){
     hint.textContent=_patientHC?"Datos clínicos cargados automáticamente desde el registro del paciente.":(s.hint||"");
     card.appendChild(hint);
     setTimeout(()=>ta.focus(),80);
+  }else if(s.t==="freetext"){
+    const fta=document.createElement("textarea");
+    fta.className="fi";fta.style.cssText="resize:vertical;min-height:90px;font-size:.85rem;line-height:1.55;padding:12px;margin-top:4px;font-family:'Familjen Grotesk',sans-serif;";
+    fta.placeholder=s.placeholder||"Describe brevemente...";
+    fta.value=TD[s.id]||"";
+    fta.oninput=()=>{TD[s.id]=fta.value;};
+    card.appendChild(fta);
+    if(s.hint){const fh=document.createElement("div");fh.style.cssText="font-size:.67rem;color:var(--mu);margin-top:7px;font-family:'JetBrains Mono',monospace;line-height:1.4;border-left:2px solid var(--cy);padding-left:8px;";fh.textContent=s.hint;card.appendChild(fh);}
+    setTimeout(()=>fta.focus(),80);
   }else if(s.t==="scale"){
     const sg=document.createElement("div");sg.className="sgrid";
     for(let i=0;i<=10;i++){const b=document.createElement("button");const hi=i>=7;b.className="sb"+(TD[s.id]==i?(hi?" selh":" sel"):"");b.textContent=i;b.onclick=()=>{TD[s.id]=i;rTriage();};sg.appendChild(b);}
@@ -4232,6 +4254,7 @@ function canAdv(s){
     return v>=mn&&v<=mx;
   }
   if(s.t==="scale")return TD[s.id]!==undefined;
+  if(s.t==="freetext")return true;
   return!!TD[s.id];
 }
 
@@ -4275,6 +4298,7 @@ async function callAI(){
   const pedN=TD.tipo==="nino"?`
 NINO: ${TD.enino||"?"} anos. Usa rangos pediatricos.`:"";
   const notasExtra=TD.notas&&TD.notas.trim()?`\nAnotaciones clinicas del profesional: ${TD.notas.trim()}`:"";
+  const otraDescExtra=TD.motivo==="otro"&&TD.otraDesc&&TD.otraDesc.trim()?`\nDescripcion del sintoma (texto libre): ${TD.otraDesc.trim()}`:"";
   let hcExtra="";
   if(_patientHC){
     const ant=(_patientHC.antecedentes||[]).join(", ");
@@ -4295,7 +4319,7 @@ Motivo: ${mM[TD.motivo]||TD.motivo}
 Consciencia: ${cM[TD.consc]||TD.consc}
 Vitales: ${vtx}
 Dolor: ${TD.dolor!==undefined?TD.dolor:"N/A"}/10
-Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${notasExtra}${hcExtra}
+Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${otraDescExtra}${notasExtra}${hcExtra}
 Responde con todos los valores textuales en ${_lr}. SOLO JSON sin backticks:
 {"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"...","red_flags":["..."],"suggested_tests":["..."],"protocol_hint":"nombre del protocolo clinico o null"}`;
   try{
