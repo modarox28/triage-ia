@@ -5708,7 +5708,10 @@ document.addEventListener('gesturechange', e => e.preventDefault(), {passive:fal
 document.addEventListener('touchmove', e => { if(e.touches.length > 1) e.preventDefault(); }, {passive:false});
 
 // ── GESTURE & HISTORY NAVIGATION ─────────────────────────────────────────
-let _gSwX=0,_gSwY=0,_gSwEdge=false,_gScroll=false;
+// Swipes que empiezan en el borde izquierdo (<44px) los maneja el sistema
+// operativo (iOS back, Android back). Nosotros solo capturamos gestos que
+// empiezan en la zona de contenido para evitar el conflicto y el lag.
+let _gSwX=0,_gSwY=0,_gScroll=false;
 
 window.addEventListener('popstate',e=>{
   if(!CU)return;
@@ -5730,20 +5733,20 @@ window.addEventListener('popstate',e=>{
 
 document.addEventListener('touchstart',e=>{
   const t=e.touches[0];
-  _gSwX=t.clientX;_gSwY=t.clientY;
-  _gSwEdge=t.clientX<38;_gScroll=false;
+  _gSwX=t.clientX;_gSwY=t.clientY;_gScroll=false;
 },{passive:true});
 
-// Detecta scroll vertical temprano — sin getComputedStyle ni reflows
 document.addEventListener('touchmove',e=>{
   if(_gScroll)return;
-  const dx=Math.abs(e.touches[0].clientX-_gSwX);
   const dy=Math.abs(e.touches[0].clientY-_gSwY);
+  const dx=Math.abs(e.touches[0].clientX-_gSwX);
   if(dy>10&&dy>dx)_gScroll=true;
 },{passive:true});
 
 document.addEventListener('touchend',e=>{
   if(_gScroll)return;
+  // Ignorar swipes que empiezan en el borde — zona reservada del sistema
+  if(_gSwX<44)return;
   const dx=e.changedTouches[0].clientX-_gSwX;
   const dy=e.changedTouches[0].clientY-_gSwY;
   if(Math.abs(dx)<52||Math.abs(dx)<Math.abs(dy)*1.4)return;
@@ -5763,8 +5766,8 @@ document.addEventListener('touchend',e=>{
     }
     return;
   }
-  // ── Tabs — borde ≤38px o gesto ≥90px ───────────────────────────────
-  if(!_gSwEdge&&Math.abs(dx)<90)return;
+  // ── Tabs — solo gestos amplios desde zona de contenido (≥90px) ──────
+  if(Math.abs(dx)<90)return;
   const tabs=(NAV[CR]||NAV.medico).map(n=>n.id);
   const ci=tabs.indexOf(_curTab);if(ci<0)return;
   if(dx>0&&ci>0)navigateTo(tabs[ci-1]);
