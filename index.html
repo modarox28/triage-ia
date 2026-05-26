@@ -1402,8 +1402,9 @@ select{padding-right:32px;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+const DS_KEY="REVOCADA";
+const PROXY="https://little-voice-6621.mdq2804.workers.dev";
 const QR_SECRET=btoa("media-patient-2025");
-async function getIdToken(){return CU?await CU.getIdToken():null;}
 
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
@@ -3561,7 +3562,7 @@ Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${notasExtra}
 SOLO JSON sin backticks:
 {"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"..."}`;
   try{
-    const r=await fetch('/api/aiProxy',{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(await getIdToken())},body:JSON.stringify({model:"deepseek-chat",max_tokens:600,messages:[{role:"user",content:prompt}]})});
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:600,messages:[{role:"user",content:prompt}]})});
     const d=await r.json();
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const res=JSON.parse(txt);
@@ -3727,7 +3728,7 @@ async function buscarDrug(){
   if(!nm){toast("Escribe el nombre del medicamento");return;}
   document.getElementById("dr").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Consultando...</div></div>`;
   try{
-    const r=await fetch('/api/aiProxy',{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(await getIdToken())},body:JSON.stringify({model:"deepseek-chat",max_tokens:800,messages:[{role:"user",content:`Informacion farmacologica sobre: "${nm}". SOLO JSON sin backticks:
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:800,messages:[{role:"user",content:`Informacion farmacologica sobre: "${nm}". SOLO JSON sin backticks:
 {"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"..."}`}]})});
     const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     document.getElementById("dr").innerHTML=`<div class="card">
@@ -3785,7 +3786,7 @@ async function checkInt(){
   if(intDrugs.length<2)return;
   document.getElementById("ir").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Verificando interacciones...</div></div>`;
   try{
-    const r=await fetch('/api/aiProxy',{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(await getIdToken())},body:JSON.stringify({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. SOLO JSON sin backticks:
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. SOLO JSON sin backticks:
 {"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]})});
     const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     const cm={BAJO:"gn",MODERADO:"yw",ALTO:"rd",CONTRAINDICADO:"rd"};const im={BAJO:"✅",MODERADO:"⚠️",ALTO:"🚨",CONTRAINDICADO:"⛔"};
@@ -4136,7 +4137,7 @@ async function handleHCPhoto(input){
     analysis.innerHTML=`<div class="ldg"><div class="sp"></div>Analizando documento con IA...</div>`;
     try{
       const base64=hcPhoto.split(',')[1];
-      const r=await fetch('/api/aiProxy',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await getIdToken())},
+      const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+DS_KEY},
         body:JSON.stringify({model:'deepseek-chat',max_tokens:600,messages:[
           {role:'user',content:`Analiza esta imagen de documento medico y extrae antecedentes, alergias y medicacion actual si los hay. Si no es un documento medico, indica que no se encontro informacion medica. SOLO JSON:
 {"antecedentes":["..."],"alergias":["..."],"medicacion":["..."],"nota":"..."}
@@ -4505,7 +4506,7 @@ async function analyzeVitcam(){
   try{
     const prompt="Analiza esta imagen de un monitor de signos vitales medico. Extrae SOLO los siguientes valores si son visibles. Responde UNICAMENTE con un JSON valido con estas claves exactas (usa null si no se ve el valor): {\"fc\":...,\"ps\":...,\"pd\":...,\"sat\":...,\"tem\":...,\"fr\":...}. fc=frecuencia cardiaca lpm, ps=presion sistolica mmHg, pd=presion diastolica mmHg, sat=saturacion O2 %, tem=temperatura C, fr=frecuencia respiratoria rpm.";
     const messages=[{role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:"data:image/jpeg;base64,"+_vitcamB64}}]}];
-    const r=await fetch('/api/aiProxy',{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(await getIdToken())},body:JSON.stringify({model:"deepseek-chat",max_tokens:200,messages})});
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:200,messages})});
     const d=await r.json();
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const extracted=JSON.parse(txt);
