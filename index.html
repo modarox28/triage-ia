@@ -1688,6 +1688,85 @@ function calcShockIndex(hr,sbp){
   return{idx:idx.toFixed(2),risk,label,color};
 }
 
+// COPILOT HINTS — deterministic red flags, questions, protocols per chief complaint (P6 layer 1)
+function _getCopilotHints(){
+  const m=TD.motivo;
+  if(!m||m==="otro")return null;
+  const vt=TD.vit||{};
+  const sint=TD.sint||[];
+  const consc=TD.consc;
+  const fc=parseFloat(vt.fc),ps=parseFloat(vt.ps),sat=parseFloat(vt.sat),fr=parseFloat(vt.fr),tem=parseFloat(vt.tem);
+  const h={flags:[],questions:[],protocols:[],urgency:"medium"};
+  if(m==="dolor_pecho"){
+    h.flags=["Posible síndrome coronario agudo","Considerar disección aórtica si dolor desgarrante irradiado a espalda"];
+    h.questions=["¿Irradia al brazo izquierdo, mandíbula o espalda?","¿Sudoración fría o náuseas?","¿Inicio súbito en reposo?","¿Historial de cardiopatía o stent previo?"];
+    h.protocols=["ECG 12 derivaciones (< 10 min)","Troponinas I/T","Acceso venoso periférico","AAS 300mg si sospecha IAM"];
+    h.urgency="high";
+  }else if(m==="disnea"){
+    h.flags=["Riesgo insuficiencia respiratoria aguda"];
+    if(sat&&sat<92)h.flags.push("SpO₂ crítica — soporte ventilatorio urgente");
+    h.questions=["¿Inicio súbito o progresivo?","¿Fiebre o tos productiva?","¿Historial de asma, EPOC o ICC?","¿Edema en miembros inferiores?"];
+    h.protocols=["Saturometría continua","Rx tórax AP",sat&&sat<92?"Gasometría arterial urgente":"Gasometría si SpO₂ < 92%","O₂ según saturación"];
+    h.urgency=sat&&sat<90?"high":"medium";
+  }else if(m==="neuro"){
+    h.flags=["Posible ACV — evaluar escala NIHSS","Descartar hipoglucemia (glucemia capilar urgente)"];
+    if(tem&&tem>38.5)h.flags.push("Fiebre + síntoma neurológico: descartar meningitis/encefalitis");
+    h.questions=["¿Déficit motor o sensitivo de inicio súbito?","¿Cefalea intensa de inicio brusco?","¿Fiebre o rigidez de nuca?","¿Duración del episodio?"];
+    h.protocols=["Glucemia capilar inmediata","TAC craneal urgente","Vía venosa + analítica completa","Escala NIHSS si ACV sospechado"];
+    h.urgency="high";
+  }else if(m==="fiebre"){
+    const qsCrit=(consc&&consc!=="alerta")||(fr&&fr>22)||(ps&&ps<=100);
+    if(qsCrit){h.flags=["Criterios qSOFA presentes — evaluar sepsis urgente","Iniciar protocolo sepsis si ≥ 2 criterios"];h.urgency="high";}
+    else{h.flags=["Investigar foco infeccioso","Descartar meningitis en fiebre + cefalea intensa"];}
+    h.questions=["¿Foco identificado (urinario, respiratorio, cutáneo)?","¿Rigidez de nuca o fotofobia?","¿Inmunosupresión o quimioterapia reciente?","¿Viaje reciente a zona endémica?"];
+    h.protocols=qsCrit?["Hemocultivos x2 antes de ATB","Lactato sérico","Antibiótico < 1h si sepsis","Hidratación IV si hipotensión"]:["Hemocultivos si fiebre sin foco","Analítica: PCR, leucocitos","Antipiréticos + hidratación"];
+  }else if(m==="trauma"){
+    h.flags=["Evaluar inestabilidad hemodinámica","Riesgo lesión columna cervical"];
+    if(ps&&ps<90)h.flags.push("Hipotensión en trauma — shock hemorrágico probable");
+    h.questions=["¿Mecanismo de alta energía (accidente vial, caída > 2m)?","¿Pérdida de consciencia?","¿Dolor cervical, torácico o abdominal?","¿Sangrado activo visible?"];
+    h.protocols=["ABCDE sistemático","Inmovilización cervical si indicado","2 vías venosas gruesas","Rx columna cervical, tórax, pelvis si trauma severo"];
+    h.urgency=ps&&ps<90?"high":"medium";
+  }else if(m==="abdominal"){
+    h.flags=["Considerar abdomen agudo quirúrgico"];
+    if(TD.tipo==="embarazada")h.flags.push("Embarazada: descartar embarazo ectópico urgente");
+    if(sint.includes("sangrado"))h.flags.push("Sangrado activo — potencialmente quirúrgico");
+    h.questions=["¿Inicio súbito o gradual?","¿Signos peritoneales (rebote, defensa)?","¿Última menstruación?","¿Cirugías abdominales previas?"];
+    h.protocols=["Analítica urgente: PCR, leucocitos, amilasa, lipasa","Ecografía abdominal","Dieta absoluta hasta valoración quirúrgica","Acceso venoso + analgesia IV"];
+  }
+  return h.flags.length?h:null;
+}
+
+function _renderCopilotCard(hints){
+  const urgColor={high:"var(--rd)",medium:"var(--yw)",low:"var(--gn)"}[hints.urgency]||"var(--cy)";
+  const urgLabel={high:"Alta prioridad",medium:"Atención moderada",low:"Observación"}[hints.urgency]||"";
+  const div=document.createElement("div");
+  div.style.cssText="border:1.5px solid rgba(0,200,240,.3);border-radius:14px;padding:12px 14px;margin-top:8px;background:rgba(0,200,240,.04);animation:fadeUp .3s both";
+  let expanded=false;
+  const header=document.createElement("div");
+  header.style.cssText="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none";
+  header.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.82rem">🤖</span><span style="font-size:.76rem;font-weight:700;color:var(--cy)">Asistente clínico</span><span style="font-size:.58rem;padding:2px 7px;border-radius:20px;background:${urgColor}22;color:${urgColor};font-weight:700">${urgLabel}</span></div><span id="_cp_toggle" style="font-size:.62rem;color:var(--mu)">▸ Ver sugerencias</span>`;
+  const body=document.createElement("div");
+  body.id="_cp_body";body.style.cssText="display:none;margin-top:10px";
+  if(hints.flags.length){
+    const fl=document.createElement("div");fl.style.cssText="margin-bottom:10px";
+    fl.innerHTML=`<div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--rd);letter-spacing:1px;margin-bottom:4px">⚠ RED FLAGS</div>${hints.flags.map(f=>`<div style="font-size:.74rem;color:var(--rd);margin-bottom:3px;font-weight:600">• ${f}</div>`).join("")}`;
+    body.appendChild(fl);
+  }
+  if(hints.questions.length){
+    const ql=document.createElement("div");ql.style.cssText="margin-bottom:10px";
+    ql.innerHTML=`<div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--cy);letter-spacing:1px;margin-bottom:4px">💡 PREGUNTAR AL PACIENTE</div>${hints.questions.map(q=>`<div style="font-size:.72rem;color:var(--tx);margin-bottom:3px">• ${q}</div>`).join("")}`;
+    body.appendChild(ql);
+  }
+  if(hints.protocols.length){
+    const pl=document.createElement("div");
+    pl.innerHTML=`<div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--gn);letter-spacing:1px;margin-bottom:6px">📋 ACCIONES RECOMENDADAS</div><div style="display:flex;flex-wrap:wrap;gap:4px">${hints.protocols.map(p=>`<span style="font-size:.66rem;padding:3px 8px;border-radius:20px;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--gn)">${p}</span>`).join("")}</div>`;
+    body.appendChild(pl);
+  }
+  div.appendChild(header);div.appendChild(body);
+  header.onclick=()=>{expanded=!expanded;body.style.display=expanded?"block":"none";const tg=document.getElementById("_cp_toggle");if(tg)tg.textContent=expanded?"▾ Ocultar":"▸ Ver sugerencias";};
+  return div;
+}
+
 // CLINICAL TIMELINE — auto-generated event log from triage session (P5)
 function _buildTriageTimeline(qsofa,news2,si,res,elapsed){
   if(!_triageStartTime)return"";
@@ -4136,6 +4215,7 @@ function rTriage(){
   const nx=document.createElement("button");nx.className="bnxt";
   nx.textContent=TS===steps.length-1?(t("analyze")||"Analizar")+" →":(t("continueBtn")||"Continuar")+" →";
   nx.disabled=!canAdv(s);nx.onclick=()=>{history.pushState({_ms:'triage-step',ts:TS+1},'');TS++;TM=[];rTriage();};nav.appendChild(nx);card.appendChild(nav);c.appendChild(card);
+  if(TD.motivo&&s.id!=="tipo"&&s.id!=="motivo"){const ch=_getCopilotHints();if(ch)c.appendChild(_renderCopilotCard(ch));}
 }
 
 function canAdv(s){
@@ -4217,9 +4297,9 @@ Vitales: ${vtx}
 Dolor: ${TD.dolor!==undefined?TD.dolor:"N/A"}/10
 Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${notasExtra}${hcExtra}
 Responde con todos los valores textuales en ${_lr}. SOLO JSON sin backticks:
-{"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"..."}`;
+{"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"...","red_flags":["..."],"suggested_tests":["..."],"protocol_hint":"nombre del protocolo clinico o null"}`;
   try{
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:600,messages:[{role:"user",content:prompt}]})});
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:750,messages:[{role:"user",content:prompt}]})});
     const d=await r.json();
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const res=JSON.parse(txt);
@@ -4261,6 +4341,13 @@ function rResult(r){
   const news2=hasVit?calcNEWS2(_sv,TD.consc):null;
   const si=vt.fc&&vt.ps?calcShockIndex(vt.fc,vt.ps):null;
   const timelineHtml=_buildTriageTimeline(qsofa,news2,si,r,elapsed);
+  let copilotResultHtml="";
+  if((r.red_flags&&r.red_flags.length)||(r.suggested_tests&&r.suggested_tests.length)||r.protocol_hint){
+    const _rfH=r.red_flags&&r.red_flags.length?`<div style="margin-bottom:10px"><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--rd);letter-spacing:1px;margin-bottom:4px">⚠ RED FLAGS DETECTADOS</div>${r.red_flags.map(f=>`<div style="font-size:.74rem;color:var(--rd);margin-bottom:3px;font-weight:600">• ${f}</div>`).join("")}</div>`:"";
+    const _stH=r.suggested_tests&&r.suggested_tests.length?`<div style="margin-bottom:10px"><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--cy);letter-spacing:1px;margin-bottom:6px">🔬 ESTUDIOS SUGERIDOS</div><div style="display:flex;flex-wrap:wrap;gap:4px">${r.suggested_tests.map(ts=>`<span style="font-size:.68rem;padding:3px 8px;border-radius:20px;background:rgba(0,200,240,.1);border:1px solid rgba(0,200,240,.3);color:var(--cy)">${ts}</span>`).join("")}</div></div>`:"";
+    const _phH=r.protocol_hint?`<div><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--gn);letter-spacing:1px;margin-bottom:4px">📋 PROTOCOLO SUGERIDO</div><div style="font-size:.8rem;font-weight:700;color:var(--tx)">${r.protocol_hint}</div></div>`:"";
+    copilotResultHtml=`<div class="card" style="border-color:rgba(0,200,240,.3);background:rgba(0,200,240,.04)"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span>🤖</span><div class="clabel" style="margin:0;color:var(--cy)">AI Copilot</div></div>${_rfH}${_stH}${_phH}<div style="font-size:.6rem;color:var(--mu);margin-top:10px;font-style:italic">Sugerencias orientativas. Decisión clínica a cargo del profesional de salud.</div></div>`;
+  }
 
   let qsofaHtml="";
   if(qsofa.score>0||vt.fr||vt.ps){
@@ -4311,6 +4398,7 @@ function rResult(r){
     ${qsofaHtml}${news2Html}${siHtml}
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
     ${timelineHtml}
+    ${copilotResultHtml}
     <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${a}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
     <div style="display:flex;gap:10px;margin-top:6px;animation:fadeUp .4s .2s both">
