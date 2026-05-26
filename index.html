@@ -15,12 +15,12 @@
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
 const auth=getAuth(fbapp);const db=getFirestore(fbapp);const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
-window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot};
+window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where};
 window.dispatchEvent(new Event("fbready"));
 </script>
 <style>
@@ -986,16 +986,16 @@ select{padding-right:32px;}
 
     <!-- PATIENT ACCESS (primary) -->
     <div id="authPatientView">
-      <button class="auth-patient-btn" id="qrScanBtn" onclick="startQR()">
-        <span style="font-size:1.3rem">📷</span>
-        <div style="text-align:left">
-          <div style="font-weight:700;font-size:.9rem" id="ptnBtnTitle">Acceso como paciente</div>
-          <div style="font-size:.72rem;opacity:.7" id="ptnBtnSub">Escanear codigo QR de la clinica</div>
-        </div>
-      </button>
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:2rem;margin-bottom:6px">🏥</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--tx)" id="ptnBtnTitle">Acceso como paciente</div>
+        <div style="font-size:.74rem;color:var(--mu);margin-top:3px" id="ptnBtnSub">Ingresa tu número de identificación</div>
+      </div>
+      <input class="fi" id="patientIdInput" type="text" inputmode="numeric" placeholder="Número de identificación (ej: 482951)" style="width:100%;box-sizing:border-box;margin-bottom:10px;text-align:center;font-size:1rem;letter-spacing:2px" onkeydown="if(event.key==='Enter')loginPatientById()">
+      <button class="bpri" id="patientLoginBtn" style="width:100%" onclick="loginPatientById()">Ingresar</button>
       <hr class="auth-sep">
       <div id="staffLinkWrap" style="text-align:center">
-        <span class="auth-staff-link" id="staffLink" onclick="showStaffLogin()">Personal medico / Administrador →</span>
+        <span class="auth-staff-link" id="staffLink" onclick="showStaffLogin()">Personal médico / Administrador →</span>
       </div>
     </div>
 
@@ -1123,7 +1123,21 @@ select{padding-right:32px;}
           <div id="nearbyList" style="margin-top:10px"></div>
         </div>
         <div class="clabel" id="lbUserMgmtSec" style="display:none">Administración</div>
-        <div class="card" id="userMgmtCard"><div class="clabel" id="lbUserMgmt">Gestion de usuarios</div><div id="userList"></div></div>
+        <div class="card" id="userMgmtCard">
+          <div class="clabel" id="lbUserMgmt">Gestión de usuarios</div>
+          <div id="userList"></div>
+        </div>
+        <div class="card" id="adminActionsCard" style="display:none">
+          <div class="clabel">Acciones de administrador</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="bsec" style="font-size:.8rem;display:flex;align-items:center;gap:8px;justify-content:center" onclick="seedDemoPatients()">
+              <span>🧪</span> Insertar pacientes demo + descargar PDF
+            </button>
+            <button class="bsec" style="font-size:.8rem;display:flex;align-items:center;gap:8px;justify-content:center" onclick="downloadPatientsPDF()">
+              <span>📄</span> Descargar PDF de IDs pacientes demo
+            </button>
+          </div>
+        </div>
       </div>
       <!-- TRIAGE -->
       <div class="sc" id="sc-triage">
@@ -1426,6 +1440,31 @@ select{padding-right:32px;}
 const DS_KEY="REVOCADA";
 const PROXY="https://little-voice-6621.mdq2804.workers.dev";
 const QR_SECRET=btoa("media-patient-2025");
+
+// DEMO PATIENTS — use these IDs in the patient login screen
+const DEMO_PATIENTS=[
+  {doc:"482951",name:"Carlos Rodríguez Mendez",age:"45",sex:"M",
+   antecedentes:["Hipertensión arterial","Diabetes tipo 2"],
+   alergias:["Sulfas"],
+   medicacion:["Metformina 850mg","Losartán 50mg","Aspirina 100mg"],
+   notes:"Paciente con DM2 e HTA controladas. Última HbA1c 7.2%. Ex-fumador 10 años. Control cardiológico anual."},
+  {doc:"739264",name:"María López Garza",age:"67",sex:"F",
+   antecedentes:["EPOC moderado","Insuficiencia cardíaca leve","Osteoporosis"],
+   alergias:["Penicilina","AINES"],
+   medicacion:["Salbutamol inhalador","Furosemida 40mg","Omeprazol 20mg","Calcio+D3"],
+   notes:"EPOC estadio II GOLD. FEV1 62%. ICC compensada. SatO2 basal 94%. Hospitalización hace 8 meses por reagudización."},
+  {doc:"156873",name:"Andrés Martínez Ruiz",age:"28",sex:"M",
+   antecedentes:["Asma bronquial leve intermitente"],
+   alergias:["Penicilina","Ibuprofeno"],
+   medicacion:["Salbutamol a demanda"],
+   notes:"Asma desencadenada por ejercicio y exposición a alérgenos. Sin hospitalización previa. Usa broncodilatador ocasionalmente."},
+  {doc:"624018",name:"Carmen Vega Torres",age:"55",sex:"F",
+   antecedentes:["Hipotiroidismo primario","Depresión mayor","Obesidad grado I"],
+   alergias:[],
+   medicacion:["Levotiroxina 100mcg","Sertralina 50mg","Metformina 500mg"],
+   notes:"Hipotiroidismo en tratamiento sustitutivo. TSH último control 2.8. Terapia psicológica activa. Sin alergias conocidas."}
+];
+let _patientHC=null;
 
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
@@ -2423,7 +2462,8 @@ async function onEmailBlur(){
 async function doSignOut(){
   _clearPresence();
   stopInactivityTimer();
-  if(CR==="paciente"){showAuthScreen();return;}
+  _patientHC=null;
+  if(CR==="paciente"){CR=null;CU=null;showAuthScreen();return;}
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
 }
 
@@ -3083,17 +3123,28 @@ async function loadDash(){
     buildChart();
     if(CR==="admin"||CR==="medico"||CR==="admin_hosp"){
       const users=await FB.getDocs(FB.collection(FB.db,"users"));
-      const RL={admin:"Admin",admin_hosp:"Adm.Hosp",medico:"Medico",paciente:"Paciente"};
+      const RL={admin:"Admin",admin_hosp:"Adm.Hospital",medico:"Médico",paciente:"Paciente"};
+      const roleIc={admin:"👑",admin_hosp:"🏥",medico:"👨‍⚕️",paciente:"🙋"};
+      const roleColors={admin:"var(--yw)",admin_hosp:"var(--pu)",medico:"var(--cy)",paciente:"var(--gn)"};
       const cols=["#00c8f0","#00e07a","#a855f7","#ffb830","#ff3a5c"];
-      document.getElementById("userList").innerHTML=users.docs.map(u=>{
-        const ud=u.data();const av=(ud.name||ud.email||"?")[0].toUpperCase();const col=cols[ud.email?.charCodeAt(0)%cols.length]||"#00c8f0";
-        const photoSrc=localStorage.getItem("ms_photo_"+u.id);
-        const avEl=`<div class="uav" style="background:${col};overflow:hidden">${photoSrc?`<img src="${photoSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:av}</div>`;
-        const roleCtrl=CR==="admin"?
-          `<select onchange="changeRole('${u.id}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${["admin","medico","admin_hosp","paciente"].map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select>`:
-          `<span style="font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--mu);padding:3px 8px;background:var(--bg3);border-radius:6px">${RL[ud.role]||ud.role||""}</span>`;
-        return`<div class="user-row">${avEl}<div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ud.name||"—"}</div><div style="font-size:.69rem;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ud.email||""}</div></div>${roleCtrl}</div>`;
-      }).join("");
+      const groups={admin:[],admin_hosp:[],medico:[],paciente:[]};
+      users.docs.forEach(u=>{const ud=u.data();const r=ud.role||"medico";(groups[r]||groups.medico).push({u,ud});});
+      let html="";
+      ["admin","admin_hosp","medico","paciente"].forEach(role=>{
+        if(!groups[role].length)return;
+        html+=`<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:${roleColors[role]};padding:10px 0 5px;display:flex;align-items:center;gap:5px">${roleIc[role]} ${RL[role]}s <span style="background:var(--bg3);color:var(--mu);border-radius:10px;padding:1px 7px;font-size:.6rem;font-weight:600;margin-left:3px">${groups[role].length}</span></div>`;
+        html+=groups[role].map(({u,ud})=>{
+          const av=(ud.name||ud.email||"?")[0].toUpperCase();const col=cols[ud.email?.charCodeAt(0)%cols.length]||"#00c8f0";
+          const photoSrc=localStorage.getItem("ms_photo_"+u.id);
+          const avEl=`<div class="uav" style="background:${col};overflow:hidden">${photoSrc?`<img src="${photoSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:av}</div>`;
+          const roleCtrl=CR==="admin"?
+            `<select onchange="changeRole('${u.id}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${["admin","medico","admin_hosp","paciente"].map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select>`:
+            `<span style="font-size:.68rem;font-family:'JetBrains Mono',monospace;color:${roleColors[ud.role]||"var(--mu)"};padding:3px 8px;background:var(--bg3);border-radius:6px">${roleIc[ud.role]||""} ${RL[ud.role]||ud.role||""}</span>`;
+          return`<div class="user-row">${avEl}<div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ud.name||"—"}</div><div style="font-size:.69rem;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ud.email||""}</div></div>${roleCtrl}</div>`;
+        }).join("");
+      });
+      document.getElementById("userList").innerHTML=html||"<div class='empty' style='padding:12px'><div class='etx'>Sin usuarios registrados</div></div>";
+      const adminAct=document.getElementById("adminActionsCard");if(adminAct)adminAct.style.display="block";
     }else{document.getElementById("userMgmtCard").style.display="none";}
     if(CR==="medico"||CR==="admin"||CR==="admin_hosp"){
       const nc=document.getElementById("nearbyCard");if(nc)nc.style.display="block";
@@ -3344,6 +3395,117 @@ function stopQR(){
   document.getElementById("qrScanModal").classList.remove("on");
 }
 
+async function loginPatientById(){
+  const inp=document.getElementById("patientIdInput");
+  const id=(inp?.value||"").trim();
+  if(!id){toast("Ingresa tu número de identificación");return;}
+  if(!FB){toast("Sin conexión a la base de datos");return;}
+  const btn=document.getElementById("patientLoginBtn");
+  if(btn){btn.disabled=true;btn.textContent="Buscando...";}
+  try{
+    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",id),FB.limit(1)));
+    if(snap.empty){
+      toast("Número de identificación no encontrado");
+      if(btn){btn.disabled=false;btn.textContent="Ingresar";}
+      return;
+    }
+    const docSnap=snap.docs[0];
+    _patientHC={id:docSnap.id,...docSnap.data()};
+    CR="paciente";
+    CU={uid:"patient-"+docSnap.id,email:_patientHC.email||"paciente@local",displayName:_patientHC.name||"Paciente"};
+    showApp();
+  }catch(e){
+    toast("Error al verificar: "+e.message);
+    if(btn){btn.disabled=false;btn.textContent="Ingresar";}
+  }
+}
+
+async function seedDemoPatients(){
+  if(!FB||!CU){toast("Sin sesión activa");return;}
+  try{
+    let seeded=0;
+    for(const p of DEMO_PATIENTS){
+      const q=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",p.doc),FB.limit(1)));
+      if(q.empty){
+        await FB.addDoc(FB.collection(FB.db,"historias"),{...p,createdAt:FB.serverTimestamp(),userId:CU.uid,userEmail:CU.email||""});
+        seeded++;
+      }
+    }
+    toast(seeded>0?`${seeded} paciente(s) demo insertado(s)`:"Los pacientes demo ya existen");
+    downloadPatientsPDF();
+    if(document.getElementById("sc-hc")?.classList.contains("on"))loadHC();
+  }catch(e){toast("Error al insertar: "+e.message);}
+}
+
+function downloadPatientsPDF(){
+  if(typeof window.jspdf==="undefined"){
+    const lines=DEMO_PATIENTS.map(p=>[
+      `Nombre: ${p.name}`,`ID de acceso: ${p.doc}`,
+      `Edad: ${p.age} años | Sexo: ${p.sex==="M"?"Masculino":"Femenino"}`,
+      `Antecedentes: ${p.antecedentes.join(", ")||"Ninguno"}`,
+      `Alergias: ${p.alergias.join(", ")||"Ninguna"}`,
+      `Medicación: ${p.medicacion.join(", ")||"Ninguna"}`,
+      `Notas: ${p.notes}`,`${"─".repeat(40)}`
+    ].join("\n")).join("\n\n");
+    const a=document.createElement("a");
+    a.href="data:text/plain;charset=utf-8,"+encodeURIComponent("PACIENTES DEMO — MedIA Suite\n\n"+lines);
+    a.download="pacientes-demo-mediasuite.txt";a.click();return;
+  }
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({unit:"mm",format:"a4"});
+  const W=210,M=18,CW=W-M*2;
+  const palette=["#00c8f0","#00e07a","#a855f7","#ffb830"];
+  let y=M;
+  // Background
+  pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");
+  // Header
+  pdf.setFontSize(18);pdf.setTextColor(0,200,240);pdf.setFont(undefined,"bold");
+  pdf.text("MedIA Suite",M,y);
+  pdf.setFontSize(9);pdf.setTextColor(150,160,180);pdf.setFont(undefined,"normal");
+  pdf.text("Tarjetas de acceso — Pacientes demo",M,y+7);
+  pdf.setFontSize(7);pdf.text(`Generado: ${new Date().toLocaleDateString("es-ES")}`,M,y+13);
+  y+=24;
+  DEMO_PATIENTS.forEach((p,i)=>{
+    if(y>250){pdf.addPage();pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");y=M;}
+    const hex=palette[i]||"#00c8f0";
+    const [r,g,b]=hex.replace("#","").match(/.{2}/g).map(x=>parseInt(x,16));
+    // Card background
+    pdf.setFillColor(17,25,44);pdf.setDrawColor(40,50,70);pdf.roundedRect(M,y,CW,60,4,4,"FD");
+    // Accent left bar
+    pdf.setFillColor(r,g,b);pdf.roundedRect(M,y,4,60,2,2,"F");
+    // Name
+    pdf.setFontSize(13);pdf.setTextColor(240,245,255);pdf.setFont(undefined,"bold");
+    pdf.text(p.name,M+8,y+10);
+    // ID chip
+    pdf.setFillColor(r,g,b);pdf.roundedRect(M+8,y+13,CW-12,8,2,2,"F");
+    pdf.setFontSize(11);pdf.setTextColor(11,17,32);pdf.setFont(undefined,"bold");
+    pdf.text(`ID DE ACCESO: ${p.doc}`,M+10,y+19);
+    // Info row
+    y+=26;
+    pdf.setFontSize(7.5);pdf.setTextColor(180,190,210);pdf.setFont(undefined,"normal");
+    pdf.text(`Edad: ${p.age} años  ·  ${p.sex==="M"?"Masculino":"Femenino"}`,M+8,y);y+=6;
+    if(p.antecedentes.length){
+      pdf.setFont(undefined,"bold");pdf.setTextColor(r,g,b);pdf.text("Antecedentes:",M+8,y);
+      pdf.setFont(undefined,"normal");pdf.setTextColor(180,190,210);
+      pdf.text(p.antecedentes.join(", "),M+38,y);y+=6;
+    }
+    if(p.alergias.length){
+      pdf.setFont(undefined,"bold");pdf.setTextColor(255,100,100);pdf.text("Alergias:",M+8,y);
+      pdf.setFont(undefined,"normal");pdf.setTextColor(255,140,140);
+      pdf.text(p.alergias.join(", "),M+28,y);y+=6;
+    }
+    pdf.setFont(undefined,"bold");pdf.setTextColor(150,200,240);pdf.text("Medicación:",M+8,y);
+    pdf.setFont(undefined,"normal");pdf.setTextColor(150,190,220);
+    const mLine=pdf.splitTextToSize(p.medicacion.join(", ")||"Ninguna",CW-35);
+    pdf.text(mLine,M+32,y);y+=mLine.length*4+4;
+    y+=6;
+  });
+  // Footer
+  pdf.setFontSize(7);pdf.setTextColor(80,90,110);pdf.setFont(undefined,"normal");
+  pdf.text("MedIA Suite — Documento confidencial de uso interno",M,288);
+  pdf.save("pacientes-demo-mediasuite.pdf");
+}
+
 // VOICE
 function voz(inp,btn){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -3420,6 +3582,13 @@ function rTriage(){
   document.getElementById("pg").style.width=((TS/tot)*100)+"%";
   if(TS>=tot){if(_lastResult){rResult(_lastResult);return;}rAnalyzing();return;}
   const s=steps[TS];const c=document.getElementById("trc");c.innerHTML="";
+  if(_patientHC&&TS===0){
+    const hcBanner=document.createElement("div");
+    hcBanner.className="cnote";hcBanner.style.cssText="background:rgba(0,200,240,.08);border:1px solid rgba(0,200,240,.28);color:var(--cy);margin-bottom:10px";
+    const ale=(_patientHC.alergias||[]).length?`<span style="color:var(--rd);font-weight:700">⚠️ Alergia: ${_patientHC.alergias.join(", ")}</span> · `:"";
+    hcBanner.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">🗂️</span><span><strong>${_patientHC.name}</strong> — ${_patientHC.age} años · ${ale}HC cargada</span>`;
+    c.appendChild(hcBanner);
+  }
   const st=document.createElement("div");st.className="stag";st.textContent=`${t("step")||"Paso"} ${TS+1} ${t("of")||"de"} ${tot}`;c.appendChild(st);
   if(TD.tipo==="nino"||TD.tipo==="adolescente"){const n=document.createElement("div");n.className="cnote";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">👨‍👩‍👦</span><span><strong>${t("pedNote")||"Paciente pediatrico / adolescente"}</strong> — ${t("pedNoteSub")||"Completar con padre, madre o tutor."}</span>`;c.appendChild(n);}
   if(TD.tipo==="movilidad"){const n=document.createElement("div");n.className="cnote";n.style.cssText="background:rgba(255,184,48,.08);border:1px solid rgba(255,184,48,.28);color:#ffb830;";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">♿</span><span><strong>${t("mobilityNote")||"Se requiere enfermero o tutor presente"}</strong><br><span style="font-size:.72rem;opacity:.85">${t("mobilityNoteSub")||"Este paciente necesita asistencia durante la evaluacion."}</span></span>`;c.appendChild(n);}
@@ -3593,13 +3762,26 @@ async function callAI(){
   const pedN=TD.tipo==="nino"?`
 NINO: ${TD.enino||"?"} anos. Usa rangos pediatricos.`:"";
   const notasExtra=TD.notas&&TD.notas.trim()?`\nAnotaciones clinicas del profesional: ${TD.notas.trim()}`:"";
+  let hcExtra="";
+  if(_patientHC){
+    const ant=(_patientHC.antecedentes||[]).join(", ");
+    const ale=(_patientHC.alergias||[]).join(", ");
+    const med=(_patientHC.medicacion||[]).join(", ");
+    const nts=_patientHC.notes||"";
+    hcExtra=`\n--- HISTORIA CLÍNICA REGISTRADA ---\nPaciente: ${_patientHC.name||""}, ${_patientHC.age||"?"}años, ${_patientHC.sex==="M"?"Masculino":"Femenino"}`;
+    if(ant)hcExtra+=`\nAntecedentes: ${ant}`;
+    if(ale)hcExtra+=`\nAlergias conocidas: ${ale}`;
+    if(med)hcExtra+=`\nMedicación actual: ${med}`;
+    if(nts)hcExtra+=`\nNotas previas: ${nts}`;
+    hcExtra+="\nConsidera esta historia clínica en tu clasificación y alertas.";
+  }
   const prompt=`Experto triage hospitalario ESI/Manchester.${pedN}
 PACIENTE: ${tM[TD.tipo]||TD.tipo}
 Motivo: ${mM[TD.motivo]||TD.motivo}
 Consciencia: ${cM[TD.consc]||TD.consc}
 Vitales: ${vtx}
 Dolor: ${TD.dolor!==undefined?TD.dolor:"N/A"}/10
-Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${notasExtra}
+Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${notasExtra}${hcExtra}
 SOLO JSON sin backticks:
 {"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"..."}`;
   try{
