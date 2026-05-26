@@ -5708,69 +5708,62 @@ document.addEventListener('gesturechange', e => e.preventDefault(), {passive:fal
 document.addEventListener('touchmove', e => { if(e.touches.length > 1) e.preventDefault(); }, {passive:false});
 
 // ── GESTURE & HISTORY NAVIGATION ─────────────────────────────────────────
-// Intercepts Android system back + swipe-back on iOS PWA content area.
-// Edge swipe (iOS borde ≤38px) also switches between tabs.
-let _gSwX=0,_gSwY=0,_gSwEdge=false;
+let _gSwX=0,_gSwY=0,_gSwEdge=false,_gScroll=false;
 
 window.addEventListener('popstate',e=>{
   if(!CU)return;
   const st=e.state;
   if(!st)return;
   if(st._ms==='triage-step'){
-    // Android back inside triage steps
-    if(TS>0){TS--;TM=[];rTriage();}
-    else if(CR!=='paciente'){_clearTriagePatient();}
-    history.pushState({_ms:'triage-step',ts:TS},''); // keep stack alive
+    if(TS>0){TS--;TM=[];requestAnimationFrame(rTriage);}
+    else if(CR!=='paciente'){requestAnimationFrame(_clearTriagePatient);}
+    history.pushState({_ms:'triage-step',ts:TS},'');
     return;
   }
   if(st._ms==='triage-enter'){
-    // Android back from first triage step → lookup
-    if(CR!=='paciente'){_triageLookupDone=false;_triageLookupResult=null;_showPatientLookup();}
+    if(CR!=='paciente'){_triageLookupDone=false;_triageLookupResult=null;requestAnimationFrame(_showPatientLookup);}
     history.pushState({_ms:'tab',id:'triage'},'');
     return;
   }
-  if(st._ms==='tab'){
-    navigateTo(st.id,true);
-  }
+  if(st._ms==='tab')navigateTo(st.id,true);
 });
 
 document.addEventListener('touchstart',e=>{
   const t=e.touches[0];
   _gSwX=t.clientX;_gSwY=t.clientY;
-  _gSwEdge=t.clientX<38;
+  _gSwEdge=t.clientX<38;_gScroll=false;
+},{passive:true});
+
+// Detecta scroll vertical temprano — sin getComputedStyle ni reflows
+document.addEventListener('touchmove',e=>{
+  if(_gScroll)return;
+  const dx=Math.abs(e.touches[0].clientX-_gSwX);
+  const dy=Math.abs(e.touches[0].clientY-_gSwY);
+  if(dy>10&&dy>dx)_gScroll=true;
 },{passive:true});
 
 document.addEventListener('touchend',e=>{
+  if(_gScroll)return;
   const dx=e.changedTouches[0].clientX-_gSwX;
   const dy=e.changedTouches[0].clientY-_gSwY;
-  // Must be primarily horizontal and long enough
-  if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.3)return;
-  // Skip on inputs
+  if(Math.abs(dx)<52||Math.abs(dx)<Math.abs(dy)*1.4)return;
   const tag=e.target.tagName;
   if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;
-  // Skip if touch is inside a horizontally scrollable element
-  let el=e.target;
-  while(el&&el!==document.body){
-    const ox=window.getComputedStyle(el).overflowX;
-    if((ox==='auto'||ox==='scroll')&&el.scrollWidth>el.clientWidth+4)return;
-    el=el.parentElement;
-  }
-  // ── Triage step swipe ──────────────────────────────────────────────────
+  // ── Triage ──────────────────────────────────────────────────────────
   if(_curTab==='triage'&&_triageLookupDone&&!_mciActive){
-    if(dx>0){// swipe derecha = atrás
-      if(TS>0){TS--;TM=[];rTriage();}
-      else if(CR!=='paciente'){_clearTriagePatient();}
-    }else{// swipe izquierda = adelante (solo si ya respondido)
+    if(dx>0){
+      if(TS>0){TS--;TM=[];requestAnimationFrame(rTriage);}
+      else if(CR!=='paciente'){requestAnimationFrame(_clearTriagePatient);}
+    }else{
       const steps=aSteps();
       if(canAdv(steps[TS])&&TS<steps.length-1){
         history.pushState({_ms:'triage-step',ts:TS+1},'');
-        TS++;TM=[];rTriage();
+        TS++;TM=[];requestAnimationFrame(rTriage);
       }
     }
     return;
   }
-  // ── Tab swipe ─────────────────────────────────────────────────────────
-  // Requiere swipe desde el borde (≤38px) O un gesto amplio (≥90px)
+  // ── Tabs — borde ≤38px o gesto ≥90px ───────────────────────────────
   if(!_gSwEdge&&Math.abs(dx)<90)return;
   const tabs=(NAV[CR]||NAV.medico).map(n=>n.id);
   const ci=tabs.indexOf(_curTab);if(ci<0)return;
