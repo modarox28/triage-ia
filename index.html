@@ -351,8 +351,9 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 .modal-sub{font-size:.78rem;color:var(--mu);margin-bottom:16px;}
 
 /* HISTORY FILTERS + LEGEND */
-.hist-flt{padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);font-size:.78rem;cursor:pointer;transition:all .2s;touch-action:manipulation;}
-.hist-flt.on{background:var(--cy);color:#000;border-color:var(--cy);font-weight:700;}
+.hist-flt{padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);font-size:.78rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s,border-color .2s;touch-action:manipulation;flex-shrink:0;}
+.hist-flt.on{background:var(--cy);color:#000;border-color:var(--cy);}
+.hist-flt:active{opacity:.7;}
 .hist-legend-btn{background:none;border:none;font-size:1rem;cursor:pointer;padding:4px 6px;border-radius:8px;transition:opacity .2s;touch-action:manipulation;opacity:.7;}
 .hist-legend-btn:hover{opacity:1;}
 .hist-legend-panel{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;padding:12px 14px;margin-bottom:8px;animation:fadeUp .25s ease;}
@@ -2854,7 +2855,7 @@ function navigateTo(id,idx){
   if(id==="hc")loadHC();
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
-  if(id==="meds")setTimeout(_showDefaultDrugs,80);
+  if(id==="meds"){ss("bs");setTimeout(_showDefaultDrugs,80);}
   if(id!=="cola")_stopColaTimer();
   document.getElementById("mainBody").scrollTop=0;
   // Show FABs only on triage tab
@@ -3362,7 +3363,8 @@ function ss(n){
   if(n==="al")rRL();if(n==="ms")rML();if(n==="bs")_showDefaultDrugs();
 }
 function _showDefaultDrugs(){
-  const dr=document.getElementById("dr");if(!dr||dr.innerHTML.trim())return;
+  const dr=document.getElementById("dr");if(!dr)return;
+  if(dr.innerHTML.trim()&&!dr.querySelector(".opt"))return;
   const cmn=["Ibuprofeno","Paracetamol","Amoxicilina","Metformina","Atorvastatina","Omeprazol","Losartán","Aspirina","Diazepam","Furosemida","Captopril","Salbutamol","Adrenalina","Morfina","Metronidazol","Ciprofloxacino"];
   dr.innerHTML=`<div class="card"><div class="clabel">Consultas frecuentes</div><div style="display:flex;flex-wrap:wrap;gap:8px">${cmn.map(m=>`<button class="opt" style="font-size:.75rem;padding:7px 12px" onclick="document.getElementById('di').value='${m}';buscarDrug()">${m}</button>`).join("")}</div></div>`;
 }
@@ -4358,7 +4360,8 @@ function loadCola(){
   },(e)=>{
     if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error: ${e.message}</div>`;
   });
-  _stopColaTimer();
+  if(_colaInterval){clearInterval(_colaInterval);_colaInterval=null;}
+  if(_colaTimerInterval){clearInterval(_colaTimerInterval);_colaTimerInterval=null;}
   _colaTimerInterval=setInterval(_renderColaTimers,30000);
 }
 
