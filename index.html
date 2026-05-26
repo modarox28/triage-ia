@@ -1609,17 +1609,29 @@ function _getTriageElapsed(){
 // CRITICAL VITALS CHECK
 function checkCriticalVitals(vitals){
   const alerts=[];
-  const {sys,dia,hr,spo2,rr,temp}=vitals;
+  const {sys,hr,spo2,rr,temp}=vitals;
+  // SpO2
   if(spo2&&spo2<90)alerts.push({key:"SpO2",val:spo2,msg:`SpO₂ crítico: ${spo2}% (< 90%)`});
-  if(spo2&&spo2>=90&&spo2<94)alerts.push({key:"SpO2_warn",val:spo2,msg:`SpO₂ bajo: ${spo2}%`,warn:true});
+  else if(spo2&&spo2<95)alerts.push({key:"SpO2_warn",val:spo2,msg:`SpO₂ bajo: ${spo2}%`,warn:true});
+  // HR
   if(hr&&hr>150)alerts.push({key:"HR_high",val:hr,msg:`FC muy elevada: ${hr} lpm`});
+  else if(hr&&hr>100)alerts.push({key:"HR_tach",val:hr,msg:`Taquicardia: ${hr} lpm`,warn:true});
   if(hr&&hr<40)alerts.push({key:"HR_low",val:hr,msg:`FC muy baja: ${hr} lpm`});
+  else if(hr&&hr<60)alerts.push({key:"HR_brad",val:hr,msg:`Bradicardia: ${hr} lpm`,warn:true});
+  // SBP
   if(sys&&sys>180)alerts.push({key:"SYS_high",val:sys,msg:`PA sistólica muy elevada: ${sys} mmHg`});
+  else if(sys&&sys>160)alerts.push({key:"SYS_htn",val:sys,msg:`Hipertensión: ${sys} mmHg`,warn:true});
   if(sys&&sys<70)alerts.push({key:"SYS_low",val:sys,msg:`PA sistólica muy baja: ${sys} mmHg`});
-  if(rr&&rr>30)alerts.push({key:"RR_high",val:rr,msg:`FR elevada: ${rr} rpm`});
+  else if(sys&&sys<90)alerts.push({key:"SYS_hypo",val:sys,msg:`Hipotensión: ${sys} mmHg`,warn:true});
+  // RR
+  if(rr&&rr>30)alerts.push({key:"RR_high",val:rr,msg:`FR muy elevada: ${rr} rpm`});
+  else if(rr&&rr>20)alerts.push({key:"RR_tach",val:rr,msg:`Taquipnea: ${rr} rpm`,warn:true});
   if(rr&&rr<8)alerts.push({key:"RR_low",val:rr,msg:`FR muy baja: ${rr} rpm`});
+  // Temp
   if(temp&&temp>=39.5)alerts.push({key:"TEMP_high",val:temp,msg:`Fiebre alta: ${temp}°C`});
+  else if(temp&&temp>=38)alerts.push({key:"TEMP_fev",val:temp,msg:`Fiebre: ${temp}°C`,warn:true});
   if(temp&&temp<35)alerts.push({key:"TEMP_low",val:temp,msg:`Hipotermia: ${temp}°C`});
+  else if(temp&&temp<36)alerts.push({key:"TEMP_hypo",val:temp,msg:`Temperatura baja: ${temp}°C`,warn:true});
   return alerts;
 }
 
@@ -1627,7 +1639,7 @@ function checkCriticalVitals(vitals){
 function _checkVitalsRealtime(){
   const box=document.getElementById("vitAlertBox");if(!box)return;
   const vt=TD.vit||{};
-  const alerts=checkCriticalVitals({sys:parseFloat(vt.ps),dia:parseFloat(vt.pd),hr:parseFloat(vt.fc),spo2:parseFloat(vt.sat),rr:parseFloat(vt.fr),temp:parseFloat(vt.tem)}).filter(a=>!a.warn);
+  const alerts=checkCriticalVitals({sys:parseFloat(vt.ps),hr:parseFloat(vt.fc),spo2:parseFloat(vt.sat),rr:parseFloat(vt.fr),temp:parseFloat(vt.tem)}).filter(a=>!a.warn);
   if(!alerts.length){box.innerHTML="";return;}
   box.innerHTML=`<div style="background:var(--rd-a);border:1.5px solid rgba(255,58,92,.4);border-radius:10px;padding:10px 12px;animation:critBlink 1.2s ease-in-out infinite">
     <div style="font-family:JetBrains Mono,monospace;font-size:.6rem;color:var(--rd);font-weight:700;letter-spacing:1px;margin-bottom:6px">⚠ VALORES CRÍTICOS DETECTADOS</div>
@@ -1635,13 +1647,45 @@ function _checkVitalsRealtime(){
   </div>`;
 }
 
-// qSOFA QUICK SCORE
+// qSOFA QUICK SCORE — sepsis risk (deterministic, not AI)
 function calcQSOFA(vitals,consciousness){
   let score=0,details=[];
   if(vitals.rr&&vitals.rr>=22){score++;details.push("FR ≥ 22 rpm");}
   if(consciousness&&consciousness!=="alerta"){score++;details.push("Alteración nivel de consciencia");}
   if(vitals.sys&&vitals.sys<=100){score++;details.push("PAS ≤ 100 mmHg");}
   return{score,details,risk:score>=2?"high":"low"};
+}
+
+// NEWS2 — National Early Warning Score 2 (deterministic)
+function calcNEWS2(vitals,consc){
+  const{sys,rr,spo2,hr,temp}=vitals;
+  let score=0,components=[];
+  const add=(pts,label,val)=>{if(pts>0){score+=pts;components.push({l:label,v:val,pts});}};
+  if(rr){const p=rr<=8||rr>=25?3:rr>=21?2:rr<=11?1:0;add(p,"FR",`${rr} rpm`);}
+  if(spo2){const p=spo2<=91?3:spo2<=93?2:spo2<=95?1:0;add(p,"SpO₂",`${spo2}%`);}
+  if(sys){const p=sys<=90||sys>=220?3:sys<=100?2:sys<=110?1:0;add(p,"PAS",`${sys} mmHg`);}
+  if(hr){const p=hr<=40||hr>=131?3:hr>=111?2:(hr<=50||hr>=91)?1:0;add(p,"FC",`${hr} lpm`);}
+  if(temp){const p=temp<=35?3:temp>=39.1?2:(temp>=38.1||temp<=36)?1:0;add(p,"Temp",`${temp}°C`);}
+  if(consc&&consc!=="alerta"){score+=3;components.push({l:"Consciencia",v:"Alterada",pts:3});}
+  const anyThree=components.some(c=>c.pts>=3);
+  let risk,riskLabel,riskColor;
+  if(score>=7||anyThree){risk="high";riskLabel="Alto — Respuesta de emergencia";riskColor="var(--rd)";}
+  else if(score>=5){risk="medium";riskLabel="Medio — Respuesta urgente";riskColor="var(--yw)";}
+  else{risk="low";riskLabel="Bajo — Monitoreo rutinario";riskColor="var(--gn)";}
+  return{score,risk,riskLabel,riskColor,components};
+}
+
+// SHOCK INDEX — FC / PAS (deterministic)
+function calcShockIndex(hr,sbp){
+  hr=parseFloat(hr);sbp=parseFloat(sbp);
+  if(!hr||!sbp||sbp===0)return null;
+  const idx=hr/sbp;
+  let risk,label,color;
+  if(idx>=1.4){risk="severe";label="Riesgo severo — Atención inmediata";color="var(--rd)";}
+  else if(idx>=1.0){risk="moderate";label="Hipoperfusión moderada";color="var(--yw)";}
+  else if(idx>=0.8){risk="mild";label="Monitorear";color="var(--yw)";}
+  else{risk="normal";label="Normal";color="var(--gn)";}
+  return{idx:idx.toFixed(2),risk,label,color};
 }
 
 // I18N
@@ -4167,9 +4211,14 @@ function rResult(r){
   let timerHtml="";
   if(elapsed!=null){const m=Math.floor(elapsed/60),s=elapsed%60;timerHtml=`<div style="font-size:.65rem;opacity:.7;margin-top:4px">⏱ Triage completado en ${m}:${String(s).padStart(2,"0")}</div>`;}
 
-  // qSOFA score
+  // Clinical scores (deterministic — not AI)
   const vt=TD.vit||{};
-  const qsofa=calcQSOFA({sys:parseFloat(vt.ps),rr:parseFloat(vt.fr)},TD.consc);
+  const _sv={sys:parseFloat(vt.ps),rr:parseFloat(vt.fr),spo2:parseFloat(vt.sat),hr:parseFloat(vt.fc),temp:parseFloat(vt.tem)};
+  const qsofa=calcQSOFA(_sv,TD.consc);
+  const hasVit=vt.ps||vt.fr||vt.sat||vt.fc||vt.tem;
+  const news2=hasVit?calcNEWS2(_sv,TD.consc):null;
+  const si=vt.fc&&vt.ps?calcShockIndex(vt.fc,vt.ps):null;
+
   let qsofaHtml="";
   if(qsofa.score>0||vt.fr||vt.ps){
     qsofaHtml=`<div class="card"><div style="display:flex;align-items:center;gap:10px">
@@ -4177,6 +4226,28 @@ function rResult(r){
       <div><div style="font-weight:700;font-size:.88rem">qSOFA ${qsofa.risk==="high"?"— Riesgo sepsis ⚠️":"— Bajo riesgo"}</div>
       ${qsofa.details.length?`<div style="font-size:.72rem;color:var(--mu);margin-top:3px">${qsofa.details.join(" · ")}</div>`:"<div style='font-size:.72rem;color:var(--mu);margin-top:3px'>Sin criterios positivos</div>"}
       ${qsofa.risk==="high"?`<div style="font-size:.68rem;color:var(--rd);margin-top:4px;font-weight:700">≥2 criterios → Evaluar sepsis. Hemocultivos, lactato, antibióticos.</div>`:""}
+      </div></div></div>`;
+  }
+
+  let news2Html="";
+  if(news2){
+    const rc=news2.risk==="high"?"crit":news2.risk==="medium"?"warn":"ok";
+    news2Html=`<div class="card"><div style="display:flex;align-items:center;gap:10px">
+      <div class="score-ring ${rc}" style="font-size:1.1rem">${news2.score}</div>
+      <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.88rem">NEWS2 — <span style="color:${news2.riskColor}">${news2.riskLabel}</span></div>
+      ${news2.components.length?`<div style="font-size:.71rem;color:var(--mu);margin-top:3px">${news2.components.map(c=>`${c.l} <span style="color:${c.pts>=3?"var(--rd)":c.pts>=2?"var(--yw)":"var(--mu)"}">+${c.pts}</span>`).join(" · ")}</div>`:`<div style="font-size:.71rem;color:var(--mu);margin-top:3px">Todos los parámetros dentro del rango</div>`}
+      ${news2.risk==="high"?`<div style="font-size:.67rem;color:var(--rd);margin-top:4px;font-weight:700">NEWS2 ≥ 7 → Respuesta de emergencia. Monitorización continua.</div>`:""}
+      </div></div></div>`;
+  }
+
+  let siHtml="";
+  if(si){
+    const rc=si.risk==="severe"?"crit":si.risk==="normal"?"ok":"warn";
+    siHtml=`<div class="card"><div style="display:flex;align-items:center;gap:10px">
+      <div class="score-ring ${rc}" style="font-size:.95rem">${si.idx}</div>
+      <div><div style="font-weight:700;font-size:.88rem">Shock Index — <span style="color:${si.color}">${si.label}</span></div>
+      <div style="font-size:.71rem;color:var(--mu);margin-top:3px">FC ${vt.fc} ÷ PAS ${vt.ps} = ${si.idx}</div>
+      ${si.risk==="severe"?`<div style="font-size:.67rem;color:var(--rd);margin-top:4px;font-weight:700">IS ≥ 1.4 → Evaluar shock hemorrágico / hipovolemia severa.</div>`:""}
       </div></div></div>`;
   }
 
@@ -4194,7 +4265,7 @@ function rResult(r){
       <span class="chip">${tM2[TD.tipo]||""}</span>${TD.semanas?`<span class="chip">${TD.semanas} sem.</span>`:""}${TD.enino?`<span class="chip">${TD.enino} años</span>`:""}
       <span class="chip">Dolor: ${TD.dolor}/10</span></div></div>
     <div class="card"><div class="clabel" data-i18n="clinicalAnalysis">${t("clinicalAnalysis")||"Analisis clinico"}</div><div style="font-size:.83rem;line-height:1.65">${r.justificacion}</div>${alH}</div>
-    ${qsofaHtml}
+    ${qsofaHtml}${news2Html}${siHtml}
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
     <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${a}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
