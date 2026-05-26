@@ -1688,6 +1688,48 @@ function calcShockIndex(hr,sbp){
   return{idx:idx.toFixed(2),risk,label,color};
 }
 
+// CLINICAL TIMELINE — auto-generated event log from triage session (P5)
+function _buildTriageTimeline(qsofa,news2,si,res,elapsed){
+  if(!_triageStartTime)return"";
+  const vt=TD.vit||{};
+  const hasVit=vt.ps||vt.fc||vt.sat||vt.tem||vt.fr;
+  const critAlerts=checkCriticalVitals({sys:parseFloat(vt.ps),hr:parseFloat(vt.fc),spo2:parseFloat(vt.sat),rr:parseFloat(vt.fr),temp:parseFloat(vt.tem)});
+  const crits=critAlerts.filter(a=>!a.warn);
+  const warns=critAlerts.filter(a=>a.warn);
+  const hasAlerts=crits.length||warns.length||(qsofa&&qsofa.risk==="high")||(news2&&news2.risk!=="low")||(si&&si.risk!=="normal");
+  if(!hasVit&&!hasAlerts)return"";
+  const fmtT=ms=>{const d=new Date(ms);return`${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;};
+  const dot="···";
+  const endMs=elapsed!=null?_triageStartTime+elapsed*1000:Date.now();
+  const classIcon={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢"}[res.clasificacion]||"⚪";
+  const classLabel={ROJO:"ATENCIÓN INMEDIATA",AMARILLO:"URGENTE",VERDE:"PUEDE ESPERAR"}[res.clasificacion]||"";
+  const evts=[];
+  evts.push({t:fmtT(_triageStartTime),ic:"🏥",txt:"Triage iniciado",sub:null,lv:"normal"});
+  if(hasVit){
+    const parts=[vt.ps?`PA ${vt.ps}/${vt.pd||"?"}`:null,vt.fc?`FC ${vt.fc} lpm`:null,vt.sat?`SpO₂ ${vt.sat}%`:null,vt.tem?`${vt.tem}°C`:null,vt.fr?`FR ${vt.fr} rpm`:null].filter(Boolean);
+    evts.push({t:dot,ic:"📊",txt:"Signos vitales",sub:parts.join(" · "),lv:"normal"});
+  }
+  if(crits.length)evts.push({t:dot,ic:"🚨",txt:crits.length===1?"Alerta crítica":`${crits.length} alertas críticas`,sub:crits.map(a=>a.msg).join(" · "),lv:"critical"});
+  else if(warns.length)evts.push({t:dot,ic:"⚠",txt:warns.map(a=>a.msg).join(" · "),sub:null,lv:"warning"});
+  if(qsofa&&qsofa.risk==="high")evts.push({t:dot,ic:"⚠",txt:`qSOFA ${qsofa.score}/3 — Posible sepsis`,sub:qsofa.details.length?qsofa.details.join(" · "):null,lv:"critical"});
+  if(news2&&news2.risk==="high")evts.push({t:dot,ic:"🚨",txt:`NEWS2 ${news2.score} — Respuesta de emergencia`,sub:null,lv:"critical"});
+  else if(news2&&news2.risk==="medium")evts.push({t:dot,ic:"⚠",txt:`NEWS2 ${news2.score} — Respuesta urgente`,sub:null,lv:"warning"});
+  if(si&&si.risk==="severe")evts.push({t:dot,ic:"⚡",txt:`Shock Index ${si.idx} — Riesgo severo`,sub:null,lv:"critical"});
+  else if(si&&si.risk==="moderate")evts.push({t:dot,ic:"⚡",txt:`Shock Index ${si.idx} — Hipoperfusión`,sub:null,lv:"warning"});
+  evts.push({t:fmtT(endMs),ic:classIcon,txt:`${res.clasificacion} — ${classLabel}`,sub:null,lv:res.clasificacion==="ROJO"?"critical":res.clasificacion==="AMARILLO"?"warning":"normal"});
+  if(elapsed!=null){const m=Math.floor(elapsed/60),s=elapsed%60;evts.push({t:dot,ic:"⏱",txt:`Duración total: ${m}m ${String(s).padStart(2,"0")}s`,sub:null,lv:"normal"});}
+  const cM={critical:"var(--rd)",warning:"var(--yw)",normal:"var(--tx)"};
+  const dM={critical:"var(--rd)",warning:"var(--yw)",normal:"var(--bd)"};
+  const rows=evts.map(ev=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--bd)">
+    <div style="font-family:JetBrains Mono,monospace;font-size:.58rem;color:var(--mu);flex-shrink:0;width:28px;padding-top:3px;text-align:right">${ev.t}</div>
+    <div style="width:5px;height:5px;border-radius:50%;background:${dM[ev.lv]};flex-shrink:0;margin-top:6px;box-shadow:0 0 4px ${dM[ev.lv]}99"></div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:.77rem;color:${cM[ev.lv]};font-weight:${ev.lv==="normal"?"400":"600"}">${ev.ic} ${ev.txt}</div>
+      ${ev.sub?`<div style="font-size:.66rem;color:var(--mu);margin-top:2px;line-height:1.4">${ev.sub}</div>`:""}
+    </div></div>`).join("");
+  return`<div class="card"><div class="clabel">Línea de tiempo clínica</div>${rows}</div>`;
+}
+
 // I18N
 const L={
   es:{sub:"Sistema medico inteligente",login:"Iniciar sesion",register:"Registrarse",cont:"Continuar",forgot:"Olvide mi contrasena",google:"Continuar con Google",
@@ -4218,6 +4260,7 @@ function rResult(r){
   const hasVit=vt.ps||vt.fr||vt.sat||vt.fc||vt.tem;
   const news2=hasVit?calcNEWS2(_sv,TD.consc):null;
   const si=vt.fc&&vt.ps?calcShockIndex(vt.fc,vt.ps):null;
+  const timelineHtml=_buildTriageTimeline(qsofa,news2,si,r,elapsed);
 
   let qsofaHtml="";
   if(qsofa.score>0||vt.fr||vt.ps){
@@ -4267,6 +4310,7 @@ function rResult(r){
     <div class="card"><div class="clabel" data-i18n="clinicalAnalysis">${t("clinicalAnalysis")||"Analisis clinico"}</div><div style="font-size:.83rem;line-height:1.65">${r.justificacion}</div>${alH}</div>
     ${qsofaHtml}${news2Html}${siHtml}
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
+    ${timelineHtml}
     <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${a}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
     <div style="display:flex;gap:10px;margin-top:6px;animation:fadeUp .4s .2s both">
@@ -5012,7 +5056,7 @@ function toggleExplain(i){const el=document.getElementById("explain-"+i);if(el)e
 // ══════════════════════════════════════
 // COLA DE PACIENTES
 // ══════════════════════════════════════
-let _colaData=[], _colaFilter="all", _colaInterval=null, _colaTimerInterval=null;
+let _colaData=[], _colaFilter="all", _colaInterval=null, _colaTimerInterval=null, _prevColaIds=new Set();
 let _presenceInterval=null,_presenceUnsub=null;
 function _initPresence(){
   if(!FB||!CU)return;
@@ -5063,19 +5107,30 @@ function loadCola(){
   const since=new Date(Date.now()-12*60*60*1000);
   const q=FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(150));
   window._queueUnsub=FB.onSnapshot(q,(snap)=>{
-    _colaData=snap.docs
+    const newData=snap.docs
       .map(d=>({id:d.id,...d.data()}))
       .filter(d=>{
         const ts=d.createdAt?.toDate?.()??new Date(d.createdAt??0);
         return ts>since;
       });
+    // Detect new critical patients — alert staff
+    if(_prevColaIds.size>0){
+      const newRojo=newData.filter(d=>d.clasificacion==="ROJO"&&!d.atendido&&!_prevColaIds.has(d.id));
+      if(newRojo.length>0){
+        navigator.vibrate?.([300,100,300,100,300]);
+        const nb=document.getElementById("nb-cola");
+        if(nb){nb.style.transform="scale(1.25)";setTimeout(()=>nb.style.transform="",600);}
+      }
+    }
+    _prevColaIds=new Set(newData.map(d=>d.id));
+    _colaData=newData;
     _renderCola();
   },(e)=>{
     if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error: ${e.message}</div>`;
   });
   if(_colaInterval){clearInterval(_colaInterval);_colaInterval=null;}
   if(_colaTimerInterval){clearInterval(_colaTimerInterval);_colaTimerInterval=null;}
-  _colaTimerInterval=setInterval(_renderColaTimers,30000);
+  _colaTimerInterval=setInterval(_renderColaTimers,60000);
 }
 
 function setColaFilter(f,btn){
@@ -5132,44 +5187,75 @@ function _renderCola(){
     return tb-ta;
   });
 
+  // Banner de alerta crítica para ROJO vencidos
+  const overdueRojo=pending.filter(d=>{
+    if(d.clasificacion!=="ROJO")return false;
+    const ts=d.createdAt?.toDate?.()??new Date(0);
+    return Math.floor((Date.now()-ts.getTime())/60000)>COLA_DEADLINE.ROJO;
+  });
+  const bannerHtml=overdueRojo.length?`<div style="background:var(--rd-a);border:1.5px solid rgba(255,58,92,.45);border-radius:12px;padding:10px 14px;margin-bottom:10px;animation:critBlink 1.2s ease-in-out infinite;display:flex;align-items:center;gap:10px">
+    <span style="font-size:1.3rem;flex-shrink:0">🚨</span>
+    <div><div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--rd);font-weight:700;letter-spacing:1.5px;margin-bottom:2px">ALERTA CRÍTICA</div>
+    <div style="font-size:.8rem;color:var(--rd);font-weight:600">${overdueRojo.length} paciente${overdueRojo.length>1?"s":""} ROJO vencido${overdueRojo.length>1?"s":""} — Atención inmediata requerida</div></div>
+  </div>`:"";
+
   if(!filtered.length){
-    listEl.innerHTML=`<div class="cola-empty"><div class="cola-empty-ic">✅</div><div class="cola-empty-tx">${tx.colaEmpty||"Sin pacientes pendientes"}</div></div>`;
+    listEl.innerHTML=bannerHtml+`<div class="cola-empty"><div class="cola-empty-ic">✅</div><div class="cola-empty-tx">${tx.colaEmpty||"Sin pacientes pendientes"}</div></div>`;
     return;
   }
 
-  listEl.innerHTML=filtered.map((d,_qi)=>{
+  listEl.innerHTML=bannerHtml+filtered.map((d,_qi)=>{
     const cc=ccM[d.clasificacion]||"ve";
     const ic=icM[d.clasificacion]||"⚪";
     const ts=d.createdAt?.toDate?.()??new Date(0);
-    const elapsedMin=Math.floor((Date.now()-ts.getTime())/60000);
+    const elapsedMs=Date.now()-ts.getTime();
+    const elapsedMin=Math.floor(elapsedMs/60000);
     const deadlineMin=COLA_DEADLINE[d.clasificacion]??30;
     const remainMin=deadlineMin-elapsedMin;
     const isDone=!!d.atendido;
     const patNum=_qi+1;
+    const isNew=elapsedMs<120000&&!isDone; // < 2 min
 
     let dlClass="ok",dlLabel="";
     if(!isDone){
-      if(remainMin<0){dlClass="over";dlLabel=`${tx.colaOverdue||"VENCIDO"} +${Math.abs(remainMin)}${tx.colaMin||"min"}`;}
-      else if(remainMin<=Math.round(deadlineMin*0.3)){dlClass="warn";dlLabel=`${remainMin}${tx.colaMin||"min"} ${tx.colaRemaining||"restantes"}`;}
-      else{dlClass="ok";dlLabel=`${remainMin}${tx.colaMin||"min"} ${tx.colaRemaining||"restantes"}`;}
+      if(remainMin<0){dlClass="over";dlLabel=`${tx.colaOverdue||"VENCIDO"} +${Math.abs(remainMin)}min`;}
+      else if(remainMin<=Math.round(deadlineMin*0.3)){dlClass="warn";dlLabel=`${remainMin}min ${tx.colaRemaining||"restantes"}`;}
+      else{dlClass="ok";dlLabel=`${remainMin}min ${tx.colaRemaining||"restantes"}`;}
     }
+    const elapsedLabel=elapsedMin<1?"Ahora":`${tx.colaAgo||"hace"} ${elapsedMin}min`;
 
-    const byLine=d.userName?`<div class="cola-by">Triageado por ${d.userName}</div>`:"";
+    // Vitales resumidos (solo si existen)
+    const vit=d.vit||{};
+    const vitParts=[vit.ps?`PA ${vit.ps}/${vit.pd||"?"}`:null,vit.fc?`FC ${vit.fc}`:null,vit.sat?`SpO₂ ${vit.sat}%`:null,vit.fr?`FR ${vit.fr}rpm`:null].filter(Boolean);
+    const vitLine=vitParts.length?`<div style="font-size:.65rem;color:var(--mu);margin-top:3px;font-family:'JetBrains Mono',monospace;line-height:1.4">${vitParts.join(" · ")}</div>`:"";
+
+    // qSOFA badge si riesgo alto
+    const qs=(vit.ps||vit.fr)?calcQSOFA({sys:parseFloat(vit.ps),rr:parseFloat(vit.fr)},d.consc):null;
+    const qsBadge=qs?.risk==="high"?`<span style="font-size:.6rem;font-family:'JetBrains Mono',monospace;background:var(--rd-a);color:var(--rd);border-radius:6px;padding:1px 6px;margin-left:5px;font-weight:700">qSOFA 2+</span>`:"";
+
+    // NEWS2 badge si score alto
+    const n2=vitParts.length?calcNEWS2({sys:parseFloat(vit.ps),rr:parseFloat(vit.fr),spo2:parseFloat(vit.sat),hr:parseFloat(vit.fc),temp:parseFloat(vit.tem)},d.consc):null;
+    const n2Badge=n2?.risk==="high"?`<span style="font-size:.6rem;font-family:'JetBrains Mono',monospace;background:var(--yw-a);color:var(--yw);border-radius:6px;padding:1px 6px;margin-left:5px;font-weight:700">NEWS2 ${n2.score}</span>`:"";
+
+    const byLine=d.userName?`<div class="cola-by">por ${d.userName}</div>`:"";
     const atendidoAt=d.atendidoAt?.toDate?.();
     const doneLabel=atendidoAt?`<div class="cola-done-lbl">✓ ${String(atendidoAt.getHours()).padStart(2,"0")}:${String(atendidoAt.getMinutes()).padStart(2,"0")}</div>`:`<div class="cola-done-lbl">✓ ${tx.colaAttended||"Atendido"}</div>`;
 
-    return `<div class="cola-card${isDone?" done":""}${dlClass==="over"&&!isDone?" vencido":""}" id="colacard-${d.id}">
+    return `<div class="cola-card${isDone?" done":""}${dlClass==="over"&&!isDone?" vencido":""}" id="colacard-${d.id}" style="${isNew?"animation:fadeUp .4s both":""}">
       <div class="cola-bar2 ${cc}"></div>
       <div class="cola-body">
         <div class="cola-top">
           <span class="cola-num">#${patNum}</span>
           <span>${ic}</span>
           <span class="cola-class ${cc}">${d.clasificacion}</span>
+          ${isNew?`<span style="font-size:.58rem;font-family:'JetBrains Mono',monospace;background:var(--cy-a);color:var(--cy);border-radius:6px;padding:1px 7px;margin-left:4px;font-weight:700">NUEVO</span>`:""}
+          ${qsBadge}${n2Badge}
         </div>
         <div class="cola-pt">${tM[d.tipo]||d.tipo||"—"}</div>
         <div class="cola-mot">${mM[d.motivo]||d.motivo||"—"}</div>
+        ${vitLine}
         <div class="cola-times">
-          <span class="cola-elapsed" id="elapsed-${d.id}">${tx.colaAgo||"hace"} ${elapsedMin}${tx.colaMin||"min"}</span>
+          <span class="cola-elapsed" id="elapsed-${d.id}">${elapsedLabel}</span>
           ${!isDone?`<span class="cola-dlchip ${dlClass}" id="dlchip-${d.id}">${dlLabel}</span>`:""}
         </div>
         ${byLine}
@@ -5196,7 +5282,7 @@ function _renderColaTimers(){
     const remainMin=deadlineMin-elapsedMin;
     const eEl=document.getElementById("elapsed-"+d.id);
     const dEl=document.getElementById("dlchip-"+d.id);
-    if(eEl)eEl.textContent=`${tx.colaAgo||"hace"} ${elapsedMin}${tx.colaMin||"min"}`;
+    if(eEl)eEl.textContent=elapsedMin<1?"Ahora":`${tx.colaAgo||"hace"} ${elapsedMin}min`;
     if(dEl){
       if(remainMin<0){dEl.className="cola-dlchip over";dEl.textContent=`${tx.colaOverdue||"VENCIDO"} +${Math.abs(remainMin)}${tx.colaMin||"min"}`;}
       else if(remainMin<=Math.round(deadlineMin*0.3)){dEl.className="cola-dlchip warn";dEl.textContent=`${remainMin}${tx.colaMin||"min"} ${tx.colaRemaining||"restantes"}`;}
