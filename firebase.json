@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "functions/**"],
+    "rewrites": [
+      { "source": "/api/aiProxy", "function": "aiProxy" }
+    ]
+  },
+  "functions": {
+    "source": "functions"
+  }
+}

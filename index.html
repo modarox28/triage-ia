@@ -14,12 +14,12 @@
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
 const auth=getAuth(fbapp);const db=getFirestore(fbapp);const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
-window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc};
+window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot};
 window.dispatchEvent(new Event("fbready"));
 </script>
 <style>
@@ -175,24 +175,22 @@ button{border-radius:0;}
 
 /* BODY + SCREENS */
 .main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0;}
-.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(52px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
 .body::-webkit-scrollbar{width:3px;}
 .body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
 .sc{display:none;padding:14px;width:100%;box-sizing:border-box;}
 .sc.on{display:block;animation:pageSlideIn .3s cubic-bezier(.34,1.4,.64,1);}
 
 /* BOTTOM NAV — Liquid Glass (iOS style) */
-.bottom-nav{display:flex;background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-top:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -10px 36px rgba(0,0,0,.28);position:fixed;bottom:0;left:0;right:0;z-index:100;padding-bottom:env(safe-area-inset-bottom,0px);}
-.light .bottom-nav{background:rgba(240,244,248,.78);border-top:1px solid rgba(0,0,0,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 -4px 20px rgba(0,0,0,.07);}
-.nb{flex:1;min-width:52px;display:flex;flex-direction:column;align-items:center;padding:12px 8px 13px;gap:3px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;position:relative;z-index:1;}
-.nb .ni{font-size:1.45rem;transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
-.nb.on .ni{transform:scale(1.22);}
-.nb .nl{font-size:.58rem;font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--mu);letter-spacing:0;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 3px;transition:color .2s;}
+.bottom-nav{display:flex;background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0;position:relative;z-index:50;overflow:visible;padding-bottom:env(safe-area-inset-bottom,0px);height:calc(52px + env(safe-area-inset-bottom,0px));}
+.bottom-nav::after{content:"";position:fixed;bottom:0;left:0;right:0;height:env(safe-area-inset-bottom,0px);background:var(--bg2);z-index:49;pointer-events:none;}
+.nb{flex:1;min-width:0;max-width:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 1px 4px;gap:1px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;position:relative;overflow:hidden;}
+.nb .ni{font-size:.95rem;transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.nb.on .ni{transform:scale(1.15);}
+.nb .nl{font-size:.42rem;font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--mu);letter-spacing:0;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 2px;transition:color .2s;}
 .nb.on .nl{color:var(--cy);}
 .nb:active{opacity:.6;}
-/* Glass pill — active tab indicator */
-.nind{position:absolute;top:6px;left:0;height:calc(100% - 12px);background:linear-gradient(135deg,rgba(0,200,240,.18),rgba(0,224,122,.1));border-radius:14px;border:1px solid rgba(0,200,240,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 0 18px rgba(0,200,240,.12);transition:all .38s cubic-bezier(.34,1.4,.64,1);pointer-events:none;z-index:0;}
-.light .nind{background:linear-gradient(135deg,rgba(0,153,187,.16),rgba(0,168,85,.08));border:1px solid rgba(0,153,187,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 12px rgba(0,153,187,.1);}
+.nind{position:absolute;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cy),var(--gn));transition:all .32s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:1;}
 
 /* CARDS */
 .card{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);transition:box-shadow .3s,transform .3s;}
@@ -683,6 +681,7 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 .cola-done-lbl{font-size:.6rem;color:var(--gn);font-family:"JetBrains Mono",monospace;text-align:center;max-width:52px;}
 .cola-refresh{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:8px;padding:5px 10px;font-size:.75rem;cursor:pointer;touch-action:manipulation;transition:all .2s;}
 .cola-refresh:hover{border-color:var(--cy);color:var(--cy);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gn);animation:pulse2 1.5s ease-in-out infinite;margin-left:6px;vertical-align:middle;}
 /* SPLASH SCREEN */
 #splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;transition:opacity .5s ease,visibility .5s ease;visibility:visible;}
 #splash.out{opacity:0;visibility:hidden;pointer-events:none;}
@@ -1270,6 +1269,12 @@ select{padding-right:32px;}
   <button class="bpri" onclick="saveHC()" style="margin-bottom:14px">💾 Guardar historia clinica</button>
 </div>
 
+<!-- DETALLE HISTORIA CLINICA -->
+<div class="sc" id="sc-hc-detail">
+  <button class="bsec" onclick="navigateTo('hc')" style="margin-bottom:12px">← Volver</button>
+  <div id="hcDetailContent"><div class="ldg"><div class="sp"></div>Cargando...</div></div>
+</div>
+
 <div class="sc" id="sc-hist">
         <div style="padding:10px 0 4px;display:flex;gap:6px;align-items:center;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;flex-shrink:0;padding-bottom:8px" id="histFilters">
           <button class="hist-flt on" data-f="all" onclick="setHistFilter('all',this)">Todos</button>
@@ -1290,7 +1295,7 @@ select{padding-right:32px;}
       <!-- COLA DE ESPERA -->
       <div class="sc" id="sc-cola">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div class="clabel" style="margin:0" id="lbColaTitle">Cola de espera</div>
+          <div class="clabel" style="margin:0" id="lbColaTitle">Cola de espera<span class="live-dot"></span></div>
           <button class="cola-refresh" onclick="loadCola()" id="colaRefreshBtn">↻ Actualizar</button>
         </div>
         <div class="cola-stats" id="colaStats"></div>
@@ -1395,10 +1400,10 @@ select{padding-right:32px;}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-const DS_KEY="REVOCADA";
-const PROXY="https://little-voice-6621.mdq2804.workers.dev";
 const QR_SECRET=btoa("media-patient-2025");
+async function getIdToken(){return CU?await CU.getIdToken():null;}
 
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
@@ -3556,7 +3561,7 @@ Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${notasExtra}
 SOLO JSON sin backticks:
 {"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"..."}`;
   try{
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:600,messages:[{role:"user",content:prompt}]})});
+    const r=await fetch('/api/aiProxy',{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(await getIdToken())},body:JSON.stringify({model:"deepseek-chat",max_tokens:600,messages:[{role:"user",content:prompt}]})});
     const d=await r.json();
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const res=JSON.parse(txt);
@@ -3621,7 +3626,10 @@ function rResult(r){
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
     <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${a}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
-    <button class="btn-share" onclick="shareResult()" style="animation:fadeUp .4s .2s both">📤 Compartir resultado</button>
+    <div style="display:flex;gap:8px;animation:fadeUp .4s .2s both">
+      <button class="btn-share" onclick="shareResult()" style="flex:1">📤 Compartir</button>
+      <button class="btn-share" onclick="exportTriagePDF()" style="flex:0 0 auto;padding:0 18px">📄 PDF</button>
+    </div>
     <button class="bsec" onclick="resetT()" style="animation:fadeUp .4s .3s both">← ${t("newPatient")||"Nuevo paciente"}</button>`;
 }
 
@@ -3643,6 +3651,70 @@ function shareResult(){
     navigator.clipboard?.writeText(text).then(()=>toast("Resultado copiado al portapapeles")).catch(()=>toast("No se pudo compartir"));
   }
 }
+function exportTriagePDF(){
+  if(!_lastResult){toast("Sin resultado para exportar");return;}
+  const {jsPDF}=window.jspdf;
+  if(!jsPDF){toast("PDF no disponible");return;}
+  const r=_lastResult;
+  const pdf=new jsPDF({unit:"mm",format:"a4"});
+  const W=210,margin=18,cw=W-margin*2;
+  let y=margin;
+  const ln=(txt,sz,bold,col)=>{
+    pdf.setFontSize(sz||11);pdf.setFont("helvetica",bold?"bold":"normal");
+    if(col)pdf.setTextColor(...col);else pdf.setTextColor(30,30,30);
+    pdf.text(txt,margin,y);y+=sz?sz*0.45+2:7;
+  };
+  const rule=(col=[200,200,200])=>{pdf.setDrawColor(...col);pdf.line(margin,y,W-margin,y);y+=4;};
+  const colorMap={ROJO:[220,38,38],AMARILLO:[202,138,4],VERDE:[21,128,61]};
+  const clr=colorMap[r.clasificacion]||[80,80,80];
+
+  pdf.setFillColor(11,17,32);pdf.rect(0,0,W,28,"F");
+  pdf.setFontSize(16);pdf.setFont("helvetica","bold");pdf.setTextColor(255,255,255);
+  pdf.text("MedIA Suite — Resultado de Triage",margin,13);
+  pdf.setFontSize(9);pdf.setFont("helvetica","normal");pdf.setTextColor(160,180,200);
+  pdf.text(new Date().toLocaleString("es-ES"),margin,21);
+  y=36;
+
+  pdf.setFillColor(...clr);pdf.roundedRect(margin,y,cw,14,3,3,"F");
+  pdf.setFontSize(14);pdf.setFont("helvetica","bold");pdf.setTextColor(255,255,255);
+  const icons={ROJO:"ROJO",AMARILLO:"AMARILLO",VERDE:"VERDE"};
+  pdf.text(`${icons[r.clasificacion]||r.clasificacion}  —  ${r.tiempo_atencion||""}`,margin+4,y+9);
+  y+=20;
+
+  const tMl={adulto:"Adulto",adulto_mayor:"Adulto mayor",embarazada:"Embarazada",nino:"Pediatrico",adolescente:"Adolescente"};
+  const mMl={dolor_pecho:"Dolor en el pecho",disnea:"Dificultad respiratoria",trauma:"Trauma/herida",abdominal:"Dolor abdominal",neuro:"Neurologico",fiebre:"Fiebre alta",otro:"Otro"};
+  ln("PACIENTE",8,true,[100,120,150]);y-=1;
+  ln(`Tipo: ${tMl[r.tipo]||r.tipo||"—"}   Motivo: ${mMl[r.motivo]||r.motivo||"—"}`);
+  if(r.dolor!=null)ln(`Dolor: ${r.dolor}/10`);
+  rule();
+
+  if(r.vitals&&Object.keys(r.vitals).some(k=>r.vitals[k])){
+    ln("SIGNOS VITALES",8,true,[100,120,150]);y-=1;
+    const vlbl={fc:"FC",ps:"P.Sistólica",pd:"P.Diastólica",sat:"SpO2",tem:"Temperatura",fr:"FR",gcs:"Glasgow"};
+    const vun={fc:"lpm",ps:"mmHg",pd:"mmHg",sat:"%",tem:"°C",fr:"rpm",gcs:""};
+    Object.entries(r.vitals).forEach(([k,v])=>{if(v)ln(`${vlbl[k]||k}: ${v} ${vun[k]||""}`,10,false);});
+    rule();
+  }
+
+  ln("ANALISIS IA",8,true,[100,120,150]);y-=1;
+  const just=pdf.splitTextToSize(r.justificacion||"",cw);
+  pdf.setFontSize(11);pdf.setFont("helvetica","normal");pdf.setTextColor(30,30,30);
+  pdf.text(just,margin,y);y+=just.length*5+4;
+  rule();
+
+  ln("ACCIONES PRIORITARIAS",8,true,[100,120,150]);y-=1;
+  (r.acciones||[]).forEach((a,i)=>{
+    const lines=pdf.splitTextToSize(`${i+1}. ${a}`,cw);
+    pdf.setFontSize(11);pdf.setFont("helvetica","normal");pdf.setTextColor(30,30,30);
+    pdf.text(lines,margin,y);y+=lines.length*5+2;
+  });
+  y+=4;rule([220,220,220]);
+
+  pdf.setFontSize(8);pdf.setFont("helvetica","italic");pdf.setTextColor(130,130,130);
+  pdf.text("Generado con MedIA Suite. Solo para uso clinico de apoyo — no reemplaza criterio medico.",margin,y);
+
+  pdf.save(`triage-${r.clasificacion}-${Date.now()}.pdf`);
+}
 function chkPA(s){s=parseFloat(s);return s<90||s>180?"critical":s<100||s>150?"warning":"normal";}
 function chkFC(f){f=parseFloat(f);return f<50||f>130?"critical":f<60||f>100?"warning":"normal";}
 function chkSat(s){s=parseFloat(s);return s<90?"critical":s<95?"warning":"normal";}
@@ -3655,7 +3727,7 @@ async function buscarDrug(){
   if(!nm){toast("Escribe el nombre del medicamento");return;}
   document.getElementById("dr").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Consultando...</div></div>`;
   try{
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:800,messages:[{role:"user",content:`Informacion farmacologica sobre: "${nm}". SOLO JSON sin backticks:
+    const r=await fetch('/api/aiProxy',{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(await getIdToken())},body:JSON.stringify({model:"deepseek-chat",max_tokens:800,messages:[{role:"user",content:`Informacion farmacologica sobre: "${nm}". SOLO JSON sin backticks:
 {"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"..."}`}]})});
     const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     document.getElementById("dr").innerHTML=`<div class="card">
@@ -3713,7 +3785,7 @@ async function checkInt(){
   if(intDrugs.length<2)return;
   document.getElementById("ir").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Verificando interacciones...</div></div>`;
   try{
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. SOLO JSON sin backticks:
+    const r=await fetch('/api/aiProxy',{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(await getIdToken())},body:JSON.stringify({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. SOLO JSON sin backticks:
 {"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]})});
     const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     const cm={BAJO:"gn",MODERADO:"yw",ALTO:"rd",CONTRAINDICADO:"rd"};const im={BAJO:"✅",MODERADO:"⚠️",ALTO:"🚨",CONTRAINDICADO:"⛔"};
@@ -4064,7 +4136,7 @@ async function handleHCPhoto(input){
     analysis.innerHTML=`<div class="ldg"><div class="sp"></div>Analizando documento con IA...</div>`;
     try{
       const base64=hcPhoto.split(',')[1];
-      const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+DS_KEY},
+      const r=await fetch('/api/aiProxy',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await getIdToken())},
         body:JSON.stringify({model:'deepseek-chat',max_tokens:600,messages:[
           {role:'user',content:`Analiza esta imagen de documento medico y extrae antecedentes, alergias y medicacion actual si los hay. Si no es un documento medico, indica que no se encontro informacion medica. SOLO JSON:
 {"antecedentes":["..."],"alergias":["..."],"medicacion":["..."],"nota":"..."}
@@ -4143,7 +4215,39 @@ function showNewHC(){
   navigateTo('hc-new');
 }
 
-function viewHC(id){toast('Vista detallada proximamente.');}
+async function viewHC(id){
+  navigateTo('hc-detail');
+  const el=document.getElementById('hcDetailContent');
+  if(!el)return;
+  el.innerHTML=`<div class="ldg"><div class="sp"></div>Cargando...</div>`;
+  try{
+    const snap=await FB.getDoc(FB.doc(FB.db,'historias',id));
+    if(!snap.exists()){el.innerHTML=`<div class="card" style="color:var(--rd)">Historia no encontrada</div>`;return;}
+    const d=snap.data();
+    const ants=(d.antecedentes||[]).map(a=>`<span class="chip">${a}</span>`).join('');
+    const alers=(d.alergias||[]).map(a=>`<span class="chip" style="background:var(--rd-a);color:var(--rd)">${a}</span>`).join('');
+    const meds=(d.medicacion||[]).map(m=>`<span class="chip" style="background:var(--cy-a);color:var(--cy)">${m}</span>`).join('');
+    const date=d.createdAt?.toDate?.()?.toLocaleDateString('es-ES')||'';
+    const av=(d.name||'?')[0].toUpperCase();
+    el.innerHTML=`
+      <div class="card" style="display:flex;gap:12px;align-items:center">
+        ${d.photo?`<img src="${d.photo}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0">`:
+          `<div style="width:56px;height:56px;border-radius:50%;background:var(--cy-a);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:var(--cy);flex-shrink:0">${av}</div>`}
+        <div>
+          <div style="font-size:1.05rem;font-weight:700">${d.name||'Sin nombre'}</div>
+          <div class="hc-detail">${d.age?d.age+' años · ':''}${d.sex==='M'?'Masculino':d.sex==='F'?'Femenino':'Otro'}${d.doc?' · '+d.doc:''}</div>
+          <div style="font-size:.68rem;color:var(--mu);margin-top:2px">${date}</div>
+        </div>
+      </div>
+      ${ants?`<div class="card"><div class="clabel">Antecedentes</div><div style="display:flex;flex-wrap:wrap;gap:6px">${ants}</div></div>`:''}
+      ${alers?`<div class="card"><div class="clabel">Alergias</div><div style="display:flex;flex-wrap:wrap;gap:6px">${alers}</div></div>`:''}
+      ${meds?`<div class="card"><div class="clabel">Medicación actual</div><div style="display:flex;flex-wrap:wrap;gap:6px">${meds}</div></div>`:''}
+      ${d.notas?`<div class="card"><div class="clabel">Notas</div><div style="font-size:.84rem;line-height:1.55">${d.notas}</div></div>`:''}
+    `;
+  }catch(e){
+    el.innerHTML=`<div class="card" style="color:var(--rd)">Error: ${e.message}</div>`;
+  }
+}
 
 
 function toggleExplain(i){const el=document.getElementById("explain-"+i);if(el)el.classList.toggle("open");}
@@ -4158,39 +4262,30 @@ const COLA_DEADLINE={ROJO:15,AMARILLO:30,VERDE:120}; // minutos
 function _stopColaTimer(){
   if(_colaInterval){clearInterval(_colaInterval);_colaInterval=null;}
   if(_colaTimerInterval){clearInterval(_colaTimerInterval);_colaTimerInterval=null;}
+  window._queueUnsub?.();window._queueUnsub=null;
 }
 
-async function loadCola(){
+function loadCola(){
   if(!FB||!CU)return;
   const listEl=document.getElementById("colaList");
-  const statsEl=document.getElementById("colaStats");
   if(!listEl)return;
   listEl.innerHTML=`<div class="ldg"><div class="sp"></div>Cargando cola...</div>`;
-
-  try{
-    // Últimas 12 horas
-    const since=new Date(Date.now()-12*60*60*1000);
-    const snap=await FB.getDocs(FB.query(
-      FB.collection(FB.db,"triages"),
-      FB.orderBy("createdAt","desc"),
-      FB.limit(150)
-    ));
+  window._queueUnsub?.();
+  const since=new Date(Date.now()-12*60*60*1000);
+  const q=FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(150));
+  window._queueUnsub=FB.onSnapshot(q,(snap)=>{
     _colaData=snap.docs
       .map(d=>({id:d.id,...d.data()}))
       .filter(d=>{
         const ts=d.createdAt?.toDate?.()??new Date(d.createdAt??0);
         return ts>since;
       });
-
     _renderCola();
-
-    // Auto-refresh cada 45s y timer cada 30s
-    _stopColaTimer();
-    _colaInterval=setInterval(loadCola,45000);
-    _colaTimerInterval=setInterval(_renderColaTimers,30000);
-  }catch(e){
-    if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error al cargar: ${e.message}</div>`;
-  }
+  },(e)=>{
+    if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error: ${e.message}</div>`;
+  });
+  _stopColaTimer();
+  _colaTimerInterval=setInterval(_renderColaTimers,30000);
 }
 
 function setColaFilter(f,btn){
@@ -4410,7 +4505,7 @@ async function analyzeVitcam(){
   try{
     const prompt="Analiza esta imagen de un monitor de signos vitales medico. Extrae SOLO los siguientes valores si son visibles. Responde UNICAMENTE con un JSON valido con estas claves exactas (usa null si no se ve el valor): {\"fc\":...,\"ps\":...,\"pd\":...,\"sat\":...,\"tem\":...,\"fr\":...}. fc=frecuencia cardiaca lpm, ps=presion sistolica mmHg, pd=presion diastolica mmHg, sat=saturacion O2 %, tem=temperatura C, fr=frecuencia respiratoria rpm.";
     const messages=[{role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:"data:image/jpeg;base64,"+_vitcamB64}}]}];
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:200,messages})});
+    const r=await fetch('/api/aiProxy',{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(await getIdToken())},body:JSON.stringify({model:"deepseek-chat",max_tokens:200,messages})});
     const d=await r.json();
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const extracted=JSON.parse(txt);
