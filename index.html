@@ -1533,6 +1533,7 @@ let _patientHC=null,_triageLookupDone=false,_triageLookupResult=null;
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
 let CU=null,CR=null,CUName=null,CUPhoto=null,isDark=true,FB=null;
+let _curTab=null;
 let CC=localStorage.getItem("ms_country")||"CO";
 function setCountry(cc){CC=cc;localStorage.setItem("ms_country",cc);loadConfig();}
 function getInsLabel(){const m={CO:"EPS afiliada",AR:"Obra social / prepaga",US:"Insurance provider",DE:"Krankenkasse",JP:"健康保険組合"};return m[CC]||t("insLabel");}
@@ -2963,7 +2964,9 @@ function buildNav(){
   });
 }
 
-function navigateTo(id,idx){
+function navigateTo(id,_fh){
+  _curTab=id;
+  if(!_fh)history.pushState({_ms:'tab',id},'');
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
   document.querySelectorAll(".nb,.snav-btn").forEach(b=>b.classList.remove("on"));
   const sc=document.getElementById("sc-"+id);if(sc)sc.classList.add("on");
@@ -3715,6 +3718,7 @@ function _confirmPatientForTriage(){
   _patientHC=_triageLookupResult;
   _triageLookupResult=null;
   _triageLookupDone=true;
+  history.pushState({_ms:'triage-enter'},'');
   _applyPatientHCToNotes();
   _updatePatientHCStrip();
   if(!_triageStartTime)_startTriageTimer();
@@ -3723,6 +3727,7 @@ function _confirmPatientForTriage(){
 
 function _skipPatientLookup(){
   _patientHC=null;_triageLookupResult=null;_triageLookupDone=true;
+  history.pushState({_ms:'triage-enter'},'');
   _updatePatientHCStrip();
   if(!_triageStartTime)_startTriageTimer();
   rTriage();
@@ -4044,7 +4049,7 @@ function rTriage(){
   }
   const nx=document.createElement("button");nx.className="bnxt";
   nx.textContent=TS===steps.length-1?(t("analyze")||"Analizar")+" →":(t("continueBtn")||"Continuar")+" →";
-  nx.disabled=!canAdv(s);nx.onclick=()=>{TS++;TM=[];rTriage();};nav.appendChild(nx);card.appendChild(nav);c.appendChild(card);
+  nx.disabled=!canAdv(s);nx.onclick=()=>{history.pushState({_ms:'triage-step',ts:TS+1},'');TS++;TM=[];rTriage();};nav.appendChild(nx);card.appendChild(nav);c.appendChild(card);
 }
 
 function canAdv(s){
@@ -5701,6 +5706,77 @@ function applyGCS(){
 document.addEventListener('gesturestart', e => e.preventDefault(), {passive:false});
 document.addEventListener('gesturechange', e => e.preventDefault(), {passive:false});
 document.addEventListener('touchmove', e => { if(e.touches.length > 1) e.preventDefault(); }, {passive:false});
+
+// ── GESTURE & HISTORY NAVIGATION ─────────────────────────────────────────
+// Intercepts Android system back + swipe-back on iOS PWA content area.
+// Edge swipe (iOS borde ≤38px) also switches between tabs.
+let _gSwX=0,_gSwY=0,_gSwEdge=false;
+
+window.addEventListener('popstate',e=>{
+  if(!CU)return;
+  const st=e.state;
+  if(!st)return;
+  if(st._ms==='triage-step'){
+    // Android back inside triage steps
+    if(TS>0){TS--;TM=[];rTriage();}
+    else if(CR!=='paciente'){_clearTriagePatient();}
+    history.pushState({_ms:'triage-step',ts:TS},''); // keep stack alive
+    return;
+  }
+  if(st._ms==='triage-enter'){
+    // Android back from first triage step → lookup
+    if(CR!=='paciente'){_triageLookupDone=false;_triageLookupResult=null;_showPatientLookup();}
+    history.pushState({_ms:'tab',id:'triage'},'');
+    return;
+  }
+  if(st._ms==='tab'){
+    navigateTo(st.id,true);
+  }
+});
+
+document.addEventListener('touchstart',e=>{
+  const t=e.touches[0];
+  _gSwX=t.clientX;_gSwY=t.clientY;
+  _gSwEdge=t.clientX<38;
+},{passive:true});
+
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-_gSwX;
+  const dy=e.changedTouches[0].clientY-_gSwY;
+  // Must be primarily horizontal and long enough
+  if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.3)return;
+  // Skip on inputs
+  const tag=e.target.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;
+  // Skip if touch is inside a horizontally scrollable element
+  let el=e.target;
+  while(el&&el!==document.body){
+    const ox=window.getComputedStyle(el).overflowX;
+    if((ox==='auto'||ox==='scroll')&&el.scrollWidth>el.clientWidth+4)return;
+    el=el.parentElement;
+  }
+  // ── Triage step swipe ──────────────────────────────────────────────────
+  if(_curTab==='triage'&&_triageLookupDone&&!_mciActive){
+    if(dx>0){// swipe derecha = atrás
+      if(TS>0){TS--;TM=[];rTriage();}
+      else if(CR!=='paciente'){_clearTriagePatient();}
+    }else{// swipe izquierda = adelante (solo si ya respondido)
+      const steps=aSteps();
+      if(canAdv(steps[TS])&&TS<steps.length-1){
+        history.pushState({_ms:'triage-step',ts:TS+1},'');
+        TS++;TM=[];rTriage();
+      }
+    }
+    return;
+  }
+  // ── Tab swipe ─────────────────────────────────────────────────────────
+  // Requiere swipe desde el borde (≤38px) O un gesto amplio (≥90px)
+  if(!_gSwEdge&&Math.abs(dx)<90)return;
+  const tabs=(NAV[CR]||NAV.medico).map(n=>n.id);
+  const ci=tabs.indexOf(_curTab);if(ci<0)return;
+  if(dx>0&&ci>0)navigateTo(tabs[ci-1]);
+  else if(dx<0&&ci<tabs.length-1)navigateTo(tabs[ci+1]);
+},{passive:true});
 </script>
 </body>
 </html>
