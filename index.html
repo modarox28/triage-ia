@@ -4261,28 +4261,64 @@ async function buscarDrug(){
     if(ant)hcCtx+=`\nAntecedentes: ${ant}.`;
     if(ale)hcCtx+=`\nALERGIAS CONOCIDAS: ${ale}.`;
     if(med)hcCtx+=`\nMedicación actual: ${med}.`;
-    hcCtx+=`\nAnaliza interacciones con su medicación actual y si hay contraindicaciones por sus antecedentes. Añade campo "alerta_paciente" con advertencia específica o vacío si es seguro.`;
+    hcCtx+=`\nDetermina si este medicamento está CONTRAINDICADO para este paciente (alergia cruzada, interacción grave, antecedente clínico relevante). Pon "contraindicado_paciente":true si hay contraindicación real, false si es seguro. En "alerta_paciente" explica el motivo detallado si contraindicado_paciente es true, o deja vacío si es seguro.`;
   }
   try{
-    const prompt=`Informacion farmacologica sobre: "${nm}".${hcCtx} SOLO JSON sin backticks:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"...","alerta_paciente":""}`;
+    const prompt=`Informacion farmacologica sobre: "${nm}".${hcCtx} SOLO JSON sin backticks:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"...","alerta_paciente":"","contraindicado_paciente":false}`;
     const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:900,messages:[{role:"user",content:prompt}]})});
-    const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
-    const patientAlert=inf.alerta_paciente&&inf.alerta_paciente.trim()&&_patientHC
-      ?`<div class="ib rd" style="animation:fadeUp .3s both"><div class="ibl">⚠️ Alerta para ${_patientHC.name}</div><div class="ibt">${inf.alerta_paciente}</div></div>` : "";
-    document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
-      ${_patientHC?`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--cy);background:rgba(0,200,240,.07);border-radius:8px;padding:5px 9px;margin-bottom:10px">🗂️ Análisis personalizado para <strong>${_patientHC.name}</strong></div>`:""}
-      <div style="font-size:1.05rem;font-weight:700;margin-bottom:3px">${inf.nombre_comercial||nm}</div>
-      <div style="font-size:.73rem;color:var(--mu);margin-bottom:11px">${inf.nombre_generico||""}</div>
-      <div style="margin-bottom:11px"><span style="background:var(--cy-a);color:var(--cy);border-radius:20px;padding:3px 9px;font-size:.7rem;font-weight:600">💊 ${inf.dosis_tipica||"Ver prospecto"}</span></div>
-      ${patientAlert}
-      <div class="ib gn"><div class="ibl">Para qué sirve</div><div class="ibt">${inf.para_que_sirve||""}</div></div>
-      <div class="ib cy"><div class="ibl">Cómo tomarlo</div><div class="ibt">${inf.como_tomar||""}</div></div>
-      <div class="ib yw"><div class="ibl">Efectos secundarios</div><div class="ibt">${inf.efectos_secundarios||""}</div></div>
-      <div class="ib rd"><div class="ibl">Contraindicaciones</div><div class="ibt">${inf.contraindicaciones||""}</div></div>
-      <div class="ib yw"><div class="ibl">Interacciones</div><div class="ibt">${inf.interacciones_comunes||""}</div></div>
-      ${inf.advertencias?`<div class="ib rd"><div class="ibl">Advertencias</div><div class="ibt">${inf.advertencias}</div></div>`:""}
-    </div>`;
+    const d=await r.json();
+    const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
+    _lastDrugInfo={inf,nm};
+    const isContra=_patientHC&&inf.contraindicado_paciente===true;
+    const ptnBadge=_patientHC?`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--cy);background:rgba(0,200,240,.07);border-radius:8px;padding:5px 9px;margin-bottom:10px">🗂️ Análisis personalizado para <strong>${_patientHC.name}</strong></div>`:"";
+    const drugHead=`${ptnBadge}<div style="font-size:1.05rem;font-weight:700;margin-bottom:3px">${inf.nombre_comercial||nm}</div><div style="font-size:.73rem;color:var(--mu);margin-bottom:11px">${inf.nombre_generico||""}</div>`;
+    if(isContra){
+      document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
+        ${drugHead}
+        <div class="ib rd" style="margin-bottom:14px;animation:fadeUp .3s .1s both">
+          <div class="ibl">&#x26D4; Contraindicado para este paciente</div>
+          <div class="ibt">${inf.alerta_paciente||inf.contraindicaciones||"Consulte con el médico tratante."}</div>
+        </div>
+        <button onclick="_showFullDrugInfo()" style="width:100%;padding:11px 14px;background:transparent;border:1.5px solid rgba(255,58,92,.3);border-radius:11px;color:var(--mu);font-size:.73rem;font-family:'Familjen Grotesk',sans-serif;cursor:pointer;touch-action:manipulation;transition:all .18s;text-align:center;animation:fadeUp .3s .2s both;line-height:1.6">&#x26A0;&#xFE0F; Mostrar información de todas formas<br><span style="font-size:.63rem;opacity:.55">Bajo mi propio riesgo — solo personal médico autorizado</span></button>
+      </div>`;
+    }else{
+      const patientAlert=inf.alerta_paciente&&inf.alerta_paciente.trim()&&_patientHC
+        ?`<div class="ib rd" style="animation:fadeUp .3s both"><div class="ibl">&#x26A0;&#xFE0F; Alerta para ${_patientHC.name}</div><div class="ibt">${inf.alerta_paciente}</div></div>`:"";
+      document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
+        ${drugHead}
+        <div style="margin-bottom:11px"><span style="background:var(--cy-a);color:var(--cy);border-radius:20px;padding:3px 9px;font-size:.7rem;font-weight:600">&#x1F48A; ${inf.dosis_tipica||"Ver prospecto"}</span></div>
+        ${patientAlert}
+        <div class="ib gn"><div class="ibl">Para qué sirve</div><div class="ibt">${inf.para_que_sirve||""}</div></div>
+        <div class="ib cy"><div class="ibl">Cómo tomarlo</div><div class="ibt">${inf.como_tomar||""}</div></div>
+        <div class="ib yw"><div class="ibl">Efectos secundarios</div><div class="ibt">${inf.efectos_secundarios||""}</div></div>
+        <div class="ib rd"><div class="ibl">Contraindicaciones</div><div class="ibt">${inf.contraindicaciones||""}</div></div>
+        <div class="ib yw"><div class="ibl">Interacciones</div><div class="ibt">${inf.interacciones_comunes||""}</div></div>
+        ${inf.advertencias?`<div class="ib rd"><div class="ibl">Advertencias</div><div class="ibt">${inf.advertencias}</div></div>`:""}
+      </div>`;
+    }
   }catch(e){document.getElementById("dr").innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.83rem">Error al consultar.</div></div>`;}
+}
+let _lastDrugInfo=null;
+function _showFullDrugInfo(){
+  if(!_lastDrugInfo)return;
+  const{inf,nm}=_lastDrugInfo;
+  const ptnBadge=_patientHC?`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--cy);background:rgba(0,200,240,.07);border-radius:8px;padding:5px 9px;margin-bottom:10px">&#x1F5C2;&#xFE0F; Análisis personalizado para <strong>${_patientHC.name}</strong></div>`:"";
+  document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
+    ${ptnBadge}
+    <div class="ib rd" style="margin-bottom:12px;padding:9px 12px">
+      <div class="ibt" style="font-size:.72rem;line-height:1.55">&#x26A0;&#xFE0F; Contraindicación detectada — información mostrada bajo responsabilidad del profesional médico</div>
+    </div>
+    <div style="font-size:1.05rem;font-weight:700;margin-bottom:3px">${inf.nombre_comercial||nm}</div>
+    <div style="font-size:.73rem;color:var(--mu);margin-bottom:11px">${inf.nombre_generico||""}</div>
+    <div style="margin-bottom:11px"><span style="background:var(--cy-a);color:var(--cy);border-radius:20px;padding:3px 9px;font-size:.7rem;font-weight:600">&#x1F48A; ${inf.dosis_tipica||"Ver prospecto"}</span></div>
+    ${inf.alerta_paciente?`<div class="ib rd" style="margin-bottom:10px"><div class="ibl">&#x26D4; Alerta para ${_patientHC?.name||"este paciente"}</div><div class="ibt">${inf.alerta_paciente}</div></div>`:""}
+    <div class="ib gn"><div class="ibl">Para qué sirve</div><div class="ibt">${inf.para_que_sirve||""}</div></div>
+    <div class="ib cy"><div class="ibl">Cómo tomarlo</div><div class="ibt">${inf.como_tomar||""}</div></div>
+    <div class="ib yw"><div class="ibl">Efectos secundarios</div><div class="ibt">${inf.efectos_secundarios||""}</div></div>
+    <div class="ib rd"><div class="ibl">Contraindicaciones</div><div class="ibt">${inf.contraindicaciones||""}</div></div>
+    <div class="ib yw"><div class="ibl">Interacciones</div><div class="ibt">${inf.interacciones_comunes||""}</div></div>
+    ${inf.advertencias?`<div class="ib rd"><div class="ibl">Advertencias</div><div class="ibt">${inf.advertencias}</div></div>`:""}
+  </div>`;
 }
 
 // MEDICATIONS
