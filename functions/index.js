@@ -20,7 +20,9 @@ exports.aiProxy = functions.https.onRequest(async (req, res) => {
   }
 
   const { messages, model = "deepseek-chat", max_tokens = 600 } = req.body;
-  const apiKey = functions.config().deepseek.key;
+  const apiKey = process.env.DEEPSEEK_KEY;
+  if (!apiKey) { res.status(500).json({ error: "API key not configured" }); return; }
+
   try {
     const r = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
