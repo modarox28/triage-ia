@@ -112,7 +112,16 @@ button{border-radius:0;}
 .lang-item:hover{background:var(--cy-a);color:var(--cy);}
 .lang-item.cur{background:var(--cy-a);color:var(--cy);font-weight:700;}
 
-.auth-lang-row{text-align:center;margin-bottom:18px;}
+.auth-lang-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;}
+.auth-theme-btn{background:none;border:1.5px solid var(--bd);border-radius:10px;padding:5px 10px;font-size:1rem;cursor:pointer;color:var(--tx);transition:border-color .18s,background .18s;touch-action:manipulation;line-height:1;flex-shrink:0;}
+.auth-theme-btn:active{opacity:.7;}
+.triage-quick-btn{display:flex;align-items:center;gap:12px;width:100%;padding:13px 15px;background:var(--bg2);border:1px solid var(--bd);border-radius:15px;cursor:pointer;touch-action:manipulation;transition:background .18s,border-color .18s,opacity .18s;text-align:left;font-family:"Familjen Grotesk",sans-serif;-webkit-user-select:none;user-select:none;}
+.triage-quick-btn:active{opacity:.7;}
+.triage-quick-ic{font-size:1.5rem;flex-shrink:0;}
+.triage-quick-body{flex:1;min-width:0;}
+.triage-quick-title{font-size:.88rem;font-weight:700;color:var(--tx);}
+.triage-quick-sub{font-size:.7rem;color:var(--mu);margin-top:2px;line-height:1.4;}
+.triage-quick-arrow{font-size:1.2rem;color:var(--mu);flex-shrink:0;font-weight:300;}
 .auth-tabs{display:flex;gap:0;margin-bottom:18px;background:var(--bg3);border-radius:10px;padding:3px;}
 .auth-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-family:"Familjen Grotesk",sans-serif;font-size:.85rem;font-weight:600;color:var(--mu);cursor:pointer;transition:all .22s;}
 .auth-tab.on{background:var(--cy);color:#000;}
@@ -1013,8 +1022,10 @@ select{padding-right:32px;}
           <div class="lang-item" onclick="setLang('pt')">🇧🇷 Português</div>
           <div class="lang-item" onclick="setLang('fr')">🇫🇷 Français</div>
           <div class="lang-item" onclick="setLang('de')">🇩🇪 Deutsch</div>
+          <div class="lang-item" onclick="setLang('ja')">🇯🇵 日本語</div>
         </div>
       </div>
+      <button id="authThemeBtn" class="auth-theme-btn" onclick="toggleTheme()" title="Tema">🌙</button>
     </div>
 
     <!-- PATIENT ACCESS (primary) -->
@@ -1530,11 +1541,12 @@ function uName(fallback="Usuario"){return CUName||CU?.displayName||CU?.email?.sp
 // THEME
 function toggleTheme(){
   isDark=!isDark;document.body.classList.toggle("light",!isDark);
-  const b=document.getElementById("themeBtn");if(b)b.textContent=isDark?"🌙":"☀️";
+  const ico=isDark?"🌙":"☀️";
+  ["themeBtn","authThemeBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ico;});
   const t=document.getElementById("themeTgl");if(t)t.classList.toggle("on",isDark);
   localStorage.setItem("theme",isDark?"dark":"light");
 }
-(()=>{const t=localStorage.getItem("theme");if(t==="light"){isDark=false;document.body.classList.add("light");const b=document.getElementById("themeBtn");if(b)b.textContent="☀️";const tg=document.getElementById("themeTgl");if(tg)tg.classList.remove("on");}})();
+(()=>{const t=localStorage.getItem("theme");if(t==="light"){isDark=false;document.body.classList.add("light");["themeBtn","authThemeBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent="☀️";});const tg=document.getElementById("themeTgl");if(tg)tg.classList.remove("on");}})();
 
 // TOAST
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2400);}
@@ -1634,7 +1646,7 @@ function calcQSOFA(vitals,consciousness){
 // I18N
 const L={
   es:{sub:"Sistema medico inteligente",login:"Iniciar sesion",register:"Registrarse",cont:"Continuar",forgot:"Olvide mi contrasena",google:"Continuar con Google",
-    ptnTitle:"Acceso como paciente",ptnSub:"Ingresa tu numero de identificacion para acceder a tu historia clinica",staffLink:"Personal medico / Administrador",patientEnter:"Ingresar",backToPatient:"← Volver",
+    ptnTitle:"Acceso como paciente",ptnSub:"Ingresa tu numero de identificacion para acceder a tu historia clinica",staffLink:"Personal medico / Administrador",patientEnter:"Ingresar",backToPatient:"← Volver",nameLbl:"Nombre",emailLbl:"Correo",passLbl:"Contrasena",orDivider:"o",idPlaceholder:"N.º ID",lookupTitle:"Identificar paciente",lookupSub:"Ingresa el numero de identificacion para cargar la historia clinica",lookupSearch:"Buscar",lookupSkip:"Continuar sin paciente registrado",
     dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historial",cola:"Cola",config:"Ajustes",prof:"Perfil",
     colaTitle:"Cola de espera",colaPending:"Pendientes",colaAttended:"Atendidos",colaMarkDone:"Atendido",colaUndone:"Pendiente",colaEmpty:"Sin pacientes pendientes",colaShift:"pacientes en el turno",colaOverdue:"VENCIDO",colaRemaining:"restantes",colaAgo:"hace",colaMin:"min",colaRefresh:"Actualizar",
     gcsTitle:"Escala de Glasgow",gcsSub:"Evaluacion del nivel de consciencia",gcsEye:"Apertura ocular",gcsVerbal:"Respuesta verbal",gcsMotor:"Respuesta motora",gcsSevLeve:"Leve",gcsSevMod:"Moderado",gcsSevGrave:"Grave",gcsApply:"Aplicar al triage",gcsBtn:"Calcular Glasgow",gcsApplied:"GCS aplicado",
@@ -1740,7 +1752,7 @@ const L={
     defaultNotes:"El paciente no refiere alergias medicamentosas conocidas ni antecedentes patologicos de relevancia clinica al momento de la evaluacion. No reporta medicacion habitual en curso. Sin historia previa de cirugias, hospitalizaciones recientes ni enfermedades cronicas diagnosticadas. No se dispone de informacion adicional del entorno que modifique el manejo inicial.",
   },
   en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
-    ptnTitle:"Patient access",ptnSub:"Enter your ID number to access your clinical history",staffLink:"Medical staff / Administrator",patientEnter:"Enter",backToPatient:"← Back",
+    ptnTitle:"Patient access",ptnSub:"Enter your ID number to access your clinical history",staffLink:"Medical staff / Administrator",patientEnter:"Enter",backToPatient:"← Back",nameLbl:"Name",emailLbl:"Email",passLbl:"Password",orDivider:"or",idPlaceholder:"ID number",lookupTitle:"Identify patient",lookupSub:"Enter ID number to load clinical history",lookupSearch:"Search",lookupSkip:"Continue without registered patient",
     dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"History",cola:"Queue",config:"Settings",prof:"Profile",
     colaTitle:"Waiting queue",colaPending:"Pending",colaAttended:"Attended",colaMarkDone:"Attended",colaUndone:"Pending",colaEmpty:"No pending patients",colaShift:"patients this shift",colaOverdue:"OVERDUE",colaRemaining:"remaining",colaAgo:"ago",colaMin:"min",colaRefresh:"Refresh",
     gcsTitle:"Glasgow Coma Scale",gcsSub:"Quantitative consciousness assessment",gcsEye:"Eye opening",gcsVerbal:"Verbal response",gcsMotor:"Motor response",gcsSevLeve:"Mild",gcsSevMod:"Moderate",gcsSevGrave:"Severe",gcsApply:"Apply to triage",gcsBtn:"Calculate Glasgow",gcsApplied:"GCS applied",
@@ -1846,7 +1858,7 @@ const L={
     defaultNotes:"Patient denies known drug allergies and no clinically relevant pathological history at time of evaluation. No current regular medication reported. No prior surgeries, recent hospitalizations or diagnosed chronic conditions. No additional contextual information available that would modify initial management.",
   },
   pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
-    ptnTitle:"Acesso como paciente",ptnSub:"Digite seu numero de identificacao para acessar seu historico",staffLink:"Equipe medica / Administrador",patientEnter:"Entrar",backToPatient:"← Voltar",
+    ptnTitle:"Acesso como paciente",ptnSub:"Digite seu numero de identificacao para acessar seu historico",staffLink:"Equipe medica / Administrador",patientEnter:"Entrar",backToPatient:"← Voltar",nameLbl:"Nome",emailLbl:"Email",passLbl:"Senha",orDivider:"ou",idPlaceholder:"N.º ID",lookupTitle:"Identificar paciente",lookupSub:"Digite o numero de identificacao para carregar o historico",lookupSearch:"Buscar",lookupSkip:"Continuar sem paciente registrado",
     dash:"Dashboard",triage:"Triagem",meds:"Meds",hist:"Historico",cola:"Fila",config:"Ajustes",prof:"Perfil",
     colaTitle:"Fila de espera",colaPending:"Pendentes",colaAttended:"Atendidos",colaMarkDone:"Atendido",colaUndone:"Pendente",colaEmpty:"Sem pacientes pendentes",colaShift:"pacientes no turno",colaOverdue:"VENCIDO",colaRemaining:"restantes",colaAgo:"ha",colaMin:"min",colaRefresh:"Atualizar",
     gcsTitle:"Escala de Glasgow",gcsSub:"Avaliacao do nivel de consciencia",gcsEye:"Abertura ocular",gcsVerbal:"Resposta verbal",gcsMotor:"Resposta motora",gcsSevLeve:"Leve",gcsSevMod:"Moderado",gcsSevGrave:"Grave",gcsApply:"Aplicar ao triage",gcsBtn:"Calcular Glasgow",gcsApplied:"GCS aplicado",
@@ -1952,7 +1964,7 @@ const L={
     defaultNotes:"Paciente nega alergias medicamentosas conhecidas e nao apresenta antecedentes patologicos de relevancia clinica no momento da avaliacao. Sem medicacao habitual em uso. Sem historico de cirurgias, hospitalizacoes recentes ou doencas cronicas diagnosticadas. Sem informacoes adicionais disponiveis que alterem o manejo inicial.",
   },
   fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
-    ptnTitle:"Acces patient",ptnSub:"Entrez votre numero d identification pour acceder a votre dossier",staffLink:"Personnel medical / Administrateur",patientEnter:"Acceder",backToPatient:"← Retour",
+    ptnTitle:"Acces patient",ptnSub:"Entrez votre numero d identification pour acceder a votre dossier",staffLink:"Personnel medical / Administrateur",patientEnter:"Acceder",backToPatient:"← Retour",nameLbl:"Nom",emailLbl:"Email",passLbl:"Mot de passe",orDivider:"ou",idPlaceholder:"N.º ID",lookupTitle:"Identifier le patient",lookupSub:"Entrez le numero d identification pour charger le dossier clinique",lookupSearch:"Rechercher",lookupSkip:"Continuer sans patient enregistre",
     dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historique",cola:"File",config:"Reglages",prof:"Profil",
     colaTitle:"File d attente",colaPending:"En attente",colaAttended:"Pris en charge",colaMarkDone:"Pris en charge",colaUndone:"En attente",colaEmpty:"Aucun patient en attente",colaShift:"patients ce quart",colaOverdue:"DEPASSE",colaRemaining:"restantes",colaAgo:"il y a",colaMin:"min",colaRefresh:"Actualiser",
     gcsTitle:"Echelle de Glasgow",gcsSub:"Evaluation quantitative de la conscience",gcsEye:"Ouverture des yeux",gcsVerbal:"Reponse verbale",gcsMotor:"Reponse motrice",gcsSevLeve:"Leger",gcsSevMod:"Modere",gcsSevGrave:"Grave",gcsApply:"Appliquer au triage",gcsBtn:"Calculer Glasgow",gcsApplied:"GCS applique",
@@ -2058,7 +2070,7 @@ const L={
     defaultNotes:"Le patient ne signale pas d'allergies medicamenteuses connues ni d'antecedents pathologiques cliniquement pertinents au moment de l'evaluation. Aucun traitement medicamenteux habituel en cours. Pas de chirurgies anterieures, d'hospitalisations recentes ni de maladies chroniques diagnostiquees. Aucune information contextuelle supplementaire disponible susceptible de modifier la prise en charge initiale.",
   },
   de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
-    ptnTitle:"Patientenzugang",ptnSub:"Geben Sie Ihre Identifikationsnummer ein",staffLink:"Medizinisches Personal / Administrator",patientEnter:"Eintreten",backToPatient:"← Zuruck",
+    ptnTitle:"Patientenzugang",ptnSub:"Geben Sie Ihre Identifikationsnummer ein",staffLink:"Medizinisches Personal / Administrator",patientEnter:"Eintreten",backToPatient:"← Zuruck",nameLbl:"Name",emailLbl:"E-Mail",passLbl:"Passwort",orDivider:"oder",idPlaceholder:"ID-Nummer",lookupTitle:"Patient identifizieren",lookupSub:"ID-Nummer eingeben um Krankenakte zu laden",lookupSearch:"Suchen",lookupSkip:"Ohne registrierten Patienten",
     dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Verlauf",cola:"Warteschlange",config:"Einstellungen",prof:"Profil",
     colaTitle:"Warteschlange",colaPending:"Wartend",colaAttended:"Behandelt",colaMarkDone:"Behandelt",colaUndone:"Wartend",colaEmpty:"Keine wartenden Patienten",colaShift:"Patienten dieser Schicht",colaOverdue:"UBERSCHRITTEN",colaRemaining:"verbleibend",colaAgo:"vor",colaMin:"min",colaRefresh:"Aktualisieren",
     gcsTitle:"Glasgow-Koma-Skala",gcsSub:"Quantitative Bewusstseinsbewertung",gcsEye:"Augenbewegung",gcsVerbal:"Verbale Reaktion",gcsMotor:"Motorische Reaktion",gcsSevLeve:"Leicht",gcsSevMod:"Maessig",gcsSevGrave:"Schwer",gcsApply:"Auf Triage anwenden",gcsBtn:"Glasgow berechnen",gcsApplied:"GCS angewendet",
@@ -2164,7 +2176,7 @@ const L={
     defaultNotes:"Der Patient berichtet keine bekannten Medikamentenallergien und keine klinisch relevanten pathologischen Vorerkrankungen zum Zeitpunkt der Beurteilung. Keine regelmaessige Medikation in Einnahme. Keine frueheren Operationen, kuerzliche Krankenhausaufenthalte oder diagnostizierte chronische Erkrankungen. Keine zusaetzlichen Kontextinformationen verfuegbar, die das initiale Management beeinflussen wuerden.",
   },
   ja:{sub:"インテリジェント医療システム",login:"ログイン",register:"登録",cont:"続ける",forgot:"パスワードを忘れた",google:"Googleで続ける",
-    ptnTitle:"患者アクセス",ptnSub:"IDを入力して病歴にアクセス",staffLink:"医療スタッフ / 管理者",patientEnter:"入る",backToPatient:"← 戻る",
+    ptnTitle:"患者アクセス",ptnSub:"IDを入力して病歴にアクセス",staffLink:"医療スタッフ / 管理者",patientEnter:"入る",backToPatient:"← 戻る",nameLbl:"名前",emailLbl:"メール",passLbl:"パスワード",orDivider:"または",idPlaceholder:"ID番号",lookupTitle:"患者を識別",lookupSub:"IDを入力して病歴を自動ロード",lookupSearch:"検索",lookupSkip:"未登録の患者で続ける",
     dash:"ダッシュボード",triage:"トリアージ",meds:"薬",hist:"履歴",cola:"待機列",config:"設定",prof:"プロフィール",
     colaTitle:"待機列",colaPending:"待機中",colaAttended:"対応済",colaMarkDone:"対応済",colaUndone:"待機中",colaEmpty:"待機患者なし",colaShift:"このシフトの患者",colaOverdue:"超過",colaRemaining:"残り",colaAgo:"前",colaMin:"分",colaRefresh:"更新",
     gcsTitle:"グラスゴー昏睡尺度",gcsSub:"意識レベルの定量評価",gcsEye:"開眼",gcsVerbal:"言語反応",gcsMotor:"運動反応",gcsSevLeve:"軽度",gcsSevMod:"中等度",gcsSevGrave:"重度",gcsApply:"トリアージに適用",gcsBtn:"Glasgow計算",gcsApplied:"GCS適用済",
@@ -2302,6 +2314,7 @@ function applyTrans(){
     forgotLink:"forgot",googleBtnTxt:"google",ptnBtnTitle:"ptnTitle",
     ptnBtnSub:"ptnSub",staffLink:"staffLink",rememberLbl:"rememberMe",
     patientLoginBtn:"patientEnter",authBackLink:"backToPatient",
+    lbName:"nameLbl",lbEmail:"emailLbl",lbPass:"passLbl",authDivOr:"orDivider",
     // Meds
     lbSearchDrug:"searchDrug",consultBtn:"consultAI",lbNewMed:"newMed",
     lbDose:"dose",lbFreq:"freq",lbHour:"hour",lbNotes:"notes",addMedBtn:"addMed",
@@ -2529,6 +2542,8 @@ async function doSignOut(){
   stopInactivityTimer();
   _patientHC=null;
   intDrugs=[];
+  _lastDrugInfo=null;
+  ["dr","ir"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML="";});
   if(_hcUnsub){_hcUnsub();_hcUnsub=null;}_hcCache={};
   if(CR==="paciente"){CR=null;CU=null;showAuthScreen();return;}
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
@@ -3582,27 +3597,45 @@ function _showPatientLookup(){
   const c=document.getElementById("trc");if(!c)return;
   document.getElementById("pg").style.width="0%";
   _updatePatientHCStrip();
+  const tx=L[CL]||L.es;
   c.innerHTML=`<div class="lookup-wrap">
     <div class="card">
       <div class="lookup-icon-wrap">
         <span class="lookup-ic">🗂️</span>
-        <div class="lookup-title">Identificar paciente</div>
-        <div class="lookup-sub">Ingresa el número de identificación para cargar<br>la historia clínica automáticamente</div>
+        <div class="lookup-title">${tx.lookupTitle||"Identificar paciente"}</div>
+        <div class="lookup-sub">${tx.lookupSub||"Ingresa el número de identificación para cargar la historia clínica"}</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:4px;animation:fadeUp .4s .2s both">
         <input class="fi" id="triagePatientId" type="text" inputmode="numeric"
-               placeholder="Número de identificación"
+               placeholder="${tx.idPlaceholder||"N.º ID"}"
                style="flex:1;min-width:0;width:auto;text-align:center;letter-spacing:2px;font-size:1rem;font-family:'JetBrains Mono',monospace"
                onkeydown="if(event.key==='Enter')_searchPatientForTriage()">
         <button id="triageSearchBtn"
                 style="flex:0 0 auto;width:auto;padding:0 18px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.88rem;cursor:pointer;font-family:'Familjen Grotesk',sans-serif;white-space:nowrap;touch-action:manipulation;transition:all .22s"
-                onclick="_searchPatientForTriage()">Buscar</button>
+                onclick="_searchPatientForTriage()">${tx.lookupSearch||"Buscar"}</button>
       </div>
       <div id="triageLookupResult" style="margin-top:12px"></div>
-      <hr class="lookup-divider">
-      <button class="bsec" style="width:100%;font-size:.8rem;color:var(--mu)" onclick="_skipPatientLookup()">
-        Continuar con paciente no registrado →
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-top:10px">
+      <button onclick="openPrehNotif()" class="triage-quick-btn" style="animation:fadeUp .4s .12s both;border-color:rgba(255,160,64,.2)">
+        <span class="triage-quick-ic">🚑</span>
+        <div class="triage-quick-body">
+          <div class="triage-quick-title" style="color:#ffa040">${tx.prehTitle||"Pre-hospitalario"}</div>
+          <div class="triage-quick-sub">${tx.prehSub||"Aviso de llegada al hospital"}</div>
+        </div>
+        <span class="triage-quick-arrow">›</span>
       </button>
+      <button onclick="openMCISetup()" id="lookupMCIBtn" class="triage-quick-btn" style="animation:fadeUp .4s .2s both;border-color:rgba(255,128,96,.2)">
+        <span class="triage-quick-ic">⚠️</span>
+        <div class="triage-quick-body">
+          <div class="triage-quick-title" style="color:#ff8060">${tx.mciMode||"MCI"}</div>
+          <div class="triage-quick-sub">${tx.mciSetupSub||"Incidente de multiples victimas — triage START rapido"}</div>
+        </div>
+        <span class="triage-quick-arrow">›</span>
+      </button>
+    </div>
+    <div style="text-align:center;margin-top:14px;animation:fadeUp .4s .28s both">
+      <span style="cursor:pointer;font-size:.78rem;color:var(--mu);text-underline-offset:3px;text-decoration:underline" onclick="_skipPatientLookup()">${tx.lookupSkip||"Continuar con paciente no registrado"} →</span>
     </div>
   </div>`;
   setTimeout(()=>document.getElementById("triagePatientId")?.focus(),120);
@@ -4063,6 +4096,7 @@ NINO: ${TD.enino||"?"} anos. Usa rangos pediatricos.`:"";
     if(nts)hcExtra+=`\nNotas previas: ${nts}`;
     hcExtra+="\nConsidera esta historia clínica en tu clasificación y alertas.";
   }
+  const _lr=({es:'español',en:'English',pt:'português',fr:'français',de:'Deutsch',ja:'日本語'})[CL]||'español';
   const prompt=`Experto triage hospitalario ESI/Manchester.${pedN}
 PACIENTE: ${tM[TD.tipo]||TD.tipo}
 Motivo: ${mM[TD.motivo]||TD.motivo}
@@ -4070,7 +4104,7 @@ Consciencia: ${cM[TD.consc]||TD.consc}
 Vitales: ${vtx}
 Dolor: ${TD.dolor!==undefined?TD.dolor:"N/A"}/10
 Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${notasExtra}${hcExtra}
-SOLO JSON sin backticks:
+Responde con todos los valores textuales en ${_lr}. SOLO JSON sin backticks:
 {"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"..."}`;
   try{
     const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:600,messages:[{role:"user",content:prompt}]})});
@@ -4264,7 +4298,8 @@ async function buscarDrug(){
     hcCtx+=`\nDetermina si este medicamento está CONTRAINDICADO para este paciente (alergia cruzada, interacción grave, antecedente clínico relevante). Pon "contraindicado_paciente":true si hay contraindicación real, false si es seguro. En "alerta_paciente" explica el motivo detallado si contraindicado_paciente es true, o deja vacío si es seguro.`;
   }
   try{
-    const prompt=`Informacion farmacologica sobre: "${nm}".${hcCtx} SOLO JSON sin backticks:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"...","alerta_paciente":"","contraindicado_paciente":false}`;
+    const _lr2=({es:'español',en:'English',pt:'português',fr:'français',de:'Deutsch',ja:'日本語'})[CL]||'español';
+    const prompt=`Informacion farmacologica sobre: "${nm}".${hcCtx} Responde valores en ${_lr2}. SOLO JSON sin backticks:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"...","alerta_paciente":"","contraindicado_paciente":false}`;
     const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:900,messages:[{role:"user",content:prompt}]})});
     const d=await r.json();
     const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
@@ -4373,8 +4408,8 @@ async function checkInt(){
   if(intDrugs.length<2)return;
   document.getElementById("ir").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Verificando interacciones...</div></div>`;
   try{
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. SOLO JSON sin backticks:
-{"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]})});
+    const _lr3=({es:'español',en:'English',pt:'português',fr:'français',de:'Deutsch',ja:'日本語'})[CL]||'español';
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. Responde valores en ${_lr3}. SOLO JSON sin backticks:\n{"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]})});
     const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     const cm={BAJO:"gn",MODERADO:"yw",ALTO:"rd",CONTRAINDICADO:"rd"};const im={BAJO:"✅",MODERADO:"⚠️",ALTO:"🚨",CONTRAINDICADO:"⛔"};
     document.getElementById("ir").innerHTML=`<div class="card"><div class="ib ${cm[inf.nivel_riesgo]||"yw"}" style="margin-bottom:10px"><div class="ibl">${im[inf.nivel_riesgo]||"⚠️"} Riesgo: ${inf.nivel_riesgo}</div><div class="ibt">${inf.resumen}</div></div>${(inf.interacciones||[]).map(i=>`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-weight:600;font-size:.8rem;margin-bottom:3px">💊 ${i.par}</div><div style="font-size:.76rem;color:var(--mu)">${i.descripcion}</div></div>`).join("")}<div class="ib cy" style="margin-top:9px"><div class="ibl">Recomendacion</div><div class="ibt">${inf.recomendacion}</div></div>${inf.consultar_medico?`<div class="wnote" style="color:var(--rd);border-color:rgba(255,58,92,.2);background:var(--rd-a)">Consulta a tu medico antes de combinar estos medicamentos.</div>`:""}</div>`;
