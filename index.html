@@ -3087,11 +3087,12 @@ function _haversine(lat1,lon1,lat2,lon2){
 }
 
 async function _fetchOverpass(query){
+  const body='data='+encodeURIComponent(query);
   for(const url of _OVERPASS_ENDPOINTS){
     try{
       const r=await Promise.race([
-        fetch(url,{method:"POST",body:query,headers:{"Content-Type":"text/plain"}}),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),20000))
+        fetch(url,{method:"POST",body,headers:{"Content-Type":"application/x-www-form-urlencoded"}}),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),15000))
       ]);
       if(r.ok){const d=await r.json();return d;}
     }catch(e){continue;}
@@ -3116,8 +3117,8 @@ function searchNearby(){
   navigator.geolocation.getCurrentPosition(async pos=>{
     const {latitude:lat,longitude:lon,accuracy}=pos.coords;
     const eps=(document.getElementById("nearbyEpsInput")?.value||"").trim();
-    const radius=12000;
-    const query=`[out:json][timeout:30];(node["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors|health_centre|social_facility)$"](around:${radius},${lat},${lon});way["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors|health_centre|social_facility)$"](around:${radius},${lat},${lon});node["healthcare"](around:${radius},${lat},${lon});way["healthcare"](around:${radius},${lat},${lon}););out center 40;`;
+    const radius=6000;
+    const query=`[out:json][timeout:25];(node["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors|health_centre)$"](around:${radius},${lat},${lon});way["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors|health_centre)$"](around:${radius},${lat},${lon});node["healthcare"](around:${radius},${lat},${lon}););out center 30;`;
     status.innerHTML=`<span class="sp"></span>&nbsp;${t("nearbySearching")||"Buscando..."}`;
     try{
       const data=await _fetchOverpass(query);
@@ -3132,12 +3133,12 @@ function searchNearby(){
       if(btn){btn.disabled=false;btn.textContent=t("nearbyBtn")||"Buscar";}
       renderNearby(lat,lon,elements);
     }catch(e){
-      status.textContent="❌ "+(t("nearbyError")||"Error al buscar. Intente de nuevo.");
+      status.innerHTML=`❌ Error al buscar. <a href="https://www.google.com/maps/search/hospital+cl%C3%ADnica/@${lat},${lon},14z" target="_blank" style="color:var(--cy)">Abrir Google Maps →</a>`;
       if(btn){btn.disabled=false;btn.textContent=t("nearbyBtn")||"Buscar";}
     }
   },err=>{
     const msgs={1:"Permiso de ubicación denegado.",2:"Ubicación no disponible.",3:"Tiempo de espera agotado."};
-    status.textContent="❌ "+(msgs[err.code]||t("nearbyError")||"No se pudo obtener la ubicacion.");
+    status.textContent="❌ "+(msgs[err.code]||"No se pudo obtener la ubicación.");
     if(btn){btn.disabled=false;btn.textContent=t("nearbyBtn")||"Buscar";}
   },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
 }
@@ -3146,36 +3147,48 @@ function renderNearby(lat,lon,elements){
   const status=document.getElementById("nearbyStatus");
   const list=document.getElementById("nearbyList");
   const mapEl=document.getElementById("nearbyMap");
-  if(!elements.length){status.textContent="📍 "+(t("nearbyNone")||"Sin resultados cercanos.");list.innerHTML="";mapEl.style.display="none";return;}
-  const shown=elements.slice(0,12);
-  status.textContent=`📍 ${shown.length} ${t("nearbyFoundN")||"centros encontrados"}`;
-  mapEl.style.display="block";
-  if(_nearbyMap){_nearbyMap.remove();_nearbyMap=null;}
-  if(window.L){
-    _nearbyMap=L.map("nearbyMap",{zoomControl:true}).setView([lat,lon],14);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OSM",maxZoom:19}).addTo(_nearbyMap);
-    const userIcon=L.divIcon({html:"<div style='background:#00c8f0;border:3px solid #fff;border-radius:50%;width:16px;height:16px;box-shadow:0 0 8px #00c8f0'></div>",className:"",iconSize:[16,16],iconAnchor:[8,8]});
-    L.marker([lat,lon],{icon:userIcon}).addTo(_nearbyMap).bindPopup("📍 Tu ubicación");
-    const amenityIcon={"hospital":"🏥","clinic":"🏨","pharmacy":"💊","health_post":"🏥","doctors":"👨‍⚕️"};
-    shown.forEach(e=>{
-      const elat=e.lat||e.center?.lat;const elon=e.lon||e.center?.lon;
-      if(!elat||!elon)return;
-      const name=e.tags?.name||e.tags?.["name:es"]||"Centro de salud";
-      const am=e.tags?.amenity||"hospital";
-      const ic=amenityIcon[am]||"🏥";
-      L.marker([elat,elon]).addTo(_nearbyMap).bindPopup(`<b>${ic} ${name}</b><br><small>${am}</small>`);
-    });
-    setTimeout(()=>_nearbyMap.invalidateSize(),200);
+  const gmBase=`https://www.google.com/maps/search/hospital+cl%C3%ADnica/@${lat},${lon},14z`;
+  if(!elements.length){
+    status.innerHTML=`📍 ${t("nearbyNone")||"Sin resultados."} <a href="${gmBase}" target="_blank" style="color:var(--cy);font-size:.75rem">Ver en Google Maps →</a>`;
+    list.innerHTML="";if(mapEl)mapEl.style.display="none";return;
   }
-  const amenityIcon={"hospital":"🏥","clinic":"🏨","pharmacy":"💊","health_post":"🏥","doctors":"👨‍⚕️"};
+  const shown=elements.slice(0,12);
+  status.innerHTML=`📍 ${shown.length} ${t("nearbyFoundN")||"centros encontrados"} &nbsp;<a href="${gmBase}" target="_blank" style="color:var(--cy);font-size:.72rem;opacity:.8">Google Maps →</a>`;
+  if(mapEl){
+    mapEl.style.display="block";
+    if(_nearbyMap){try{_nearbyMap.remove();}catch(er){}; _nearbyMap=null;}
+    if(window.L){
+      try{
+        _nearbyMap=L.map("nearbyMap",{zoomControl:true,attributionControl:false}).setView([lat,lon],14);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(_nearbyMap);
+        const uIcon=L.divIcon({html:"<div style='background:#00c8f0;border:3px solid #fff;border-radius:50%;width:14px;height:14px;box-shadow:0 0 8px #00c8f0'></div>",className:"",iconSize:[14,14],iconAnchor:[7,7]});
+        L.marker([lat,lon],{icon:uIcon}).addTo(_nearbyMap).bindPopup("📍 Tu ubicación");
+        const aic={"hospital":"🏥","clinic":"🏨","pharmacy":"💊","health_post":"🏥","doctors":"👨‍⚕️","health_centre":"🏥"};
+        shown.forEach(e=>{
+          const elat=e.lat||e.center?.lat;const elon=e.lon||e.center?.lon;
+          if(!elat||!elon)return;
+          const name=e.tags?.name||"Centro de salud";
+          const am=e.tags?.amenity||"hospital";
+          L.marker([elat,elon]).addTo(_nearbyMap).bindPopup(`<b>${aic[am]||"🏥"} ${name}</b>`);
+        });
+        setTimeout(()=>{try{_nearbyMap.invalidateSize();}catch(er){}},300);
+      }catch(er){
+        mapEl.innerHTML=`<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=${lon-.04},${lat-.04},${lon+.04},${lat+.04}&layer=mapnik&marker=${lat},${lon}" style="width:100%;height:100%;border:none" loading="lazy"></iframe>`;
+      }
+    }else{
+      mapEl.innerHTML=`<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=${lon-.04},${lat-.04},${lon+.04},${lat+.04}&layer=mapnik&marker=${lat},${lon}" style="width:100%;height:100%;border:none" loading="lazy"></iframe>`;
+    }
+  }
+  const aic={"hospital":"🏥","clinic":"🏨","pharmacy":"💊","health_post":"🏥","doctors":"👨‍⚕️","health_centre":"🏥"};
   list.innerHTML=shown.map(e=>{
     const name=e.tags?.name||"Centro de salud";
     const addr=e.tags?.["addr:street"]?`${e.tags["addr:street"]} ${e.tags["addr:housenumber"]||""}`.trim():"";
-    const am=e.tags?.amenity||"hospital";
-    const ic=amenityIcon[am]||"🏥";
+    const am=e.tags?.amenity||e.tags?.healthcare||"hospital";
     const dist=e._dist<1000?`${Math.round(e._dist)}m`:`${(e._dist/1000).toFixed(1)}km`;
     const phone=e.tags?.phone||e.tags?.["contact:phone"]||"";
-    return`<div class="near-item"><span class="near-icon">${ic}</span><div style="flex:1;min-width:0"><div class="near-name">${name}</div>${addr?`<div class="near-addr">${addr}</div>`:""}<div style="display:flex;gap:8px;align-items:center;margin-top:2px">${phone?`<span style="font-size:.65rem;color:var(--mu)">📞 ${phone}</span>`:""}</div></div><span class="near-dist">${dist}</span></div>`;
+    const elat=e.lat||e.center?.lat;const elon=e.lon||e.center?.lon;
+    const gmDir=elat&&elon?`https://www.google.com/maps/dir/?api=1&destination=${elat},${elon}`:"";
+    return`<div class="near-item"${gmDir?` onclick="window.open('${gmDir}','_blank')" style="cursor:pointer"`:""}><span class="near-icon">${aic[am]||"🏥"}</span><div style="flex:1;min-width:0"><div class="near-name">${name}</div>${addr?`<div class="near-addr">${addr}</div>`:""}<div style="display:flex;gap:8px;align-items:center;margin-top:2px">${phone?`<span style="font-size:.65rem;color:var(--mu)">📞 ${phone}</span>`:""}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span class="near-dist">${dist}</span>${gmDir?`<span style="font-size:.6rem;color:var(--cy);opacity:.75">Maps →</span>`:""}</div></div>`;
   }).join("");
 }
 
@@ -3904,6 +3917,13 @@ function rTriage(){
   if(TS>=tot){if(_lastResult){rResult(_lastResult);return;}rAnalyzing();return;}
   _updatePatientHCStrip();
   const s=steps[TS];const c=document.getElementById("trc");c.innerHTML="";
+  if(TS===0&&CR!=="paciente"){
+    const bk=document.createElement("button");
+    bk.style.cssText="display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:.82rem;font-family:'Familjen Grotesk',sans-serif;cursor:pointer;padding:8px 14px;margin-bottom:10px;touch-action:manipulation;font-weight:600;";
+    bk.textContent=t("backToPatient")||"← Volver";
+    bk.onclick=()=>_clearTriagePatient();
+    c.appendChild(bk);
+  }
   const st=document.createElement("div");st.className="stag";st.textContent=`${t("step")||"Paso"} ${TS+1} ${t("of")||"de"} ${tot}`;c.appendChild(st);
   if(TD.tipo==="nino"||TD.tipo==="adolescente"){const n=document.createElement("div");n.className="cnote";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">👨‍👩‍👦</span><span><strong>${t("pedNote")||"Paciente pediatrico / adolescente"}</strong> — ${t("pedNoteSub")||"Completar con padre, madre o tutor."}</span>`;c.appendChild(n);}
   if(TD.tipo==="movilidad"){const n=document.createElement("div");n.className="cnote";n.style.cssText="background:rgba(255,184,48,.08);border:1px solid rgba(255,184,48,.28);color:#ffb830;";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">♿</span><span><strong>${t("mobilityNote")||"Se requiere enfermero o tutor presente"}</strong><br><span style="font-size:.72rem;opacity:.85">${t("mobilityNoteSub")||"Este paciente necesita asistencia durante la evaluacion."}</span></span>`;c.appendChild(n);}
