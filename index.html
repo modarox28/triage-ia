@@ -636,8 +636,17 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 .notes-warn{font-size:.68rem;color:var(--yw);font-family:"JetBrains Mono",monospace;margin-top:6px;border-left:2px solid var(--yw);padding-left:8px;line-height:1.4;display:none;}
 .notes-warn.on{display:block;animation:fadeUp .2s ease;}
 /* SHARE RESULT BUTTON */
-.btn-share{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:11px;background:transparent;border:1.5px solid var(--cy);border-radius:9px;color:var(--cy);font-family:"Familjen Grotesk",sans-serif;font-size:.85rem;cursor:pointer;touch-action:manipulation;margin-bottom:8px;transition:all .2s;}
-.btn-share:hover,.btn-share:active{background:var(--cy-a);}
+.btn-share{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex:1;padding:14px 8px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:14px;color:var(--tx);font-family:"Familjen Grotesk",sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;cursor:pointer;touch-action:manipulation;transition:all .2s;}
+.btn-share:hover,.btn-share:active{border-color:var(--cy);color:var(--cy);background:var(--cy-a);}
+.btn-share .bsi{font-size:1.5rem;line-height:1;}
+.btn-pdf{border-color:rgba(255,184,48,.35);color:var(--yw);}
+.btn-pdf:hover,.btn-pdf:active{border-color:var(--yw);background:var(--yw-a);}
+/* Presence bar */
+.presence-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:9px 12px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px;}
+.presence-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg2);border:1px solid rgba(0,224,122,.25);border-radius:20px;font-size:.67rem;font-weight:600;color:var(--gn);}
+.presence-chip .pdot{width:6px;height:6px;border-radius:50%;background:var(--gn);flex-shrink:0;animation:pulse2 1.5s ease-in-out infinite;}
+/* Cola patient number */
+.cola-num{font-family:"JetBrains Mono",monospace;font-size:.6rem;font-weight:700;color:var(--mu);background:var(--bg3);border:1px solid var(--bd);border-radius:5px;padding:1px 5px;}
 /* ATTENTION TIMER CHIP */
 .attn-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.7rem;font-family:"JetBrains Mono",monospace;font-weight:700;letter-spacing:.5px;margin-top:6px;}
 .attn-chip.now{background:rgba(255,58,92,.15);color:var(--rd);border:1px solid rgba(255,58,92,.3);animation:pulse .9s infinite alternate;}
@@ -1074,9 +1083,15 @@ select{padding-right:32px;}
     <div class="body" id="mainBody">
       <!-- DASHBOARD -->
       <div class="sc" id="sc-dash">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div id="dashRoleLabel" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;color:var(--tx)"></div>
+          <span id="dashRoleBadge"></span>
+        </div>
+        <div class="clabel">Estadísticas del turno</div>
         <div class="stat-grid" id="statGrid"></div>
-        <button class="bsec" id="handoffBtn" style="width:100%;margin-bottom:10px;font-size:.82rem" onclick="openHandoff()">📋 <span id="handoffBtnTxt">Resumen de turno</span></button>
-        <div class="card"><div class="clabel" id="lbRecentT">Ultimos triages</div><div id="recentT"></div></div>
+        <button class="bsec" id="handoffBtn" style="width:100%;margin-bottom:14px;font-size:.82rem" onclick="openHandoff()">📋 <span id="handoffBtnTxt">Resumen de turno</span></button>
+        <div class="clabel">Actividad reciente</div>
+        <div class="card"><div id="recentT"></div></div>
         <div class="card" id="chartCard" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div class="clabel" style="margin:0" id="lbChartTitle">Estadisticas</div>
@@ -1106,6 +1121,7 @@ select{padding-right:32px;}
           <div id="nearbyMap" style="height:220px;border-radius:12px;overflow:hidden;background:var(--bg3)"></div>
           <div id="nearbyList" style="margin-top:10px"></div>
         </div>
+        <div class="clabel" id="lbUserMgmtSec" style="display:none">Administración</div>
         <div class="card" id="userMgmtCard"><div class="clabel" id="lbUserMgmt">Gestion de usuarios</div><div id="userList"></div></div>
       </div>
       <!-- TRIAGE -->
@@ -1307,6 +1323,7 @@ select{padding-right:32px;}
           <button class="hist-flt" data-cf="pending" onclick="setColaFilter('pending',this)" id="colaPendingBtn">Pendientes</button>
           <button class="hist-flt" data-cf="done" onclick="setColaFilter('done',this)">Atendidos</button>
         </div>
+        <div id="presenceBar" style="display:none"></div>
         <div id="colaList"></div>
       </div>
       <!-- CONFIGURACION -->
@@ -2403,6 +2420,7 @@ async function onEmailBlur(){
 }
 
 async function doSignOut(){
+  _clearPresence();
   stopInactivityTimer();
   if(CR==="paciente"){showAuthScreen();return;}
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
@@ -2730,7 +2748,7 @@ function showApp(){
   const def={admin:"dash",admin_hosp:"dash",medico:"triage",paciente:"meds"}[CR]||"triage";
   navigateTo(def);
   showWelcome();
-  if(CR!=="paciente")startInactivityTimer();
+  if(CR!=="paciente"){startInactivityTimer();_initPresence();}
 }
 
 function showWelcome(){
@@ -2836,6 +2854,7 @@ function navigateTo(id,idx){
   if(id==="hc")loadHC();
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
+  if(id==="meds")setTimeout(_showDefaultDrugs,80);
   if(id!=="cola")_stopColaTimer();
   document.getElementById("mainBody").scrollTop=0;
   // Show FABs only on triage tab
@@ -2963,8 +2982,8 @@ function searchNearby(){
   navigator.geolocation.getCurrentPosition(async pos=>{
     const {latitude:lat,longitude:lon,accuracy}=pos.coords;
     const eps=(document.getElementById("nearbyEpsInput")?.value||"").trim();
-    const radius=6000;
-    const query=`[out:json][timeout:25];(node["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors)$"](around:${radius},${lat},${lon});way["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors)$"](around:${radius},${lat},${lon}););out center 20;`;
+    const radius=12000;
+    const query=`[out:json][timeout:30];(node["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors|health_centre|social_facility)$"](around:${radius},${lat},${lon});way["amenity"~"^(hospital|clinic|pharmacy|health_post|doctors|health_centre|social_facility)$"](around:${radius},${lat},${lon});node["healthcare"](around:${radius},${lat},${lon});way["healthcare"](around:${radius},${lat},${lon}););out center 40;`;
     status.innerHTML=`<span class="sp"></span>&nbsp;${t("nearbySearching")||"Buscando..."}`;
     try{
       const data=await _fetchOverpass(query);
@@ -3029,25 +3048,37 @@ function renderNearby(lat,lon,elements){
 // DASHBOARD
 async function loadDash(){
   if(!FB||!CU||CR==="paciente")return;
+  // Role header
+  const roleLabels={admin:"👑 Panel de Administrador",admin_hosp:"🏥 Panel Hospitalario",medico:"👨‍⚕️ Mi Panel"};
+  const rl=document.getElementById("dashRoleLabel");if(rl)rl.textContent=roleLabels[CR]||"Dashboard";
+  const rb=document.getElementById("dashRoleBadge");if(rb)rb.innerHTML=`<span style="font-size:.62rem;padding:3px 9px;border-radius:10px;background:var(--cy-a);color:var(--cy);font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.5px">${(CR||"").toUpperCase()}</span>`;
+  // Show/hide admin section
+  const adminSec=document.getElementById("lbUserMgmtSec");if(adminSec)adminSec.style.display=(CR==="admin"||CR==="admin_hosp")?"block":"none";
   try{
-    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(50)));
-    const ro=snap.docs.filter(d=>d.data().clasificacion==="ROJO").length;
-    const am=snap.docs.filter(d=>d.data().clasificacion==="AMARILLO").length;
-    const ve=snap.docs.filter(d=>d.data().clasificacion==="VERDE").length;
+    const isAdmin=CR==="admin"||CR==="admin_hosp";
+    const snapQ=isAdmin
+      ? FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(50))
+      : FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(50));
+    const snap=await FB.getDocs(snapQ);
+    const myDocs=isAdmin?snap.docs:snap.docs.filter(d=>d.data().userId===CU.uid);
+    const ro=myDocs.filter(d=>d.data().clasificacion==="ROJO").length;
+    const am=myDocs.filter(d=>d.data().clasificacion==="AMARILLO").length;
+    const ve=myDocs.filter(d=>d.data().clasificacion==="VERDE").length;
     document.getElementById("statGrid").innerHTML=`
-      <div class="stat-card"><div class="stat-num">${snap.size}</div><div class="stat-lbl">${t("statTotal")||"Total"}</div></div>
+      <div class="stat-card"><div class="stat-num">${myDocs.length}</div><div class="stat-lbl">${t("statTotal")||"Total"}</div></div>
       <div class="stat-card"><div class="stat-num" style="color:var(--rd)">${ro}</div><div class="stat-lbl">🔴 ${t("statCritical")||"Criticos"}</div></div>
       <div class="stat-card"><div class="stat-num" style="color:var(--yw)">${am}</div><div class="stat-lbl">🟡 ${t("statUrgent")||"Urgentes"}</div></div>
       <div class="stat-card"><div class="stat-num" style="color:var(--gn)">${ve}</div><div class="stat-lbl">🟢 ${t("statStable")||"Estables"}</div></div>`;
     const loc3={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
     const mMD={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
-    const rows=snap.docs.slice(0,5).map(d=>{
+    const rows=myDocs.slice(0,5).map(d=>{
       const dt=d.data();const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
       const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc3,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
-      return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-size:.82rem;font-weight:600">${mMD[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}</div></div></div>`;
+      const quien=dt.userName?`<span style="font-size:.62rem;color:var(--cy);margin-left:4px">· ${dt.userName}</span>`:"";
+      return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-size:.82rem;font-weight:600">${mMD[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}${quien}</div></div></div>`;
     }).join("");
     document.getElementById("recentT").innerHTML=rows||`<div class="empty"><div class="etx">${t("noData")||"Sin triages aun."}</div></div>`;
-    _chartData=snap.docs.map(d=>d.data());
+    _chartData=myDocs.map(d=>d.data());
     buildChart();
     if(CR==="admin"||CR==="medico"||CR==="admin_hosp"){
       const users=await FB.getDocs(FB.collection(FB.db,"users"));
@@ -3328,7 +3359,12 @@ function voz(inp,btn){
 function ss(n){
   ["bs","ms","al","in"].forEach(x=>{document.getElementById("ms-"+x).classList.remove("on");document.getElementById("st-"+x).classList.remove("on");});
   document.getElementById("ms-"+n).classList.add("on");document.getElementById("st-"+n).classList.add("on");
-  if(n==="al")rRL();if(n==="ms")rML();
+  if(n==="al")rRL();if(n==="ms")rML();if(n==="bs")_showDefaultDrugs();
+}
+function _showDefaultDrugs(){
+  const dr=document.getElementById("dr");if(!dr||dr.innerHTML.trim())return;
+  const cmn=["Ibuprofeno","Paracetamol","Amoxicilina","Metformina","Atorvastatina","Omeprazol","Losartán","Aspirina","Diazepam","Furosemida","Captopril","Salbutamol","Adrenalina","Morfina","Metronidazol","Ciprofloxacino"];
+  dr.innerHTML=`<div class="card"><div class="clabel">Consultas frecuentes</div><div style="display:flex;flex-wrap:wrap;gap:8px">${cmn.map(m=>`<button class="opt" style="font-size:.75rem;padding:7px 12px" onclick="document.getElementById('di').value='${m}';buscarDrug()">${m}</button>`).join("")}</div></div>`;
 }
 
 // TRIAGE STEPS
@@ -3380,7 +3416,7 @@ function rTriage(){
   if(_mciActive){_renderMCITriage();return;}
   const steps=aSteps();const tot=steps.length;
   document.getElementById("pg").style.width=((TS/tot)*100)+"%";
-  if(TS>=tot){rAnalyzing();return;}
+  if(TS>=tot){if(_lastResult){rResult(_lastResult);return;}rAnalyzing();return;}
   const s=steps[TS];const c=document.getElementById("trc");c.innerHTML="";
   const st=document.createElement("div");st.className="stag";st.textContent=`${t("step")||"Paso"} ${TS+1} ${t("of")||"de"} ${tot}`;c.appendChild(st);
   if(TD.tipo==="nino"||TD.tipo==="adolescente"){const n=document.createElement("div");n.className="cnote";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">👨‍👩‍👦</span><span><strong>${t("pedNote")||"Paciente pediatrico / adolescente"}</strong> — ${t("pedNoteSub")||"Completar con padre, madre o tutor."}</span>`;c.appendChild(n);}
@@ -3630,9 +3666,9 @@ function rResult(r){
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
     <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${a}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
-    <div style="display:flex;gap:8px;animation:fadeUp .4s .2s both">
-      <button class="btn-share" onclick="shareResult()" style="flex:1">📤 Compartir</button>
-      <button class="btn-share" onclick="exportTriagePDF()" style="flex:0 0 auto;padding:0 18px">📄 PDF</button>
+    <div style="display:flex;gap:10px;margin-top:6px;animation:fadeUp .4s .2s both">
+      <button class="btn-share" onclick="shareResult()"><span class="bsi">📤</span>Compartir</button>
+      <button class="btn-share btn-pdf" onclick="exportTriagePDF()"><span class="bsi">📄</span>Exportar PDF</button>
     </div>
     <button class="bsec" onclick="resetT()" style="animation:fadeUp .4s .3s both">← ${t("newPatient")||"Nuevo paciente"}</button>`;
 }
@@ -3650,7 +3686,9 @@ function shareResult(){
   const elapsedTxt=r.elapsed!=null?`\nDuración triage: ${Math.floor(r.elapsed/60)}m ${r.elapsed%60}s`:"";
   const text=`🏥 RESULTADO DE TRIAGE — MedIA Suite\n${"─".repeat(35)}\n${ic} ${r.clasificacion} · ${tM2[r.tipo]||r.tipo||""}\nMotivo: ${mM2[r.motivo]||r.motivo||""} · ${ts}${elapsedTxt}\n${"─".repeat(35)}\n📋 Analisis:\n${r.justificacion||""}\n${"─".repeat(35)}\n✅ Acciones:\n${acciones}\n${"─".repeat(35)}\nGenerado con MedIA Suite`;
   if(navigator.share){
-    navigator.share({title:"Resultado de Triage",text}).catch(()=>{});
+    navigator.share({title:"Resultado de Triage — MedIA Suite",text}).catch(()=>{
+      navigator.clipboard?.writeText(text).then(()=>toast("Copiado al portapapeles")).catch(()=>{});
+    });
   }else{
     navigator.clipboard?.writeText(text).then(()=>toast("Resultado copiado al portapapeles")).catch(()=>toast("No se pudo compartir"));
   }
@@ -4260,6 +4298,38 @@ function toggleExplain(i){const el=document.getElementById("explain-"+i);if(el)e
 // COLA DE PACIENTES
 // ══════════════════════════════════════
 let _colaData=[], _colaFilter="all", _colaInterval=null, _colaTimerInterval=null;
+let _presenceInterval=null,_presenceUnsub=null;
+function _initPresence(){
+  if(!FB||!CU)return;
+  const ref=FB.doc(FB.db,"presence",CU.uid);
+  FB.setDoc(ref,{name:uName(),role:CR||"medico",email:CU.email||"",online:true,lastSeen:FB.serverTimestamp()},{merge:true}).catch(()=>{});
+  if(_presenceInterval)clearInterval(_presenceInterval);
+  _presenceInterval=setInterval(()=>{if(FB&&CU)FB.setDoc(ref,{lastSeen:FB.serverTimestamp(),online:true},{merge:true}).catch(()=>{});},55000);
+  if(_presenceUnsub)_presenceUnsub();
+  const q=FB.query(FB.collection(FB.db,"presence"),FB.orderBy("lastSeen","desc"),FB.limit(25));
+  _presenceUnsub=FB.onSnapshot(q,snap=>{
+    const now=Date.now();
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>{
+      if(!d.online)return false;
+      if(d.id===CU?.uid)return false;
+      const last=d.lastSeen?.toMillis?.()??0;
+      return(now-last)<180000; // visible si activo en los últimos 3 min
+    });
+    _renderPresence(docs);
+  },()=>{});
+}
+function _clearPresence(){
+  if(_presenceInterval){clearInterval(_presenceInterval);_presenceInterval=null;}
+  if(_presenceUnsub){_presenceUnsub();_presenceUnsub=null;}
+  if(FB&&CU)FB.setDoc(FB.doc(FB.db,"presence",CU.uid),{online:false,lastSeen:FB.serverTimestamp()},{merge:true}).catch(()=>{});
+}
+function _renderPresence(docs){
+  const bar=document.getElementById("presenceBar");if(!bar)return;
+  if(!docs.length){bar.style.display="none";bar.innerHTML="";return;}
+  const rl={admin:"Admin",admin_hosp:"Hosp",medico:"Médico",paciente:"Pac"};
+  bar.style.display="flex";bar.className="presence-bar";
+  bar.innerHTML=`<div style="font-size:.62rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:1px;width:100%;margin-bottom:2px">🟢 Conectados ahora (${docs.length})</div>${docs.map(d=>`<div class="presence-chip"><span class="pdot"></span>${d.name||d.email?.split("@")[0]||"Usuario"}<span style="font-size:.55rem;opacity:.65;margin-left:2px">${rl[d.role]||""}</span></div>`).join("")}`;
+}
 
 const COLA_DEADLINE={ROJO:15,AMARILLO:30,VERDE:120}; // minutos
 
@@ -4351,7 +4421,7 @@ function _renderCola(){
     return;
   }
 
-  listEl.innerHTML=filtered.map(d=>{
+  listEl.innerHTML=filtered.map((d,_qi)=>{
     const cc=ccM[d.clasificacion]||"ve";
     const ic=icM[d.clasificacion]||"⚪";
     const ts=d.createdAt?.toDate?.()??new Date(0);
@@ -4359,6 +4429,7 @@ function _renderCola(){
     const deadlineMin=COLA_DEADLINE[d.clasificacion]??30;
     const remainMin=deadlineMin-elapsedMin;
     const isDone=!!d.atendido;
+    const patNum=_qi+1;
 
     let dlClass="ok",dlLabel="";
     if(!isDone){
@@ -4375,6 +4446,7 @@ function _renderCola(){
       <div class="cola-bar2 ${cc}"></div>
       <div class="cola-body">
         <div class="cola-top">
+          <span class="cola-num">#${patNum}</span>
           <span>${ic}</span>
           <span class="cola-class ${cc}">${d.clasificacion}</span>
         </div>
