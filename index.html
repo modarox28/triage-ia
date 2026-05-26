@@ -5169,6 +5169,7 @@ function toggleExplain(i){const el=document.getElementById("explain-"+i);if(el)e
 // COLA DE PACIENTES
 // ══════════════════════════════════════
 let _colaData=[], _colaFilter="all", _colaInterval=null, _colaTimerInterval=null, _prevColaIds=new Set();
+let _colaScoreCache=new Map(); // id -> {qs,n2,vitHash} — avoids recalculating on every render
 let _presenceInterval=null,_presenceUnsub=null;
 function _initPresence(){
   if(!FB||!CU)return;
@@ -5207,6 +5208,10 @@ const COLA_DEADLINE={ROJO:15,AMARILLO:30,VERDE:120}; // minutos
 function _stopColaTimer(){
   if(_colaInterval){clearInterval(_colaInterval);_colaInterval=null;}
   if(_colaTimerInterval){clearInterval(_colaTimerInterval);_colaTimerInterval=null;}
+  // Listener (_queueUnsub) intentionally kept alive — cola data stays fresh in background
+}
+function _stopColaListener(){
+  _stopColaTimer();
   window._queueUnsub?.();window._queueUnsub=null;
 }
 
@@ -5214,17 +5219,19 @@ function loadCola(){
   if(!FB||!CU)return;
   const listEl=document.getElementById("colaList");
   if(!listEl)return;
+  // Fast path: listener already running → just re-render cached data and restart timer
+  if(window._queueUnsub&&_colaData.length>=0&&_prevColaIds.size>=0){
+    _renderCola();
+    if(!_colaTimerInterval)_colaTimerInterval=setInterval(_renderColaTimers,60000);
+    return;
+  }
   listEl.innerHTML=`<div class="ldg"><div class="sp"></div>Cargando cola...</div>`;
-  window._queueUnsub?.();
+  window._queueUnsub?.();window._queueUnsub=null;
+  // Server-side 12h filter — Firestore returns only relevant docs (no client-side filtering)
   const since=new Date(Date.now()-12*60*60*1000);
-  const q=FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(150));
+  const q=FB.query(FB.collection(FB.db,"triages"),FB.where("createdAt",">=",since),FB.orderBy("createdAt","desc"),FB.limit(60));
   window._queueUnsub=FB.onSnapshot(q,(snap)=>{
-    const newData=snap.docs
-      .map(d=>({id:d.id,...d.data()}))
-      .filter(d=>{
-        const ts=d.createdAt?.toDate?.()??new Date(d.createdAt??0);
-        return ts>since;
-      });
+    const newData=snap.docs.map(d=>({id:d.id,...d.data()}));
     // Detect new critical patients — alert staff
     if(_prevColaIds.size>0){
       const newRojo=newData.filter(d=>d.clasificacion==="ROJO"&&!d.atendido&&!_prevColaIds.has(d.id));
@@ -5236,11 +5243,13 @@ function loadCola(){
     }
     _prevColaIds=new Set(newData.map(d=>d.id));
     _colaData=newData;
-    _renderCola();
+    // Full render only when cola tab is visible; else just update badge
+    const colaTab=document.getElementById("sc-cola");
+    if(colaTab&&colaTab.classList.contains("on")){_renderCola();}
+    else{_updateColaBadge(_colaData.filter(d=>!d.atendido).length);}
   },(e)=>{
     if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error: ${e.message}</div>`;
   });
-  if(_colaInterval){clearInterval(_colaInterval);_colaInterval=null;}
   if(_colaTimerInterval){clearInterval(_colaTimerInterval);_colaTimerInterval=null;}
   _colaTimerInterval=setInterval(_renderColaTimers,60000);
 }
@@ -5341,12 +5350,16 @@ function _renderCola(){
     const vitParts=[vit.ps?`PA ${vit.ps}/${vit.pd||"?"}`:null,vit.fc?`FC ${vit.fc}`:null,vit.sat?`SpO₂ ${vit.sat}%`:null,vit.fr?`FR ${vit.fr}rpm`:null].filter(Boolean);
     const vitLine=vitParts.length?`<div style="font-size:.65rem;color:var(--mu);margin-top:3px;font-family:'JetBrains Mono',monospace;line-height:1.4">${vitParts.join(" · ")}</div>`:"";
 
-    // qSOFA badge si riesgo alto
-    const qs=(vit.ps||vit.fr)?calcQSOFA({sys:parseFloat(vit.ps),rr:parseFloat(vit.fr)},d.consc):null;
+    // Clinical scores — cached per patient + vitals hash to avoid recalculating on every render
+    const _vh=[vit.ps,vit.fc,vit.sat,vit.fr,vit.tem,d.consc].join("|");
+    let _sc=_colaScoreCache.get(d.id);
+    if(!_sc||_sc.h!==_vh){
+      const qs=(vit.ps||vit.fr)?calcQSOFA({sys:parseFloat(vit.ps),rr:parseFloat(vit.fr)},d.consc):null;
+      const n2=vitParts.length?calcNEWS2({sys:parseFloat(vit.ps),rr:parseFloat(vit.fr),spo2:parseFloat(vit.sat),hr:parseFloat(vit.fc),temp:parseFloat(vit.tem)},d.consc):null;
+      _sc={qs,n2,h:_vh};_colaScoreCache.set(d.id,_sc);
+    }
+    const {qs,n2}=_sc;
     const qsBadge=qs?.risk==="high"?`<span style="font-size:.6rem;font-family:'JetBrains Mono',monospace;background:var(--rd-a);color:var(--rd);border-radius:6px;padding:1px 6px;margin-left:5px;font-weight:700">qSOFA 2+</span>`:"";
-
-    // NEWS2 badge si score alto
-    const n2=vitParts.length?calcNEWS2({sys:parseFloat(vit.ps),rr:parseFloat(vit.fr),spo2:parseFloat(vit.sat),hr:parseFloat(vit.fc),temp:parseFloat(vit.tem)},d.consc):null;
     const n2Badge=n2?.risk==="high"?`<span style="font-size:.6rem;font-family:'JetBrains Mono',monospace;background:var(--yw-a);color:var(--yw);border-radius:6px;padding:1px 6px;margin-left:5px;font-weight:700">NEWS2 ${n2.score}</span>`:"";
 
     const byLine=d.userName?`<div class="cola-by">por ${d.userName}</div>`:"";
