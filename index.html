@@ -3917,13 +3917,6 @@ function rTriage(){
   if(TS>=tot){if(_lastResult){rResult(_lastResult);return;}rAnalyzing();return;}
   _updatePatientHCStrip();
   const s=steps[TS];const c=document.getElementById("trc");c.innerHTML="";
-  if(TS===0&&CR!=="paciente"){
-    const bk=document.createElement("button");
-    bk.style.cssText="display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:.82rem;font-family:'Familjen Grotesk',sans-serif;cursor:pointer;padding:8px 14px;margin-bottom:10px;touch-action:manipulation;font-weight:600;";
-    bk.textContent=t("backToPatient")||"← Volver";
-    bk.onclick=()=>_clearTriagePatient();
-    c.appendChild(bk);
-  }
   const st=document.createElement("div");st.className="stag";st.textContent=`${t("step")||"Paso"} ${TS+1} ${t("of")||"de"} ${tot}`;c.appendChild(st);
   if(TD.tipo==="nino"||TD.tipo==="adolescente"){const n=document.createElement("div");n.className="cnote";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">👨‍👩‍👦</span><span><strong>${t("pedNote")||"Paciente pediatrico / adolescente"}</strong> — ${t("pedNoteSub")||"Completar con padre, madre o tutor."}</span>`;c.appendChild(n);}
   if(TD.tipo==="movilidad"){const n=document.createElement("div");n.className="cnote";n.style.cssText="background:rgba(255,184,48,.08);border:1px solid rgba(255,184,48,.28);color:#ffb830;";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">♿</span><span><strong>${t("mobilityNote")||"Se requiere enfermero o tutor presente"}</strong><br><span style="font-size:.72rem;opacity:.85">${t("mobilityNoteSub")||"Este paciente necesita asistencia durante la evaluacion."}</span></span>`;c.appendChild(n);}
@@ -4040,7 +4033,15 @@ function rTriage(){
     }
   }
   const nav=document.createElement("div");nav.className="bnav-row";
-  if(TS>0){const b=document.createElement("button");b.className="bbk";b.textContent="← "+(t("back")||"Atras");b.onclick=()=>{TS--;TM=[];rTriage();};nav.appendChild(b);}
+  if(TS>0){
+    const b=document.createElement("button");b.className="bbk";b.textContent="← "+(t("back")||"Atras");b.onclick=()=>{TS--;TM=[];rTriage();};nav.appendChild(b);
+  }else if(CR!=="paciente"){
+    const b=document.createElement("button");b.className="bbk";
+    b.style.cssText="color:var(--tx);border-color:var(--bd);font-weight:600;";
+    b.textContent="← "+(t("back")||"Volver");
+    b.onclick=()=>_clearTriagePatient();
+    nav.appendChild(b);
+  }
   const nx=document.createElement("button");nx.className="bnxt";
   nx.textContent=TS===steps.length-1?(t("analyze")||"Analizar")+" →":(t("continueBtn")||"Continuar")+" →";
   nx.disabled=!canAdv(s);nx.onclick=()=>{TS++;TM=[];rTriage();};nav.appendChild(nx);card.appendChild(nav);c.appendChild(card);
