@@ -2512,6 +2512,7 @@ async function doSignOut(){
   _clearPresence();
   stopInactivityTimer();
   _patientHC=null;
+  intDrugs=[];
   if(_hcUnsub){_hcUnsub();_hcUnsub=null;}_hcCache={};
   if(CR==="paciente"){CR=null;CU=null;showAuthScreen();return;}
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
@@ -3793,7 +3794,7 @@ function voz(inp,btn){
 function ss(n){
   ["bs","ms","al","in"].forEach(x=>{document.getElementById("ms-"+x).classList.remove("on");document.getElementById("st-"+x).classList.remove("on");});
   document.getElementById("ms-"+n).classList.add("on");document.getElementById("st-"+n).classList.add("on");
-  if(n==="al")rRL();if(n==="ms")rML();if(n==="bs")_showDefaultDrugs();
+  if(n==="al")rRL();if(n==="ms")rML();if(n==="bs")_showDefaultDrugs();if(n==="in")_applyPatientMedsToInteractions();
 }
 function _showDefaultDrugs(){
   const dr=document.getElementById("dr");if(!dr)return;
@@ -4287,8 +4288,15 @@ function saveMeds(){localStorage.setItem("ms_meds",JSON.stringify(MEDS));}
 function delMed(id){MEDS=MEDS.filter(m=>m.id!==id);if(ALM[id]){clearInterval(ALM[id]);delete ALM[id];}saveMeds();rML();rRL();toast(t("medDeleted")||"Eliminado");}
 function rML(){
   const el=document.getElementById("ml");
-  if(!MEDS.length){el.innerHTML=`<div class="empty"><div class="eic">💊</div><div class="etx">${t("noMeds")||"Sin medicamentos registrados."}</div></div>`;return;}
-  el.innerHTML=MEDS.map(m=>`<div class="mi2"><div class="mi2-bar" style="background:${m.color}"></div><div class="mi2-body"><div class="mi2-name">💊 ${m.name}</div><div class="mi2-info">${m.dose?m.dose+" · ":""}${m.freq} · ${m.time}</div>${m.notes?`<div class="mi2-note">${m.notes}</div>`:""}</div><div class="mi2-actions"><button class="tgl ${m.active?"on":""}" onclick="togR(${m.id},this)"></button><button class="mi2-del" onclick="delMed(${m.id})">🗑</button></div></div>`).join("");
+  const hcMeds=(CR==="paciente"&&_patientHC?.medicacion?.length)?_patientHC.medicacion:[];
+  const clrs=["#00c8f0","#00e07a","#a855f7","#ffb830","#ff8060"];
+  let html="";
+  if(hcMeds.length){
+    html+=`<div style="margin-bottom:2px"><div style="font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--cy);padding:4px 0 8px;display:flex;align-items:center;gap:5px">🗂️ Historia clínica <span style="background:var(--cy-a);color:var(--cy);border-radius:8px;padding:1px 6px;font-size:.6rem;font-family:'JetBrains Mono',monospace">${hcMeds.length}</span></div>${hcMeds.map((m,i)=>`<div class="mi2" style="animation:fadeUp .3s ${i*.06}s both"><div class="mi2-bar" style="background:${clrs[i%clrs.length]}"></div><div class="mi2-body"><div class="mi2-name">💊 ${m}</div><div class="mi2-info" style="color:var(--cy);font-size:.68rem">Desde tu historia clínica</div></div><div class="mi2-actions"><span style="font-size:.58rem;padding:2px 7px;border-radius:8px;background:var(--cy-a);color:var(--cy);font-family:'JetBrains Mono',monospace;font-weight:700">HC</span></div></div>`).join("")}</div>`;
+    if(MEDS.length)html+=`<div style="font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);padding:10px 0 8px;border-top:1px solid var(--bd);margin-top:6px">Agregados por ti</div>`;
+  }
+  if(!hcMeds.length&&!MEDS.length){el.innerHTML=`<div class="empty"><div class="eic">💊</div><div class="etx">${t("noMeds")||"Sin medicamentos registrados."}</div></div>`;return;}
+  el.innerHTML=html+MEDS.map(m=>`<div class="mi2"><div class="mi2-bar" style="background:${m.color}"></div><div class="mi2-body"><div class="mi2-name">💊 ${m.name}</div><div class="mi2-info">${m.dose?m.dose+" · ":""}${m.freq} · ${m.time}</div>${m.notes?`<div class="mi2-note">${m.notes}</div>`:""}</div><div class="mi2-actions"><button class="tgl ${m.active?"on":""}" onclick="togR(${m.id},this)"></button><button class="mi2-del" onclick="delMed(${m.id})">🗑</button></div></div>`).join("");
 }
 function rRL(){
   const el=document.getElementById("rl");
@@ -4302,6 +4310,10 @@ function dA(){document.getElementById("ab").style.display="none";}
 
 // INTERACTIONS
 let intDrugs=[];
+function _applyPatientMedsToInteractions(){
+  if(CR!=="paciente"||!_patientHC?.medicacion?.length)return;
+  if(!intDrugs.length){intDrugs=[..._patientHC.medicacion];rIntTags();}
+}
 function addInt(){const v=document.getElementById("ii").value.trim();if(!v)return;if(intDrugs.includes(v)){toast("Ya esta en la lista");return;}intDrugs.push(v);document.getElementById("ii").value="";rIntTags();}
 function remInt(n){intDrugs=intDrugs.filter(d=>d!==n);rIntTags();}
 function rIntTags(){document.getElementById("itags").innerHTML=intDrugs.map(d=>`<span class="tag">💊 ${d}<span class="tagx" onclick="remInt('${d}')">✕</span></span>`).join("");document.getElementById("chkint").disabled=intDrugs.length<2;}
