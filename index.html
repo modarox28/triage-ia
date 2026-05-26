@@ -8,6 +8,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-touch-fullscreen" content="yes">
 <meta name="apple-mobile-web-app-title" content="MedIA Suite">
 <meta name="theme-color" content="#0b1120">
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -23,7 +24,7 @@ window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,si
 window.dispatchEvent(new Event("fbready"));
 </script>
 <style>
-:root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);--zoom:1;}
+:root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);--zoom:1;--nav-h:70px;}
 .light{--bg:#f0f4f8;--bg2:#fff;--bg3:#e8edf5;--bd:#d0dae8;--tx:#0f1923;--mu:#6b7fa3;--mu2:#9aabc4;--cy:#0099bb;--gn:#00a855;--rd:#d42042;--yw:#c97a00;--cy-a:rgba(0,153,187,.08);--gn-a:rgba(0,168,85,.08);--rd-a:rgba(212,32,66,.08);--yw-a:rgba(201,122,0,.08);--shadow:0 4px 24px rgba(0,0,0,.08);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;touch-action:manipulation;}
 html{font-size:calc(16px * var(--zoom));-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation;}
@@ -175,14 +176,14 @@ button{border-radius:0;}
 
 /* BODY + SCREENS */
 .main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0;}
-.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(52px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
 .body::-webkit-scrollbar{width:3px;}
 .body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
 .sc{display:none;padding:14px;width:100%;box-sizing:border-box;}
 .sc.on{display:block;animation:pageSlideIn .3s cubic-bezier(.34,1.4,.64,1);}
 
 /* BOTTOM NAV — iOS 26 Liquid Glass */
-.bottom-nav{display:flex;background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-top:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -10px 36px rgba(0,0,0,.28);flex-shrink:0;position:relative;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
+.bottom-nav{display:flex;background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-top:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -10px 36px rgba(0,0,0,.28);flex-shrink:0;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);}
 .light .bottom-nav{background:rgba(240,244,248,.78);border-top:1px solid rgba(0,0,0,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 -4px 20px rgba(0,0,0,.07);}
 .bottom-nav::after{content:"";position:fixed;bottom:0;left:0;right:0;height:env(safe-area-inset-bottom,0px);background:rgba(11,17,32,.55);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);z-index:49;pointer-events:none;}
 .light .bottom-nav::after{background:rgba(240,244,248,.78);}
@@ -721,9 +722,20 @@ html{touch-action:manipulation;}
 /* iOS Safari: select arrow custom */
 select{padding-right:32px;}
 /* -webkit-backdrop-filter already set in main .bottom-nav rule */
-/* Auth screen iOS keyboard push-up fix */
+/* Auth screen iOS keyboard push-up fix + nav glass */
 @supports (-webkit-touch-callout: none){
   .auth-screen{justify-content:flex-start;padding-top:max(calc(env(safe-area-inset-top,0px) + 20px), 40px);}
+  .app.on{height:-webkit-fill-available;}
+  .bottom-nav{
+    background:rgba(17,24,39,0.75);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    backdrop-filter:blur(20px) saturate(180%);
+  }
+}
+/* Android Chrome URL bar fallback */
+@supports not (height:100dvh){
+  .app.on{height:100vh;height:-webkit-fill-available;}
+  body{min-height:-webkit-fill-available;}
 }
 </style>
 </head>
