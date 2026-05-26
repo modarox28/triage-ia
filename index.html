@@ -389,6 +389,14 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 #qrVideo{width:100%;display:block;border-radius:12px;}
 .qr-line{position:absolute;left:8%;right:8%;height:2px;background:var(--cy);box-shadow:0 0 8px var(--cy);animation:scanLine 2s linear infinite;}
 
+/* TRIAGE TOOLBAR */
+.triage-tb{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;min-height:34px;}
+.triage-act-bar{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--bd);border-radius:22px;overflow:hidden;flex-shrink:0;}
+.triage-act-btn{display:flex;align-items:center;gap:4px;padding:6px 12px;border:none;background:transparent;font-size:.73rem;font-weight:600;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:background .18s,opacity .18s;touch-action:manipulation;white-space:nowrap;-webkit-user-select:none;user-select:none;}
+.triage-act-btn:active{opacity:.65;}
+.triage-act-btn.t-preh{color:#ffa040;}
+.triage-act-btn.t-mci{color:#ff8060;}
+.triage-act-sep{width:1px;height:18px;background:var(--bd);flex-shrink:0;}
 /* PATIENT HC CHIP (persistent banner across triage steps) */
 .pt-hc-chip{display:flex;align-items:center;gap:10px;background:rgba(0,200,240,.07);border:1px solid rgba(0,200,240,.25);border-radius:14px;padding:10px 14px;margin-bottom:10px;animation:fadeUp .35s both;}
 .pt-hc-chip .pt-av{width:34px;height:34px;border-radius:50%;background:var(--cy-a);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--cy);flex-shrink:0;}
@@ -1148,6 +1156,13 @@ select{padding-right:32px;}
           <div id="nearbyMap" style="height:220px;border-radius:12px;overflow:hidden;background:var(--bg3)"></div>
           <div id="nearbyList" style="margin-top:10px"></div>
         </div>
+        <div class="card" id="patientCountCard" style="display:none;animation:fadeUp .4s both">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="clabel" style="margin:0">Pacientes registrados</div>
+            <button onclick="navigateTo('hc')" style="font-size:.72rem;color:var(--cy);background:none;border:none;cursor:pointer;font-family:'Familjen Grotesk',sans-serif;font-weight:600">Ver todos →</button>
+          </div>
+          <div id="patientCountStats"></div>
+        </div>
         <div class="clabel" id="lbUserMgmtSec" style="display:none">Administración</div>
         <div class="card" id="userMgmtCard">
           <div class="clabel" id="lbUserMgmt">Gestión de usuarios</div>
@@ -1167,11 +1182,12 @@ select{padding-right:32px;}
       </div>
       <!-- TRIAGE -->
       <div class="sc" id="sc-triage">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">
+        <div class="triage-tb">
           <span class="triage-timer" id="triageTimerBadge" style="display:none"></span>
-          <div style="display:flex;gap:6px;margin-left:auto">
-            <button class="bsec" style="font-size:.72rem;padding:5px 12px;border-color:rgba(255,140,0,.4);color:#ffa040" onclick="openPrehNotif()">🚑 Pre-hosp.</button>
-            <button class="bsec" id="mciToggleBtn" style="font-size:.72rem;padding:5px 12px;border-color:rgba(255,60,60,.4);color:#ff8060" onclick="openMCISetup()">⚠️ MCI</button>
+          <div class="triage-act-bar">
+            <button class="triage-act-btn t-preh" onclick="openPrehNotif()">🚑 Pre-hosp.</button>
+            <div class="triage-act-sep"></div>
+            <button class="triage-act-btn t-mci" id="mciToggleBtn" onclick="openMCISetup()">⚠️ MCI</button>
           </div>
         </div>
         <div class="pgw" id="pgWrap"><div class="pgf" id="pg" style="width:0%"></div></div>
@@ -1251,7 +1267,7 @@ select{padding-right:32px;}
 <div class="sc" id="sc-hc">
   <div style="display:flex;gap:8px;margin-bottom:12px">
     <button class="bpri" style="flex:1" onclick="showNewHC()">+ Nueva historia</button>
-    <button class="bpri" style="flex:0 0 auto;background:var(--bg3);border:1.5px solid var(--bd);color:var(--tx)" onclick="loadHC()">🔄</button>
+    <button onclick="reloadHC()" style="flex:0 0 auto;width:auto;padding:9px 16px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:9px;color:var(--tx);font-size:1rem;cursor:pointer;transition:all .2s;touch-action:manipulation" title="Recargar">🔄</button>
   </div>
   <div id="hcList"><div class="ldg"><div class="sp"></div>${t('loading')||'Cargando...'}</div></div>
 </div>
@@ -1408,9 +1424,15 @@ select{padding-right:32px;}
           </div>
         </div>
         <div class="card" id="qrCard" style="display:none">
-          <div class="clabel">QR Pacientes</div>
-          <div style="font-size:.8rem;color:var(--mu);margin-bottom:10px">Imprime este codigo QR para que los pacientes puedan acceder.</div>
-          <button class="bpri" onclick="showQR()">📱 Ver codigo QR</button>
+          <div class="clabel">QR Acceso Pacientes</div>
+          <div style="font-size:.8rem;color:var(--mu);margin-bottom:10px">Muestra este QR en recepción para que los pacientes accedan a la app.</div>
+          <button class="bpri" onclick="showQR()">📱 Ver código QR global</button>
+        </div>
+        <div class="card" id="patientQRCard" style="display:none;animation:fadeUp .4s both">
+          <div class="clabel">Mi código de acceso</div>
+          <div style="font-size:.8rem;color:var(--mu);margin-bottom:10px;line-height:1.55">Muéstrale este código al médico para identificarte sin necesidad de teclear tu número.</div>
+          <div id="patientIdDisplay" style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;text-align:center;color:var(--cy);background:var(--bg3);border-radius:12px;padding:12px;margin-bottom:12px;letter-spacing:4px">—</div>
+          <button class="bpri" onclick="showPatientQR()">📱 Ver QR de identificación</button>
         </div>
         <div class="card">
           <div class="clabel" id="lbAccount">Cuenta</div>
@@ -2877,7 +2899,7 @@ const NAV={
   admin:[{id:"dash",ic:"📊",k:"dash"},{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
   admin_hosp:[{id:"dash",ic:"📊",k:"dash"},{id:"cola",ic:"🩺",k:"cola"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
   medico:[{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
-  paciente:[{id:"meds",ic:"💊",k:"meds"},{id:"prof",ic:"👤",k:"prof"}],
+  paciente:[{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"config",ic:"⚙️",k:"config"}],
 };
 
 function buildNav(){
@@ -2929,7 +2951,7 @@ function navigateTo(id,idx){
   }
   if(id==="hist")loadHist();
   if(id==="cola")loadCola();
-  if(id==="hc")loadHC();
+  if(id==="hc"){if(CR==="paciente"&&_patientHC?.id){viewHC(_patientHC.id);}else{loadHC();}}
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
   if(id==="meds"){ss("bs");setTimeout(_showDefaultDrugs,80);}
@@ -2954,6 +2976,8 @@ function updateUI(){
   const sc=document.getElementById("sideChip");
   if(sc)sc.innerHTML=`<div class="user-av" style="background:${photo?"transparent":col}">${avInner}</div><div><div class="user-name">${name}</div><div class="user-role">${RL[CR]||CR}</div></div>`;
   document.getElementById("qrCard").style.display=(CR==="admin"||CR==="medico")?"block":"none";
+  const pqr=document.getElementById("patientQRCard");if(pqr)pqr.style.display=(CR==="paciente"&&_patientHC?.doc)?"block":"none";
+  if(CR==="paciente"&&_patientHC?.doc){const d=document.getElementById("patientIdDisplay");if(d)d.textContent=_patientHC.doc;}
 }
 
 // CHART
@@ -3187,6 +3211,43 @@ async function loadDash(){
       const nc=document.getElementById("nearbyCard");if(nc)nc.style.display="block";
       const ni=document.getElementById("nearbyEpsInput");if(ni)ni.placeholder=getInsLabel();
     }
+    // Patient count card
+    if(CR==="admin"||CR==="admin_hosp"||CR==="medico"){
+      const countCard=document.getElementById("patientCountCard");
+      const countStats=document.getElementById("patientCountStats");
+      if(countCard&&countStats){
+        countCard.style.display="block";
+        const cached=Object.keys(_hcCache).length;
+        const renderCount=(n,breakdown)=>{
+          countStats.innerHTML=`
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
+              <div style="font-size:2.6rem;font-weight:800;color:var(--cy);line-height:1">${n}</div>
+              <div style="font-size:.72rem;color:var(--mu);line-height:1.4">historias<br>clínicas</div>
+            </div>
+            ${breakdown?`<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">${breakdown}</div>`:""}`;
+        };
+        if(cached>0){
+          const vals=Object.values(_hcCache);
+          const bySex={M:vals.filter(v=>v.sex==="M").length,F:vals.filter(v=>v.sex==="F").length};
+          const chips=[
+            bySex.M?`<span style="font-size:.65rem;padding:3px 9px;border-radius:10px;background:rgba(0,200,240,.12);color:var(--cy)">♂ ${bySex.M}</span>`:"",
+            bySex.F?`<span style="font-size:.65rem;padding:3px 9px;border-radius:10px;background:rgba(168,85,247,.12);color:var(--pu)">♀ ${bySex.F}</span>`:""
+          ].filter(Boolean).join("");
+          renderCount(cached,chips);
+        }else{
+          countStats.innerHTML=`<div class="skel" style="height:52px;border-radius:10px"></div>`;
+          FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.limit(200))).then(snap=>{
+            const bySex={M:0,F:0};
+            snap.docs.forEach(d=>{const s=d.data().sex;if(s==="M")bySex.M++;else if(s==="F")bySex.F++;});
+            const chips=[
+              bySex.M?`<span style="font-size:.65rem;padding:3px 9px;border-radius:10px;background:rgba(0,200,240,.12);color:var(--cy)">♂ ${bySex.M}</span>`:"",
+              bySex.F?`<span style="font-size:.65rem;padding:3px 9px;border-radius:10px;background:rgba(168,85,247,.12);color:var(--pu)">♀ ${bySex.F}</span>`:""
+            ].filter(Boolean).join("");
+            renderCount(snap.size,chips);
+          }).catch(()=>{countStats.innerHTML=`<div style="font-size:.75rem;color:var(--mu);text-align:center">—</div>`;});
+        }
+      }
+    }
   }catch(e){console.error(e);}
 }
 
@@ -3365,8 +3426,31 @@ function handleProfilePhoto(input,ctx){
 }
 
 // QR SHOW
+function showPatientQR(){
+  if(!_patientHC?.doc){toast("No tienes ID registrado");return;}
+  const modal=document.getElementById("qrShowModal");modal.classList.add("on");
+  modal.querySelector(".modal-title").textContent="📱 Mi código QR";
+  modal.querySelector(".modal-sub").textContent=`ID: ${_patientHC.doc} — Muéstrale este QR al médico`;
+  const wrap=document.getElementById("qrDisplay");wrap.innerHTML="";
+  const qrVal=_patientHC.doc;
+  if(typeof QRCode!=="undefined"){
+    new QRCode(wrap,{text:qrVal,width:180,height:180,correctLevel:QRCode.CorrectLevel.M,colorDark:isDark?"#00c8f0":"#0099bb",colorLight:isDark?"#0b1120":"#ffffff"});
+    setTimeout(()=>{const img=wrap.querySelector("img");if(img){img.style.borderRadius="10px";img.style.display="block";}},80);
+  }else{
+    wrap.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrVal)}&bgcolor=${isDark?"0b1120":"ffffff"}&color=${isDark?"00c8f0":"0099bb"}" style="border-radius:10px;width:180px;height:180px;display:block">`;
+  }
+}
+
+function reloadHC(){
+  if(_hcUnsub){_hcUnsub();_hcUnsub=null;}
+  _hcCache={};
+  loadHC();
+}
+
 function showQR(){
   document.getElementById("qrShowModal").classList.add("on");
+  document.getElementById("qrShowModal").querySelector(".modal-title").textContent="📱 Código de acceso";
+  document.getElementById("qrShowModal").querySelector(".modal-sub").textContent="Muestra este QR en recepción para acceso de pacientes";
   const wrap=document.getElementById("qrDisplay");
   wrap.innerHTML="";
   if(typeof QRCode!=="undefined"){
@@ -3435,6 +3519,15 @@ function stopQR(){
 // ── PATIENT HC HELPERS ────────────────────────────────────────────────────────
 function _applyPatientHCToNotes(){
   if(!_patientHC)return;
+  // Auto-set patient type from registered age
+  const age=parseInt(_patientHC.age);
+  if(!isNaN(age)&&!TD.tipo){
+    if(age<=12)TD.tipo="nino";
+    else if(age<=17)TD.tipo="adolescente";
+    else if(age<=59)TD.tipo="adulto";
+    else TD.tipo="adulto_mayor";
+  }
+  // Pre-fill clinical notes
   const parts=[];
   if(_patientHC.antecedentes?.length)parts.push(`Antecedentes: ${_patientHC.antecedentes.join(", ")}`);
   if(_patientHC.alergias?.length)parts.push(`ALERGIAS (IMPORTANTE): ${_patientHC.alergias.join(", ")}`);
@@ -4141,17 +4234,32 @@ function chkFR(f){f=parseFloat(f);return f<8||f>30?"critical":f<12||f>24?"warnin
 async function buscarDrug(){
   const nm=document.getElementById("di").value.trim();
   if(!nm){toast("Escribe el nombre del medicamento");return;}
-  document.getElementById("dr").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Consultando...</div></div>`;
+  document.getElementById("dr").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Consultando${_patientHC?" con historial del paciente":""}...</div></div>`;
+  let hcCtx="";
+  if(_patientHC){
+    const ant=(_patientHC.antecedentes||[]).join(", ");
+    const ale=(_patientHC.alergias||[]).join(", ");
+    const med=(_patientHC.medicacion||[]).join(", ");
+    hcCtx=`\nPACIENTE: ${_patientHC.name}, ${_patientHC.age} años.`;
+    if(ant)hcCtx+=`\nAntecedentes: ${ant}.`;
+    if(ale)hcCtx+=`\nALERGIAS CONOCIDAS: ${ale}.`;
+    if(med)hcCtx+=`\nMedicación actual: ${med}.`;
+    hcCtx+=`\nAnaliza interacciones con su medicación actual y si hay contraindicaciones por sus antecedentes. Añade campo "alerta_paciente" con advertencia específica o vacío si es seguro.`;
+  }
   try{
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:800,messages:[{role:"user",content:`Informacion farmacologica sobre: "${nm}". SOLO JSON sin backticks:
-{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"..."}`}]})});
+    const prompt=`Informacion farmacologica sobre: "${nm}".${hcCtx} SOLO JSON sin backticks:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"...","alerta_paciente":""}`;
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:900,messages:[{role:"user",content:prompt}]})});
     const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
-    document.getElementById("dr").innerHTML=`<div class="card">
+    const patientAlert=inf.alerta_paciente&&inf.alerta_paciente.trim()&&_patientHC
+      ?`<div class="ib rd" style="animation:fadeUp .3s both"><div class="ibl">⚠️ Alerta para ${_patientHC.name}</div><div class="ibt">${inf.alerta_paciente}</div></div>` : "";
+    document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
+      ${_patientHC?`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--cy);background:rgba(0,200,240,.07);border-radius:8px;padding:5px 9px;margin-bottom:10px">🗂️ Análisis personalizado para <strong>${_patientHC.name}</strong></div>`:""}
       <div style="font-size:1.05rem;font-weight:700;margin-bottom:3px">${inf.nombre_comercial||nm}</div>
       <div style="font-size:.73rem;color:var(--mu);margin-bottom:11px">${inf.nombre_generico||""}</div>
       <div style="margin-bottom:11px"><span style="background:var(--cy-a);color:var(--cy);border-radius:20px;padding:3px 9px;font-size:.7rem;font-weight:600">💊 ${inf.dosis_tipica||"Ver prospecto"}</span></div>
-      <div class="ib gn"><div class="ibl">Para que sirve</div><div class="ibt">${inf.para_que_sirve||""}</div></div>
-      <div class="ib cy"><div class="ibl">Como tomarlo</div><div class="ibt">${inf.como_tomar||""}</div></div>
+      ${patientAlert}
+      <div class="ib gn"><div class="ibl">Para qué sirve</div><div class="ibt">${inf.para_que_sirve||""}</div></div>
+      <div class="ib cy"><div class="ibl">Cómo tomarlo</div><div class="ibt">${inf.como_tomar||""}</div></div>
       <div class="ib yw"><div class="ibl">Efectos secundarios</div><div class="ibt">${inf.efectos_secundarios||""}</div></div>
       <div class="ib rd"><div class="ibl">Contraindicaciones</div><div class="ibt">${inf.contraindicaciones||""}</div></div>
       <div class="ib yw"><div class="ibl">Interacciones</div><div class="ibt">${inf.interacciones_comunes||""}</div></div>
