@@ -26,12 +26,10 @@ window.dispatchEvent(new Event("fbready"));
 :root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);--zoom:1;}
 .light{--bg:#f0f4f8;--bg2:#fff;--bg3:#e8edf5;--bd:#d0dae8;--tx:#0f1923;--mu:#6b7fa3;--mu2:#9aabc4;--cy:#0099bb;--gn:#00a855;--rd:#d42042;--yw:#c97a00;--cy-a:rgba(0,153,187,.08);--gn-a:rgba(0,168,85,.08);--rd-a:rgba(212,32,66,.08);--yw-a:rgba(201,122,0,.08);--shadow:0 4px 24px rgba(0,0,0,.08);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;touch-action:manipulation;}
-html{font-size:calc(16px * var(--zoom));height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
-body{height:100%;overflow:hidden;width:100%;max-width:100%;background:var(--bg);color:var(--tx);font-family:"Familjen Grotesk",sans-serif;transition:background .3s,color .3s;overscroll-behavior:none;-webkit-overflow-scrolling:touch;}
+html{font-size:calc(16px * var(--zoom));-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation;}
+body{overflow:hidden;width:100%;max-width:100%;background:var(--bg);color:var(--tx);font-family:"Familjen Grotesk",sans-serif;transition:background .3s,color .3s;overscroll-behavior:none;}
 
-/* iOS Safari height fix — position:fixed + inset fills the viewport automatically */
-/* dvh kept as progressive enhancement for browsers that support it */
-@supports (height:100dvh){html,body{height:100dvh;}}
+/* .app usa position:fixed top:0 left:0 right:0 bottom:0 — no necesita altura explícita */
 
 /* iOS — prevent auto zoom on input focus (font-size must be ≥ 16px rendered) */
 input,select,textarea{font-size:max(16px,1em)!important;}
@@ -176,7 +174,7 @@ button{border-radius:0;}
 .role-badge.paciente{background:var(--gn-a);color:var(--gn);}
 
 /* BODY + SCREENS */
-.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0;}
 .body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
 .body::-webkit-scrollbar{width:3px;}
 .body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
@@ -704,14 +702,11 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 a,input,button,select,textarea{-webkit-touch-callout:default;}
 /* Prevent selection on UI elements */
 .nb,.opt,.bpri,.bnxt,.bbk,.bsec,.htab,.icon-btn,.hist-flt{-webkit-user-select:none;user-select:none;}
-/* Fix for iOS Safari gap between bottom-nav and screen edge */
-.bottom-nav{padding-bottom:max(env(safe-area-inset-bottom,0px),13px);}
+/* Bottom nav: safe-area handled in main rule — no override needed here */
 /* Momentum scrolling on all scrollable containers */
 .body,.auth-screen,.preh-sheet,.handoff-sheet,.dosp-sheet,.gcs-sheet,.sidebar-nav{-webkit-overflow-scrolling:touch;}
 /* Prevent double-tap zoom on buttons */
 .nb,.opt,.bpri,.bnxt,.bbk,.bsec,.htab,.icon-btn,.hist-flt,.auth-btn,.auth-goo{touch-action:manipulation;}
-/* Fix iOS flex height bug — body can sometimes grow */
-body{position:fixed;width:100%;}
 /* Bottom sheet handle bar (visual cue for iOS users) */
 .preh-sheet::before,.handoff-sheet::before,.dosp-sheet::before,.gcs-sheet::before,.vitcam-sheet::before,.mci-setup-sheet::before{content:"";display:block;width:36px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px;}
 /* Fix iOS input type=number arrows */
@@ -722,8 +717,7 @@ html{touch-action:manipulation;}
 *{-webkit-font-smoothing:antialiased;}
 /* iOS Safari: select arrow custom */
 select{padding-right:32px;}
-/* Fix backdrop-filter iOS rendering */
-.bottom-nav{-webkit-backdrop-filter:saturate(180%) blur(28px);}
+/* -webkit-backdrop-filter already set in main .bottom-nav rule */
 /* Auth screen iOS keyboard push-up fix */
 @supports (-webkit-touch-callout: none){
   .auth-screen{justify-content:flex-start;padding-top:max(calc(env(safe-area-inset-top,0px) + 20px), 40px);}
@@ -1426,26 +1420,8 @@ function toggleTheme(){
 // TOAST
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2400);}
 
-// iOS SAFARI HEIGHT FIX — uses visualViewport API to avoid the 100vh address-bar bug
-(()=>{
-  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(/macintosh/i.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
-  if(!isIOS)return;
-  function _setVH(){
-    const h=(window.visualViewport?window.visualViewport.height:window.innerHeight);
-    document.documentElement.style.setProperty("--vh",h+"px");
-    const app=document.querySelector(".app");
-    if(app){app.style.height=h+"px";}
-    // Keep body locked
-    document.body.style.height=h+"px";
-  }
-  _setVH();
-  if(window.visualViewport){
-    window.visualViewport.addEventListener("resize",_setVH,{passive:true});
-    window.visualViewport.addEventListener("scroll",_setVH,{passive:true});
-  }
-  window.addEventListener("resize",_setVH,{passive:true});
-  window.addEventListener("orientationchange",()=>setTimeout(_setVH,120),{passive:true});
-})();
+// No JS height hacks needed — .app{position:fixed;top:0;left:0;right:0;bottom:0}
+// correctly fills the viewport on both iOS and Android without override.
 
 // ZOOM ACCESSIBILITY
 let _zoomLevel=parseFloat(localStorage.getItem("ms_zoom")||"1");

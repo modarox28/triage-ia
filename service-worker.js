@@ -1,5 +1,5 @@
-const CACHE_STATIC = 'media-static-v6';
-const CACHE_CDN    = 'media-cdn-v6';
+const CACHE_STATIC = 'media-static-v7';
+const CACHE_CDN    = 'media-cdn-v7';
 
 const STATIC_ASSETS = [
   './',
