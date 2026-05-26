@@ -16,6 +16,15 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT}from"./src/clinical/engine.js";
+import{getCopilotHints,renderCopilotCard}from"./src/clinical/copilot.js";
+import{buildTriageTimeline}from"./src/clinical/timeline.js";
+import{L}from"./src/i18n/index.js";
+import{chkPA,chkFC,chkSat,chkT,chkFR}from"./src/utils/clinical.js";
+import{COLA_DEADLINE,INACT_MS,WARN_MS}from"./src/config/constants.js";
+import{getSteps as _getStepsModule}from"./src/triage/steps.js";
+import{buildTriagePrompt}from"./src/ai/prompt.js";
+import{saveTriage,updateTriageAttended,getTriagesHistory,syncOfflineQueue as _syncOfflineQueueFn,subscribeTriageQueue}from"./src/firebase/triages.js";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
 const auth=getAuth(fbapp);const db=getFirestore(fbapp);const gProvider=new GoogleAuthProvider();
@@ -53,6 +62,7 @@ button{border-radius:0;}
 @keyframes skeletonPulse{0%,100%{opacity:.5}50%{opacity:1}}
 @keyframes critBlink{0%,100%{background:var(--rd-a);border-color:var(--rd)}50%{background:rgba(255,58,92,.22);border-color:rgba(255,58,92,.6)}}
 @keyframes bounceIn{0%{transform:scale(0)}60%{transform:scale(1.1)}80%{transform:scale(.95)}100%{transform:scale(1)}}
+@keyframes ringCritPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,58,92,0)}50%{box-shadow:0 0 0 7px rgba(255,58,92,.18);}}
 @keyframes slideInBottom{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
 
 /* Ripple container */
@@ -85,10 +95,10 @@ button{border-radius:0;}
 /* Accessibility banner */
 .access-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--bd);}
 /* Score display */
-.score-ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",monospace;font-size:1.3rem;font-weight:700;flex-shrink:0;border:3px solid;}
+.score-ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",monospace;font-size:1.3rem;font-weight:700;flex-shrink:0;border:3px solid;transition:box-shadow .3s;}
 .score-ring.ok{border-color:var(--gn);color:var(--gn);background:var(--gn-a);}
 .score-ring.warn{border-color:var(--yw);color:var(--yw);background:var(--yw-a);}
-.score-ring.crit{border-color:var(--rd);color:var(--rd);background:var(--rd-a);}
+.score-ring.crit{border-color:var(--rd);color:var(--rd);background:var(--rd-a);animation:ringCritPulse 1.6s ease-in-out infinite;}
 
 /* AUTH */
 .auth-screen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));}
@@ -209,7 +219,7 @@ button{border-radius:0;}
 .light .nind{background:rgba(0,0,0,.06);}
 
 /* CARDS */
-.card{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);transition:box-shadow .3s,transform .3s;}
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);transition:box-shadow .25s,transform .25s;}
 @media(hover:hover){.card:hover{box-shadow:0 8px 32px rgba(0,0,0,.22);transform:translateY(-1px);}}
 .clabel{font-family:"JetBrains Mono",monospace;font-size:.58rem;font-weight:700;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:11px;}
 @media(min-width:768px){.sc{padding:20px;}.desk-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}.desk-full{grid-column:1/-1;}}
@@ -271,10 +281,10 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 .brd:hover{background:#ff6680!important;}
 
 /* RESULT */
-.rcard{border-radius:16px;padding:20px;text-align:center;animation:scaleIn .42s cubic-bezier(.34,1.4,.64,1);margin-bottom:10px;}
-.rcard.ro{background:var(--rd-a);border:2px solid var(--rd);}
-.rcard.am{background:var(--yw-a);border:2px solid var(--yw);}
-.rcard.ve{background:var(--gn-a);border:2px solid var(--gn);}
+.rcard{border-radius:18px;padding:22px 20px;text-align:center;animation:scaleIn .42s cubic-bezier(.34,1.4,.64,1);margin-bottom:10px;}
+.rcard.ro{background:var(--rd-a);border:2px solid var(--rd);box-shadow:0 4px 32px rgba(255,58,92,.18);}
+.rcard.am{background:var(--yw-a);border:2px solid var(--yw);box-shadow:0 4px 28px rgba(255,184,48,.14);}
+.rcard.ve{background:var(--gn-a);border:2px solid var(--gn);box-shadow:0 4px 28px rgba(0,224,122,.12);}
 .ric{font-size:2.6rem;display:block;margin-bottom:7px;animation:pulse2 2s infinite;}
 .rlbl{font-family:"JetBrains Mono",monospace;font-size:1.5rem;font-weight:700;letter-spacing:3px;margin-bottom:4px;}
 .rcard.ro .rlbl{color:var(--rd);}
@@ -436,7 +446,7 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 .atitle{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:.88rem;}
 .asub{font-size:.72rem;opacity:.75;margin-top:2px;}
 .aok{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.15);border:none;color:#000;padding:4px 11px;border-radius:6px;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;font-size:.7rem;font-weight:700;}
-.toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--bg3);color:var(--tx);border:1px solid var(--bd);padding:8px 15px;border-radius:9px;font-size:.77rem;z-index:9998;opacity:0;transition:all .25s;white-space:nowrap;max-width:88vw;pointer-events:none;}
+.toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-6px);background:rgba(30,40,60,.95);color:var(--tx);border:1px solid rgba(255,255,255,.12);padding:9px 18px;border-radius:22px;font-size:.78rem;z-index:9998;opacity:0;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:88vw;pointer-events:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.4);}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* SETTINGS SCREEN */
@@ -712,9 +722,11 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 .cola-stat-n{font-size:1.5rem;font-weight:700;font-family:"JetBrains Mono",monospace;line-height:1;}
 .cola-stat-n.ro{color:var(--rd)}.cola-stat-n.am{color:var(--yw)}.cola-stat-n.ve{color:var(--gn)}.cola-stat-n.total{color:var(--cy)}
 .cola-stat-l{font-size:.56rem;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-top:3px;text-align:center;}
-.cola-card{display:flex;align-items:stretch;background:var(--bg2);border:1px solid var(--bd);border-radius:13px;margin-bottom:8px;overflow:hidden;transition:opacity .3s;}
+.cola-card{display:flex;align-items:stretch;background:var(--bg2);border:1px solid var(--bd);border-radius:13px;margin-bottom:8px;overflow:hidden;transition:opacity .3s,border-color .15s,transform .15s;}
 .cola-card.done{opacity:.45;filter:grayscale(.4);}
 .cola-card.vencido{border-color:rgba(255,58,92,.35);animation:none;}
+.cola-card.drag-over{border-color:var(--cy);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,200,240,.2);}
+.cola-card[draggable="true"]{cursor:grab;}.cola-card[draggable="true"]:active{cursor:grabbing;}
 .cola-bar2{width:4px;flex-shrink:0;}
 .cola-bar2.ro{background:var(--rd)}.cola-bar2.am{background:var(--yw)}.cola-bar2.ve{background:var(--gn)}
 .cola-body{flex:1;padding:10px 12px;min-width:0;}
@@ -1539,6 +1551,17 @@ function setCountry(cc){CC=cc;localStorage.setItem("ms_country",cc);loadConfig()
 function getInsLabel(){const m={CO:"EPS afiliada",AR:"Obra social / prepaga",US:"Insurance provider",DE:"Krankenkasse",JP:"健康保険組合"};return m[CC]||t("insLabel");}
 function uName(fallback="Usuario"){return CUName||CU?.displayName||CU?.email?.split("@")[0]||fallback;}
 
+// AUDIT LOG — writes to Firestore auditLogs collection (silent fail, never blocks the app)
+async function logAudit(action,meta={}){
+  if(!FB||!CU||CR==="paciente")return;
+  try{
+    await FB.addDoc(FB.collection(FB.db,"auditLogs"),{
+      userId:CU.uid,userEmail:CU.email||"",userName:uName(),role:CR||"",
+      action,meta,ts:FB.serverTimestamp()
+    });
+  }catch(e){}
+}
+
 // THEME
 function toggleTheme(){
   isDark=!isDark;document.body.classList.toggle("light",!isDark);
@@ -1606,35 +1629,6 @@ function _getTriageElapsed(){
   return Math.floor((Date.now()-_triageStartTime)/1000);
 }
 
-// CRITICAL VITALS CHECK
-function checkCriticalVitals(vitals){
-  const alerts=[];
-  const {sys,hr,spo2,rr,temp}=vitals;
-  // SpO2
-  if(spo2&&spo2<90)alerts.push({key:"SpO2",val:spo2,msg:`SpO₂ crítico: ${spo2}% (< 90%)`});
-  else if(spo2&&spo2<95)alerts.push({key:"SpO2_warn",val:spo2,msg:`SpO₂ bajo: ${spo2}%`,warn:true});
-  // HR
-  if(hr&&hr>150)alerts.push({key:"HR_high",val:hr,msg:`FC muy elevada: ${hr} lpm`});
-  else if(hr&&hr>100)alerts.push({key:"HR_tach",val:hr,msg:`Taquicardia: ${hr} lpm`,warn:true});
-  if(hr&&hr<40)alerts.push({key:"HR_low",val:hr,msg:`FC muy baja: ${hr} lpm`});
-  else if(hr&&hr<60)alerts.push({key:"HR_brad",val:hr,msg:`Bradicardia: ${hr} lpm`,warn:true});
-  // SBP
-  if(sys&&sys>180)alerts.push({key:"SYS_high",val:sys,msg:`PA sistólica muy elevada: ${sys} mmHg`});
-  else if(sys&&sys>160)alerts.push({key:"SYS_htn",val:sys,msg:`Hipertensión: ${sys} mmHg`,warn:true});
-  if(sys&&sys<70)alerts.push({key:"SYS_low",val:sys,msg:`PA sistólica muy baja: ${sys} mmHg`});
-  else if(sys&&sys<90)alerts.push({key:"SYS_hypo",val:sys,msg:`Hipotensión: ${sys} mmHg`,warn:true});
-  // RR
-  if(rr&&rr>30)alerts.push({key:"RR_high",val:rr,msg:`FR muy elevada: ${rr} rpm`});
-  else if(rr&&rr>20)alerts.push({key:"RR_tach",val:rr,msg:`Taquipnea: ${rr} rpm`,warn:true});
-  if(rr&&rr<8)alerts.push({key:"RR_low",val:rr,msg:`FR muy baja: ${rr} rpm`});
-  // Temp
-  if(temp&&temp>=39.5)alerts.push({key:"TEMP_high",val:temp,msg:`Fiebre alta: ${temp}°C`});
-  else if(temp&&temp>=38)alerts.push({key:"TEMP_fev",val:temp,msg:`Fiebre: ${temp}°C`,warn:true});
-  if(temp&&temp<35)alerts.push({key:"TEMP_low",val:temp,msg:`Hipotermia: ${temp}°C`});
-  else if(temp&&temp<36)alerts.push({key:"TEMP_hypo",val:temp,msg:`Temperatura baja: ${temp}°C`,warn:true});
-  return alerts;
-}
-
 // Real-time vitals alert during triage entry
 function _checkVitalsRealtime(){
   const box=document.getElementById("vitAlertBox");if(!box)return;
@@ -1647,818 +1641,13 @@ function _checkVitalsRealtime(){
   </div>`;
 }
 
-// qSOFA QUICK SCORE — sepsis risk (deterministic, not AI)
-function calcQSOFA(vitals,consciousness){
-  let score=0,details=[];
-  if(vitals.rr&&vitals.rr>=22){score++;details.push("FR ≥ 22 rpm");}
-  if(consciousness&&consciousness!=="alerta"){score++;details.push("Alteración nivel de consciencia");}
-  if(vitals.sys&&vitals.sys<=100){score++;details.push("PAS ≤ 100 mmHg");}
-  return{score,details,risk:score>=2?"high":"low"};
-}
+// COPILOT HINTS — thin adapters (implementations in src/clinical/copilot.js)
+function _getCopilotHints(){return getCopilotHints(TD);}
+function _renderCopilotCard(hints){return renderCopilotCard(hints);}
 
-// NEWS2 — National Early Warning Score 2 (deterministic)
-function calcNEWS2(vitals,consc){
-  const{sys,rr,spo2,hr,temp}=vitals;
-  let score=0,components=[];
-  const add=(pts,label,val)=>{if(pts>0){score+=pts;components.push({l:label,v:val,pts});}};
-  if(rr){const p=rr<=8||rr>=25?3:rr>=21?2:rr<=11?1:0;add(p,"FR",`${rr} rpm`);}
-  if(spo2){const p=spo2<=91?3:spo2<=93?2:spo2<=95?1:0;add(p,"SpO₂",`${spo2}%`);}
-  if(sys){const p=sys<=90||sys>=220?3:sys<=100?2:sys<=110?1:0;add(p,"PAS",`${sys} mmHg`);}
-  if(hr){const p=hr<=40||hr>=131?3:hr>=111?2:(hr<=50||hr>=91)?1:0;add(p,"FC",`${hr} lpm`);}
-  if(temp){const p=temp<=35?3:temp>=39.1?2:(temp>=38.1||temp<=36)?1:0;add(p,"Temp",`${temp}°C`);}
-  if(consc&&consc!=="alerta"){score+=3;components.push({l:"Consciencia",v:"Alterada",pts:3});}
-  const anyThree=components.some(c=>c.pts>=3);
-  let risk,riskLabel,riskColor;
-  if(score>=7||anyThree){risk="high";riskLabel="Alto — Respuesta de emergencia";riskColor="var(--rd)";}
-  else if(score>=5){risk="medium";riskLabel="Medio — Respuesta urgente";riskColor="var(--yw)";}
-  else{risk="low";riskLabel="Bajo — Monitoreo rutinario";riskColor="var(--gn)";}
-  return{score,risk,riskLabel,riskColor,components};
-}
+// CLINICAL TIMELINE — thin adapter (implementation in src/clinical/timeline.js)
+function _buildTriageTimeline(qsofa,news2,si,res,elapsed){return buildTriageTimeline(TD,_triageStartTime,qsofa,news2,si,res,elapsed);}
 
-// SHOCK INDEX — FC / PAS (deterministic)
-function calcShockIndex(hr,sbp){
-  hr=parseFloat(hr);sbp=parseFloat(sbp);
-  if(!hr||!sbp||sbp===0)return null;
-  const idx=hr/sbp;
-  let risk,label,color;
-  if(idx>=1.4){risk="severe";label="Riesgo severo — Atención inmediata";color="var(--rd)";}
-  else if(idx>=1.0){risk="moderate";label="Hipoperfusión moderada";color="var(--yw)";}
-  else if(idx>=0.8){risk="mild";label="Monitorear";color="var(--yw)";}
-  else{risk="normal";label="Normal";color="var(--gn)";}
-  return{idx:idx.toFixed(2),risk,label,color};
-}
-
-// COPILOT HINTS — deterministic red flags, questions, protocols per chief complaint (P6 layer 1)
-function _getCopilotHints(){
-  const m=TD.motivo;
-  if(!m)return null;
-  const vt=TD.vit||{};
-  const sint=TD.sint||[];
-  const consc=TD.consc;
-  const fc=parseFloat(vt.fc),ps=parseFloat(vt.ps),sat=parseFloat(vt.sat),fr=parseFloat(vt.fr),tem=parseFloat(vt.tem);
-  const h={flags:[],questions:[],protocols:[],urgency:"medium"};
-  if(m==="dolor_pecho"){
-    h.flags=["Posible síndrome coronario agudo","Considerar disección aórtica si dolor desgarrante irradiado a espalda"];
-    h.questions=["¿Irradia al brazo izquierdo, mandíbula o espalda?","¿Sudoración fría o náuseas?","¿Inicio súbito en reposo?","¿Historial de cardiopatía o stent previo?"];
-    h.protocols=["ECG 12 derivaciones (< 10 min)","Troponinas I/T","Acceso venoso periférico","AAS 300mg si sospecha IAM"];
-    h.urgency="high";
-  }else if(m==="disnea"){
-    h.flags=["Riesgo insuficiencia respiratoria aguda"];
-    if(sat&&sat<92)h.flags.push("SpO₂ crítica — soporte ventilatorio urgente");
-    h.questions=["¿Inicio súbito o progresivo?","¿Fiebre o tos productiva?","¿Historial de asma, EPOC o ICC?","¿Edema en miembros inferiores?"];
-    h.protocols=["Saturometría continua","Rx tórax AP",sat&&sat<92?"Gasometría arterial urgente":"Gasometría si SpO₂ < 92%","O₂ según saturación"];
-    h.urgency=sat&&sat<90?"high":"medium";
-  }else if(m==="neuro"){
-    h.flags=["Posible ACV — evaluar escala NIHSS","Descartar hipoglucemia (glucemia capilar urgente)"];
-    if(tem&&tem>38.5)h.flags.push("Fiebre + síntoma neurológico: descartar meningitis/encefalitis");
-    h.questions=["¿Déficit motor o sensitivo de inicio súbito?","¿Cefalea intensa de inicio brusco?","¿Fiebre o rigidez de nuca?","¿Duración del episodio?"];
-    h.protocols=["Glucemia capilar inmediata","TAC craneal urgente","Vía venosa + analítica completa","Escala NIHSS si ACV sospechado"];
-    h.urgency="high";
-  }else if(m==="fiebre"){
-    const qsCrit=(consc&&consc!=="alerta")||(fr&&fr>22)||(ps&&ps<=100);
-    if(qsCrit){h.flags=["Criterios qSOFA presentes — evaluar sepsis urgente","Iniciar protocolo sepsis si ≥ 2 criterios"];h.urgency="high";}
-    else{h.flags=["Investigar foco infeccioso","Descartar meningitis en fiebre + cefalea intensa"];}
-    h.questions=["¿Foco identificado (urinario, respiratorio, cutáneo)?","¿Rigidez de nuca o fotofobia?","¿Inmunosupresión o quimioterapia reciente?","¿Viaje reciente a zona endémica?"];
-    h.protocols=qsCrit?["Hemocultivos x2 antes de ATB","Lactato sérico","Antibiótico < 1h si sepsis","Hidratación IV si hipotensión"]:["Hemocultivos si fiebre sin foco","Analítica: PCR, leucocitos","Antipiréticos + hidratación"];
-  }else if(m==="trauma"){
-    h.flags=["Evaluar inestabilidad hemodinámica","Riesgo lesión columna cervical"];
-    if(ps&&ps<90)h.flags.push("Hipotensión en trauma — shock hemorrágico probable");
-    h.questions=["¿Mecanismo de alta energía (accidente vial, caída > 2m)?","¿Pérdida de consciencia?","¿Dolor cervical, torácico o abdominal?","¿Sangrado activo visible?"];
-    h.protocols=["ABCDE sistemático","Inmovilización cervical si indicado","2 vías venosas gruesas","Rx columna cervical, tórax, pelvis si trauma severo"];
-    h.urgency=ps&&ps<90?"high":"medium";
-  }else if(m==="abdominal"){
-    h.flags=["Considerar abdomen agudo quirúrgico"];
-    if(TD.tipo==="embarazada")h.flags.push("Embarazada: descartar embarazo ectópico urgente");
-    if(sint.includes("sangrado"))h.flags.push("Sangrado activo — potencialmente quirúrgico");
-    h.questions=["¿Inicio súbito o gradual?","¿Signos peritoneales (rebote, defensa)?","¿Última menstruación?","¿Cirugías abdominales previas?"];
-    h.protocols=["Analítica urgente: PCR, leucocitos, amilasa, lipasa","Ecografía abdominal","Dieta absoluta hasta valoración quirúrgica","Acceso venoso + analgesia IV"];
-  }else if(m==="otro"){
-    const conscAlt=consc&&consc!=="alerta";
-    const desc=(TD.otraDesc||"").trim();
-    if(conscAlt)h.flags.push("Alteración de consciencia — evaluación urgente");
-    if(fc&&fc>100&&ps&&ps<90)h.flags.push("Taquicardia + hipotensión — posible shock");
-    if(sint.includes("cianosis"))h.flags.push("Cianosis presente — descartar hipoxia");
-    if(sint.includes("sangrado"))h.flags.push("Sangrado activo — determinar origen");
-    if(!h.flags.length)h.flags=["Síntomas generales: monitorizar evolución","Confirmar signos vitales completos"];
-    if(desc)h.flags.unshift(`Síntoma referido: "${desc.length>70?desc.slice(0,67)+"…":desc}"`);
-    h.questions=["¿Cuándo comenzaron los síntomas y cómo han evolucionado?","¿Síntomas asociados: náuseas, fiebre, mareo?","¿Medicación habitual o alergias conocidas?","¿Enfermedades crónicas o cirugías previas?","¿Consultas de urgencias recientes?"];
-    h.protocols=["Signos vitales completos","Analítica básica si ingreso probable","Anamnesis detallada","Vigilar signos de deterioro clínico"];
-    h.urgency=conscAlt||(fc&&fc>100&&ps&&ps<90)?"high":sint.includes("cianosis")||sint.includes("sangrado")?"medium":"low";
-  }
-  return h.flags.length?h:null;
-}
-
-function _renderCopilotCard(hints){
-  const urgColor={high:"var(--rd)",medium:"var(--yw)",low:"var(--gn)"}[hints.urgency]||"var(--cy)";
-  const urgLabel={high:"Alta prioridad",medium:"Atención moderada",low:"Observación"}[hints.urgency]||"";
-  const div=document.createElement("div");
-  div.style.cssText="border:1.5px solid rgba(0,200,240,.3);border-radius:14px;padding:12px 14px;margin-top:8px;background:rgba(0,200,240,.04);animation:fadeUp .3s both";
-  let expanded=true;
-  const header=document.createElement("div");
-  header.style.cssText="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none";
-  header.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.82rem">🤖</span><span style="font-size:.76rem;font-weight:700;color:var(--cy)">Asistente clínico</span><span style="font-size:.58rem;padding:2px 7px;border-radius:20px;background:${urgColor}22;color:${urgColor};font-weight:700">${urgLabel}</span></div><span id="_cp_toggle" style="font-size:.62rem;color:var(--mu)">▾ Ocultar</span>`;
-  const body=document.createElement("div");
-  body.id="_cp_body";body.style.cssText="display:block;margin-top:10px";
-  if(hints.flags.length){
-    const fl=document.createElement("div");fl.style.cssText="margin-bottom:10px";
-    fl.innerHTML=`<div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--rd);letter-spacing:1px;margin-bottom:4px">⚠ RED FLAGS</div>${hints.flags.map(f=>`<div style="font-size:.74rem;color:var(--rd);margin-bottom:3px;font-weight:600">• ${f}</div>`).join("")}`;
-    body.appendChild(fl);
-  }
-  if(hints.questions.length){
-    const ql=document.createElement("div");ql.style.cssText="margin-bottom:10px";
-    ql.innerHTML=`<div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--cy);letter-spacing:1px;margin-bottom:4px">💡 PREGUNTAR AL PACIENTE</div>${hints.questions.map(q=>`<div style="font-size:.72rem;color:var(--tx);margin-bottom:3px">• ${q}</div>`).join("")}`;
-    body.appendChild(ql);
-  }
-  if(hints.protocols.length){
-    const pl=document.createElement("div");
-    pl.innerHTML=`<div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--gn);letter-spacing:1px;margin-bottom:6px">📋 ACCIONES RECOMENDADAS</div><div style="display:flex;flex-wrap:wrap;gap:4px">${hints.protocols.map(p=>`<span style="font-size:.66rem;padding:3px 8px;border-radius:20px;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--gn)">${p}</span>`).join("")}</div>`;
-    body.appendChild(pl);
-  }
-  div.appendChild(header);div.appendChild(body);
-  header.onclick=()=>{expanded=!expanded;body.style.display=expanded?"block":"none";const tg=document.getElementById("_cp_toggle");if(tg)tg.textContent=expanded?"▾ Ocultar":"▸ Ver sugerencias";};
-  return div;
-}
-
-// CLINICAL TIMELINE — auto-generated event log from triage session (P5)
-function _buildTriageTimeline(qsofa,news2,si,res,elapsed){
-  if(!_triageStartTime)return"";
-  const vt=TD.vit||{};
-  const hasVit=vt.ps||vt.fc||vt.sat||vt.tem||vt.fr;
-  const critAlerts=checkCriticalVitals({sys:parseFloat(vt.ps),hr:parseFloat(vt.fc),spo2:parseFloat(vt.sat),rr:parseFloat(vt.fr),temp:parseFloat(vt.tem)});
-  const crits=critAlerts.filter(a=>!a.warn);
-  const warns=critAlerts.filter(a=>a.warn);
-  const hasAlerts=crits.length||warns.length||(qsofa&&qsofa.risk==="high")||(news2&&news2.risk!=="low")||(si&&si.risk!=="normal");
-  if(!hasVit&&!hasAlerts)return"";
-  const fmtT=ms=>{const d=new Date(ms);return`${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;};
-  const dot="···";
-  const endMs=elapsed!=null?_triageStartTime+elapsed*1000:Date.now();
-  const classIcon={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢"}[res.clasificacion]||"⚪";
-  const classLabel={ROJO:"ATENCIÓN INMEDIATA",AMARILLO:"URGENTE",VERDE:"PUEDE ESPERAR"}[res.clasificacion]||"";
-  const evts=[];
-  evts.push({t:fmtT(_triageStartTime),ic:"🏥",txt:"Triage iniciado",sub:null,lv:"normal"});
-  if(hasVit){
-    const parts=[vt.ps?`PA ${vt.ps}/${vt.pd||"?"}`:null,vt.fc?`FC ${vt.fc} lpm`:null,vt.sat?`SpO₂ ${vt.sat}%`:null,vt.tem?`${vt.tem}°C`:null,vt.fr?`FR ${vt.fr} rpm`:null].filter(Boolean);
-    evts.push({t:dot,ic:"📊",txt:"Signos vitales",sub:parts.join(" · "),lv:"normal"});
-  }
-  if(crits.length)evts.push({t:dot,ic:"🚨",txt:crits.length===1?"Alerta crítica":`${crits.length} alertas críticas`,sub:crits.map(a=>a.msg).join(" · "),lv:"critical"});
-  else if(warns.length)evts.push({t:dot,ic:"⚠",txt:warns.map(a=>a.msg).join(" · "),sub:null,lv:"warning"});
-  if(qsofa&&qsofa.risk==="high")evts.push({t:dot,ic:"⚠",txt:`qSOFA ${qsofa.score}/3 — Posible sepsis`,sub:qsofa.details.length?qsofa.details.join(" · "):null,lv:"critical"});
-  if(news2&&news2.risk==="high")evts.push({t:dot,ic:"🚨",txt:`NEWS2 ${news2.score} — Respuesta de emergencia`,sub:null,lv:"critical"});
-  else if(news2&&news2.risk==="medium")evts.push({t:dot,ic:"⚠",txt:`NEWS2 ${news2.score} — Respuesta urgente`,sub:null,lv:"warning"});
-  if(si&&si.risk==="severe")evts.push({t:dot,ic:"⚡",txt:`Shock Index ${si.idx} — Riesgo severo`,sub:null,lv:"critical"});
-  else if(si&&si.risk==="moderate")evts.push({t:dot,ic:"⚡",txt:`Shock Index ${si.idx} — Hipoperfusión`,sub:null,lv:"warning"});
-  evts.push({t:fmtT(endMs),ic:classIcon,txt:`${res.clasificacion} — ${classLabel}`,sub:null,lv:res.clasificacion==="ROJO"?"critical":res.clasificacion==="AMARILLO"?"warning":"normal"});
-  if(elapsed!=null){const m=Math.floor(elapsed/60),s=elapsed%60;evts.push({t:dot,ic:"⏱",txt:`Duración total: ${m}m ${String(s).padStart(2,"0")}s`,sub:null,lv:"normal"});}
-  const cM={critical:"var(--rd)",warning:"var(--yw)",normal:"var(--tx)"};
-  const dM={critical:"var(--rd)",warning:"var(--yw)",normal:"var(--bd)"};
-  const rows=evts.map(ev=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--bd)">
-    <div style="font-family:JetBrains Mono,monospace;font-size:.58rem;color:var(--mu);flex-shrink:0;width:28px;padding-top:3px;text-align:right">${ev.t}</div>
-    <div style="width:5px;height:5px;border-radius:50%;background:${dM[ev.lv]};flex-shrink:0;margin-top:6px;box-shadow:0 0 4px ${dM[ev.lv]}99"></div>
-    <div style="flex:1;min-width:0">
-      <div style="font-size:.77rem;color:${cM[ev.lv]};font-weight:${ev.lv==="normal"?"400":"600"}">${ev.ic} ${ev.txt}</div>
-      ${ev.sub?`<div style="font-size:.66rem;color:var(--mu);margin-top:2px;line-height:1.4">${ev.sub}</div>`:""}
-    </div></div>`).join("");
-  return`<div class="card"><div class="clabel">Línea de tiempo clínica</div>${rows}</div>`;
-}
-
-// I18N
-const L={
-  es:{sub:"Sistema medico inteligente",login:"Iniciar sesion",register:"Registrarse",cont:"Continuar",forgot:"Olvide mi contrasena",google:"Continuar con Google",
-    ptnTitle:"Acceso como paciente",ptnSub:"Ingresa tu numero de identificacion para acceder a tu historia clinica",staffLink:"Personal medico / Administrador",patientEnter:"Ingresar",backToPatient:"← Volver",nameLbl:"Nombre",emailLbl:"Correo",passLbl:"Contrasena",orDivider:"o",idPlaceholder:"N.º ID",lookupTitle:"Identificar paciente",lookupSub:"Ingresa el numero de identificacion para cargar la historia clinica",lookupSearch:"Buscar",lookupSkip:"Continuar sin paciente registrado",
-    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historial",cola:"Cola",config:"Ajustes",prof:"Perfil",
-    colaTitle:"Cola de espera",colaPending:"Pendientes",colaAttended:"Atendidos",colaMarkDone:"Atendido",colaUndone:"Pendiente",colaEmpty:"Sin pacientes pendientes",colaShift:"pacientes en el turno",colaOverdue:"VENCIDO",colaRemaining:"restantes",colaAgo:"hace",colaMin:"min",colaRefresh:"Actualizar",
-    gcsTitle:"Escala de Glasgow",gcsSub:"Evaluacion del nivel de consciencia",gcsEye:"Apertura ocular",gcsVerbal:"Respuesta verbal",gcsMotor:"Respuesta motora",gcsSevLeve:"Leve",gcsSevMod:"Moderado",gcsSevGrave:"Grave",gcsApply:"Aplicar al triage",gcsBtn:"Calcular Glasgow",gcsApplied:"GCS aplicado",
-    vitcamTitle:"Vitales por imagen",vitcamSub:"Fotografía el monitor y la IA extrae los valores",vitcamDrop:"Toca para fotografiar o seleccionar imagen",vitcamAnalyze:"Analizar imagen",vitcamApply:"Aplicar vitales",vitcamApplied:"Vitales aplicados",vitcamError:"No se pudo leer la imagen. Intente con mejor iluminacion.",vitcamAnalyzing:"Analizando imagen...",
-    prehTitle:"Notificacion Pre-hospitalaria",prehSub:"Aviso de llegada al hospital",prehAge:"Edad aprox.",prehSex:"Sexo",prehSexM:"M",prehSexF:"F",prehMechanism:"Mecanismo / motivo",prehVitals:"Signos vitales",prehTx:"Tratamiento prehospitalario",prehTxPh:"Ej: O2 15L/min, via venosa, adrenalina 1mg...",prehETA:"ETA (minutos)",prehSend:"Enviar notificacion",prehSent:"Notificacion enviada",prehCopied:"Notificacion copiada",
-    handoffTitle:"Resumen de Turno",handoffSub:"Reporte de cierre y traspaso de guardia",handoffGenerate:"Generar resumen",handoffNotes:"Notas de traspaso",handoffNotesPh:"Pendientes, observaciones criticas, pacientes a vigilar...",handoffShare:"Compartir reporte",handoffCopy:"Reporte copiado",handoffShift:"Turno actual (ultimas 8h)",handoffPending:"Pendientes",handoffAttended:"Atendidos",handoffCritical:"Criticos",handoffTotal:"Total",
-    dospTitle:"Calculadora Dosis Pediatrica",dospWeight:"Peso del paciente (kg)",dospWeightPh:"Ej: 20",dospConc:"Concentracion disponible",dospDrug:"Seleccione medicamento",dospDose:"Dosis calculada",dospVol:"Volumen",dospMax:"Dosis maxima",dospFreq:"Frecuencia",dospWarn:"Dosis supera el maximo recomendado. Usar dosis maxima.",dospNoData:"Seleccione medicamento y peso.",
-    mciMode:"MODO MCI",mciActive:"MCI ACTIVO",mciSetup:"Activar Modo MCI",mciSetupSub:"Incidente de multiples victimas — triage START rapido",mciName:"Nombre del incidente",mciNamePh:"Ej: Accidente vial ruta 7",mciActivate:"Activar MCI",mciDeactivate:"Desactivar MCI",mciPatient:"Paciente #",mciImmediate:"INMEDIATO",mciDelayed:"DIFERIDO",mciMinor:"MENOR",mciExpectant:"EXPECTANTE",mciFullTriage:"Triage completo",mciConfirmEnd:"Desactivar MCI y volver al modo normal?",mciTotal:"Total",
-    search:"Buscar",myMeds:"Mis meds",alerts:"Alertas",inter:"Inter.",
-    searchDrug:"Buscar medicamento",consultAI:"Consultar con IA",
-    newMed:"Nuevo medicamento",dose:"Dosis",freq:"Frecuencia",hour:"Hora",notes:"Notas",addMed:"+ Agregar",
-    addList:"Agregar a lista",verify:"Verificar con IA",
-    recentT:"Ultimos triages",userMgmt:"Gestion de usuarios",histTitle:"Historial de triages",
-    appearance:"Apariencia",darkMode:"Modo oscuro",darkSub:"Interfaz con fondo oscuro",account:"Cuenta",zoomMode:"Tamaño de texto",zoomSub:"Ajuste para mejor visibilidad",
-    reminders:"Recordatorios de hoy",alarmsNote:"Las alarmas suenan mientras la app esta abierta.",
-    hc:"Historia",
-    signOut:"Cerrar sesion",
-    loading:"Cargando...",
-    painFacialOr:"O usa la escala facial",
-    analyzing:"Analizando datos...",
-    analyzingSub:"La IA evalua signos vitales y sintomas.",
-    immAttn:"ATENCION INMEDIATA",
-    urgent:"URGENTE",
-    canWait:"PUEDE ESPERAR",
-    adultLbl:"Adulto (18-59)",
-    elderLbl:"Tercera edad (60+)",
-    pregLbl:"Embarazada",
-    childLbl:"Pediatrico (0-12)",
-    f0:"Sin dolor",
-    f2:"Muy leve",
-    f4:"Leve",
-    f6:"Moderado",
-    f8:"Fuerte",
-    f10:"Insoportable",
-    hc:"Historia",
-    newHC:"Nueva historia",
-    patientData:"Datos del paciente",
-    medHistory:"Antecedentes medicos",
-    allergies:"Alergias conocidas",
-    currentMeds:"Medicacion actual",
-    additionalNotes:"Notas adicionales",
-    saveHC:"Guardar historia clinica",
-    painScale:"Escala de dolor",
-    painNumeric:"Escala numerica (0-10)",
-    painFacial:"Escala facial",
-    painFacialSub:"Para ninos o dificultad de expresion",
-    noPain:"Sin dolor",
-    unbearable:"Insoportable",
-    patientType:"Tipo de paciente",
-    mainReason:"Motivo de consulta",
-    consciousness:"Nivel de consciencia",
-    vitals:"Signos vitales",
-    additionalSymptoms:"Sintomas adicionales",
-    childAge:"Edad del nino",
-    gestWeeks:"Semanas de gestacion",
-    symptomDetail:"Caracteristicas del sintoma",
-    clinicalAnalysis:"Analisis clinico",
-    priorityActions:"Acciones prioritarias",
-    criticalAlerts:"Alertas criticas",
-    interDetail:"Detalle por medicamento",
-    whySimple:"¿Por que? Explicacion simple",
-    sameFamily:"Tienen el mismo efecto — posible duplicacion",
-    seeDoctor:"Consulta a tu medico antes de tomar estos juntos",
-    extractedByAI:"Datos extraidos por IA",
-    photoSub:"La IA puede extraer antecedentes de documentos medicos",
-    tapPhoto:"Toca para tomar foto o subir imagen",
-    analyzingDoc:"Analizando documento con IA...",
-    noMedicalInfo:"No se encontro informacion medica. Ingresa los datos manualmente.",
-    noHC:"Sin historias clinicas aun.",
-    male:"Masculino",
-    female:"Femenino",
-    other:"Otro",
-    checkInter:"Verificar interacciones",disclaimer:"Herramienta de apoyo. Decision final corresponde al personal medico.",
-    newPatient:"Nuevo paciente",resetSent:"Correo enviado. Revisa tu bandeja.",resetErr:"No se pudo enviar.",
-    interDesc:"Agrega 2 o mas medicamentos para verificar.",
-    step:"Paso",of:"de",back:"Atras",continueBtn:"Continuar",analyze:"Analizar",analyzingLabel:"EVALUANDO RIESGO CLINICO",
-    selectProfile:"Seleccione el perfil del paciente.",selectSymptom:"Seleccione el sintoma dominante.",evalAlert:"Evalua el estado de alerta.",enterVitals:"Ingrese los valores disponibles.",selectApply:"Selecciona las que apliquen.",markApply:"Marque todos los que apliquen.",
-    teenLbl:"Adolescente (13-17)",pedNote:"Paciente pediatrico / adolescente",pedNoteSub:"Completar con padre, madre o tutor.",
-    chestPainL:"Dolor en el pecho",breathingL:"Dificultad para respirar",traumaL:"Trauma / golpe / herida",abdominalL:"Dolor abdominal / vomito",neuroL:"Convulsion / perdida de consciencia",feverL:"Fiebre alta",otherL:"Otro / sintomas generales",
-    consc1:"Alerta — responde normalmente",consc2:"Responde solo a voz",consc3:"Responde solo al dolor",consc4:"No responde (inconsciente)",
-    sym1:"Sangrado activo",sym2:"Palidez / sudoracion fria",sym3:"Mareo / perdida de equilibrio",sym4:"Cianosis (labios o unas azulados)",sym5:"Temperatura >39C",sym6:"Debilidad muscular intensa",sym7:"Ninguno de los anteriores",
-    vSysBP:"P. sistolica (mmHg)",vDiaBP:"P. diastolica (mmHg)",vHR:"Frec. cardiaca (lpm)",vSpO2:"Saturacion O2 (%)",vTemp:"Temperatura (C)",vRR:"Frec. respiratoria (rpm)",
-    welcomeHello:"Bienvenido",changePass:"Cambiar contrasena",curPass:"Contrasena actual",newPass:"Nueva contrasena",confirmPass:"Confirmar contrasena",savePass:"Guardar",passChanged:"Contrasena actualizada.",passError:"Error al cambiar contrasena.",passMatch:"Las contrasenas no coinciden.",passShort:"Minimo 6 caracteres.",reauth:"Contrasena actual incorrecta.",photoUpdated:"Foto actualizada.",
-    mobilityLbl:"Movilidad / capacidad reducida",mobilityNote:"Se requiere enfermero o tutor presente",mobilityNoteSub:"Este paciente necesita asistencia durante la evaluacion. Asegurese de contar con el apoyo necesario antes de continuar.",
-    ageErrorPed:"Edad invalida para paciente pediatrico. El rango valido es 0 a 12 anos.",ageErrorTeen:"Edad invalida para adolescente. El rango valido es 13 a 17 anos.",
-    rememberMe:"Recordarme en este dispositivo",rememberWarn:"Las credenciales se guardaran en este dispositivo. No uses esta opcion en dispositivos compartidos o publicos.",rememberConfirm:"Entendido, guardar",rememberCancel:"Cancelar",
-    inactWarn:"Tu sesion se cerrara pronto por inactividad.",stayActive:"Seguir activo",sessionOut:"Sesion cerrada por inactividad.",
-    voiceMode:"Modo Voz",voiceListening:"Escuchando...",voiceHeard:"Entendido:",voiceNotUnderstood:"No entendi, repite por favor.",voiceNotSupported:"Tu navegador no soporta comandos de voz.",voiceSayNumber:"Di el numero de tu opcion.",voiceSayScale:"Di un numero del cero al diez.",voiceSelectMulti:"Di el numero de otra opcion o di siguiente para continuar.",voiceConfirmed:"Seleccionado:",voiceNext:"Siguiente.",
-    notesFabTitle:"Anotaciones",notesPh:"Escribe observaciones clinicas relevantes (antecedentes, alergias, medicacion actual, contexto especial)...",notesSave:"Guardar notas",notesIncluded:"Notas incluidas en el analisis",notesLabel:"ANOTACIONES CLINICAS",notesChars:"caracteres",
-    noData:"Sin datos.",
-    countryLabel:"Pais / Country",countrySub:"Adapta terminologia y sistema de triage.",
-    insLabel:"Aseguradora / EPS",
-    nearbyTitle:"Centros de salud cercanos",nearbyEpsLbl:"Tu aseguradora / EPS",nearbyBtn:"Buscar centros",nearbyLocating:"Obteniendo ubicacion...",nearbyNone:"Sin resultados cercanos.",nearbyError:"No se pudo obtener la ubicacion.",
-    chartTitle:"Estadisticas",chartDay:"Hoy",chartWeek:"Semana",chartMonth:"Mes",chartYear:"Ano",chartByColor:"Por clasificacion",chartByType:"Por tipo de paciente",chartByMotivo:"Por motivo",chartNoData:"Sin datos suficientes",
-    filterAll:"Todos",filterByMotivo:"Por motivo",
-    histAll:"Todos",statTotal:"Total",statCritical:"Criticos",statUrgent:"Urgentes",statStable:"Estables",
-    nearbySearching:"Buscando...",nearbyFoundN:"centros encontrados",
-    histLegend:"Leyenda",legendCritical:"Atencion inmediata",legendUrgent:"Atencion urgente",legendStable:"Puede esperar",legendNotes:"Anotaciones clinicas",legendPerformedBy:"Realizado por",
-    mPecho:"Dolor pecho",mDisnea:"Dif. respirar",mTrauma:"Trauma",mAbdominal:"Dolor abdominal",mNeuro:"Neurologico",mFiebre:"Fiebre",mOtro:"Otro",
-    tAdulto:"Adulto",tMayor:"Mayor",tNino:"Nino",tAdol:"Adol.",tEmbar:"Embar.",tMovil:"Movil.",
-    noMeds:"Sin medicamentos registrados.",myMedsLabel:"Mis medicamentos",noReminders:"Agrega medicamentos para ver recordatorios.",medAdded:"Medicamento agregado",medDeleted:"Eliminado",medActivated:"Activado",medDeactivated:"Desactivado",
-    clinicalNotes:"Anotaciones clinicas",clinicalNotesSub:"Revise y complete con informacion relevante del paciente.",notesHint:"Modifique si el paciente refiere alergias, medicacion actual o antecedentes patologicos.",
-    defaultNotes:"El paciente no refiere alergias medicamentosas conocidas ni antecedentes patologicos de relevancia clinica al momento de la evaluacion. No reporta medicacion habitual en curso. Sin historia previa de cirugias, hospitalizaciones recientes ni enfermedades cronicas diagnosticadas. No se dispone de informacion adicional del entorno que modifique el manejo inicial.",
-  },
-  en:{sub:"Intelligent medical system",login:"Sign in",register:"Sign up",cont:"Continue",forgot:"Forgot password",google:"Continue with Google",
-    ptnTitle:"Patient access",ptnSub:"Enter your ID number to access your clinical history",staffLink:"Medical staff / Administrator",patientEnter:"Enter",backToPatient:"← Back",nameLbl:"Name",emailLbl:"Email",passLbl:"Password",orDivider:"or",idPlaceholder:"ID number",lookupTitle:"Identify patient",lookupSub:"Enter ID number to load clinical history",lookupSearch:"Search",lookupSkip:"Continue without registered patient",
-    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"History",cola:"Queue",config:"Settings",prof:"Profile",
-    colaTitle:"Waiting queue",colaPending:"Pending",colaAttended:"Attended",colaMarkDone:"Attended",colaUndone:"Pending",colaEmpty:"No pending patients",colaShift:"patients this shift",colaOverdue:"OVERDUE",colaRemaining:"remaining",colaAgo:"ago",colaMin:"min",colaRefresh:"Refresh",
-    gcsTitle:"Glasgow Coma Scale",gcsSub:"Quantitative consciousness assessment",gcsEye:"Eye opening",gcsVerbal:"Verbal response",gcsMotor:"Motor response",gcsSevLeve:"Mild",gcsSevMod:"Moderate",gcsSevGrave:"Severe",gcsApply:"Apply to triage",gcsBtn:"Calculate Glasgow",gcsApplied:"GCS applied",
-    vitcamTitle:"Vitals from image",vitcamSub:"Photograph the monitor and AI extracts the values",vitcamDrop:"Tap to photograph or select image",vitcamAnalyze:"Analyze image",vitcamApply:"Apply vitals",vitcamApplied:"Vitals applied",vitcamError:"Could not read the image. Try better lighting.",vitcamAnalyzing:"Analyzing image...",
-    prehTitle:"Pre-hospital Notification",prehSub:"Arrival alert to hospital",prehAge:"Approx. age",prehSex:"Sex",prehSexM:"M",prehSexF:"F",prehMechanism:"Mechanism / reason",prehVitals:"Vital signs",prehTx:"Pre-hospital treatment",prehTxPh:"E.g.: O2 15L/min, IV access, epinephrine 1mg...",prehETA:"ETA (minutes)",prehSend:"Send notification",prehSent:"Notification sent",prehCopied:"Notification copied",
-    handoffTitle:"Shift Summary",handoffSub:"Shift closure and handoff report",handoffGenerate:"Generate summary",handoffNotes:"Handoff notes",handoffNotesPh:"Pending items, critical observations, patients to watch...",handoffShare:"Share report",handoffCopy:"Report copied",handoffShift:"Current shift (last 8h)",handoffPending:"Pending",handoffAttended:"Attended",handoffCritical:"Critical",handoffTotal:"Total",
-    dospTitle:"Pediatric Dose Calculator",dospWeight:"Patient weight (kg)",dospWeightPh:"E.g.: 20",dospConc:"Available concentration",dospDrug:"Select medication",dospDose:"Calculated dose",dospVol:"Volume",dospMax:"Maximum dose",dospFreq:"Frequency",dospWarn:"Dose exceeds recommended maximum. Use maximum dose.",dospNoData:"Select medication and weight.",
-    mciMode:"MCI MODE",mciActive:"MCI ACTIVE",mciSetup:"Activate MCI Mode",mciSetupSub:"Mass casualty incident — rapid START triage",mciName:"Incident name",mciNamePh:"E.g.: Highway accident route 7",mciActivate:"Activate MCI",mciDeactivate:"Deactivate MCI",mciPatient:"Patient #",mciImmediate:"IMMEDIATE",mciDelayed:"DELAYED",mciMinor:"MINOR",mciExpectant:"EXPECTANT",mciFullTriage:"Full triage",mciConfirmEnd:"Deactivate MCI and return to normal mode?",mciTotal:"Total",
-    search:"Search",myMeds:"My meds",alerts:"Alerts",inter:"Interact.",
-    searchDrug:"Search medication",consultAI:"Consult AI",
-    newMed:"New medication",dose:"Dose",freq:"Frequency",hour:"Time",notes:"Notes",addMed:"+ Add",
-    addList:"Add to list",verify:"Verify with AI",
-    recentT:"Recent triages",userMgmt:"User management",histTitle:"Triage history",
-    appearance:"Appearance",darkMode:"Dark mode",darkSub:"Dark background interface",account:"Account",zoomMode:"Text size",zoomSub:"Adjust for better visibility",
-    reminders:"Today reminders",alarmsNote:"Alarms ring while the app is open.",
-    hc:"Records",
-    signOut:"Sign out",
-    loading:"Loading...",
-    painFacialOr:"Or use the facial scale",
-    analyzing:"Analyzing data...",
-    analyzingSub:"AI evaluates vital signs and symptoms.",
-    immAttn:"IMMEDIATE ATTENTION",
-    urgent:"URGENT",
-    canWait:"CAN WAIT",
-    adultLbl:"Adult (18-59)",
-    elderLbl:"Elderly (60+)",
-    pregLbl:"Pregnant",
-    childLbl:"Pediatric (0-12)",
-    f0:"No pain",
-    f2:"Very mild",
-    f4:"Mild",
-    f6:"Moderate",
-    f8:"Strong",
-    f10:"Unbearable",
-    hc:"Records",
-    newHC:"New record",
-    patientData:"Patient data",
-    medHistory:"Medical history",
-    allergies:"Known allergies",
-    currentMeds:"Current medication",
-    additionalNotes:"Additional notes",
-    saveHC:"Save medical record",
-    painScale:"Pain scale",
-    painNumeric:"Numeric scale (0-10)",
-    painFacial:"Facial scale",
-    painFacialSub:"For children or communication difficulties",
-    noPain:"No pain",
-    unbearable:"Unbearable",
-    patientType:"Patient type",
-    mainReason:"Main reason for visit",
-    consciousness:"Level of consciousness",
-    vitals:"Vital signs",
-    additionalSymptoms:"Additional symptoms",
-    childAge:"Child age",
-    gestWeeks:"Weeks of pregnancy",
-    symptomDetail:"Symptom characteristics",
-    clinicalAnalysis:"Clinical analysis",
-    priorityActions:"Priority actions",
-    criticalAlerts:"Critical alerts",
-    interDetail:"Detail per medication",
-    whySimple:"Why? Simple explanation",
-    sameFamily:"Same effect — possible duplication",
-    seeDoctor:"Consult your doctor before taking these together",
-    extractedByAI:"Data extracted by AI",
-    photoSub:"AI can extract history from medical documents",
-    tapPhoto:"Tap to take photo or upload image",
-    analyzingDoc:"Analyzing document with AI...",
-    noMedicalInfo:"No medical information found. Enter data manually.",
-    noHC:"No medical records yet.",
-    male:"Male",
-    female:"Female",
-    other:"Other",
-    checkInter:"Check interactions",disclaimer:"Support tool. Final decision belongs to medical staff.",
-    newPatient:"New patient",resetSent:"Recovery email sent.",resetErr:"Could not send.",
-    interDesc:"Add 2 or more medications to verify.",
-    step:"Step",of:"of",back:"Back",continueBtn:"Continue",analyze:"Analyze",analyzingLabel:"EVALUATING CLINICAL RISK",
-    selectProfile:"Select patient profile.",selectSymptom:"Select the main symptom.",evalAlert:"Assess level of consciousness.",enterVitals:"Enter available values.",selectApply:"Select all that apply.",markApply:"Check all that apply.",
-    teenLbl:"Adolescent (13-17)",pedNote:"Pediatric / adolescent patient",pedNoteSub:"Complete with parent or guardian.",
-    chestPainL:"Chest pain",breathingL:"Difficulty breathing",traumaL:"Trauma / injury",abdominalL:"Abdominal pain / vomiting",neuroL:"Seizure / loss of consciousness",feverL:"High fever",otherL:"Other / general symptoms",
-    consc1:"Alert — responds normally",consc2:"Responds only to voice",consc3:"Responds only to pain",consc4:"Unresponsive (unconscious)",
-    sym1:"Active bleeding",sym2:"Pallor / cold sweating",sym3:"Dizziness / loss of balance",sym4:"Cyanosis (blue lips or nails)",sym5:"Temperature >39C",sym6:"Severe muscle weakness",sym7:"None of the above",
-    vSysBP:"Systolic BP (mmHg)",vDiaBP:"Diastolic BP (mmHg)",vHR:"Heart rate (bpm)",vSpO2:"O2 saturation (%)",vTemp:"Temperature (C)",vRR:"Resp. rate (rpm)",
-    welcomeHello:"Welcome",changePass:"Change password",curPass:"Current password",newPass:"New password",confirmPass:"Confirm password",savePass:"Save",passChanged:"Password updated.",passError:"Error changing password.",passMatch:"Passwords do not match.",passShort:"Minimum 6 characters.",reauth:"Current password is incorrect.",photoUpdated:"Photo updated.",
-    mobilityLbl:"Reduced mobility / capacity",mobilityNote:"Nurse or guardian must be present",mobilityNoteSub:"This patient requires assistance during evaluation. Make sure the necessary support is available before continuing.",
-    ageErrorPed:"Invalid age for pediatric patient. Valid range is 0 to 12 years.",ageErrorTeen:"Invalid age for adolescent. Valid range is 13 to 17 years.",
-    rememberMe:"Remember me on this device",rememberWarn:"Credentials will be saved on this device. Do not use this option on shared or public devices.",rememberConfirm:"Got it, save",rememberCancel:"Cancel",
-    inactWarn:"Your session will close soon due to inactivity.",stayActive:"Stay active",sessionOut:"Session closed due to inactivity.",
-    voiceMode:"Voice Mode",voiceListening:"Listening...",voiceHeard:"Got it:",voiceNotUnderstood:"Didn't catch that, please repeat.",voiceNotSupported:"Your browser does not support voice commands.",voiceSayNumber:"Say the number of your option.",voiceSayScale:"Say a number from zero to ten.",voiceSelectMulti:"Say another option number or say next to continue.",voiceConfirmed:"Selected:",voiceNext:"Next.",
-    notesFabTitle:"Notes",notesPh:"Write relevant clinical observations (history, allergies, current medication, special context)...",notesSave:"Save notes",notesIncluded:"Notes included in analysis",notesLabel:"CLINICAL NOTES",notesChars:"chars",
-    noData:"No data.",
-    countryLabel:"Country",countrySub:"Adapts terminology and triage system.",
-    insLabel:"Insurance provider",
-    nearbyTitle:"Nearby health centers",nearbyEpsLbl:"Your insurance",nearbyBtn:"Search centers",nearbyLocating:"Getting location...",nearbyNone:"No nearby results.",nearbyError:"Could not get location.",
-    chartTitle:"Statistics",chartDay:"Today",chartWeek:"Week",chartMonth:"Month",chartYear:"Year",chartByColor:"By classification",chartByType:"By patient type",chartByMotivo:"By reason",chartNoData:"Not enough data",
-    filterAll:"All",filterByMotivo:"By reason",
-    histAll:"All",statTotal:"Total",statCritical:"Critical",statUrgent:"Urgent",statStable:"Stable",
-    nearbySearching:"Searching...",nearbyFoundN:"centers found",
-    histLegend:"Legend",legendCritical:"Immediate care",legendUrgent:"Priority care",legendStable:"Can wait",legendNotes:"Clinical notes",legendPerformedBy:"Performed by",
-    mPecho:"Chest pain",mDisnea:"Dyspnea",mTrauma:"Trauma",mAbdominal:"Abdominal pain",mNeuro:"Neurological",mFiebre:"Fever",mOtro:"Other",
-    tAdulto:"Adult",tMayor:"Elder",tNino:"Child",tAdol:"Adol.",tEmbar:"Preg.",tMovil:"Mobil.",
-    noMeds:"No medications registered.",myMedsLabel:"My medications",noReminders:"Add medications to see reminders.",medAdded:"Medication added",medDeleted:"Removed",medActivated:"Activated",medDeactivated:"Deactivated",
-    clinicalNotes:"Clinical annotations",clinicalNotesSub:"Review and complete with relevant patient information.",notesHint:"Modify if patient reports allergies, current medication or relevant medical history.",
-    defaultNotes:"Patient denies known drug allergies and no clinically relevant pathological history at time of evaluation. No current regular medication reported. No prior surgeries, recent hospitalizations or diagnosed chronic conditions. No additional contextual information available that would modify initial management.",
-  },
-  pt:{sub:"Sistema medico inteligente",login:"Entrar",register:"Registrar",cont:"Continuar",forgot:"Esqueci a senha",google:"Continuar com Google",
-    ptnTitle:"Acesso como paciente",ptnSub:"Digite seu numero de identificacao para acessar seu historico",staffLink:"Equipe medica / Administrador",patientEnter:"Entrar",backToPatient:"← Voltar",nameLbl:"Nome",emailLbl:"Email",passLbl:"Senha",orDivider:"ou",idPlaceholder:"N.º ID",lookupTitle:"Identificar paciente",lookupSub:"Digite o numero de identificacao para carregar o historico",lookupSearch:"Buscar",lookupSkip:"Continuar sem paciente registrado",
-    dash:"Dashboard",triage:"Triagem",meds:"Meds",hist:"Historico",cola:"Fila",config:"Ajustes",prof:"Perfil",
-    colaTitle:"Fila de espera",colaPending:"Pendentes",colaAttended:"Atendidos",colaMarkDone:"Atendido",colaUndone:"Pendente",colaEmpty:"Sem pacientes pendentes",colaShift:"pacientes no turno",colaOverdue:"VENCIDO",colaRemaining:"restantes",colaAgo:"ha",colaMin:"min",colaRefresh:"Atualizar",
-    gcsTitle:"Escala de Glasgow",gcsSub:"Avaliacao do nivel de consciencia",gcsEye:"Abertura ocular",gcsVerbal:"Resposta verbal",gcsMotor:"Resposta motora",gcsSevLeve:"Leve",gcsSevMod:"Moderado",gcsSevGrave:"Grave",gcsApply:"Aplicar ao triage",gcsBtn:"Calcular Glasgow",gcsApplied:"GCS aplicado",
-    vitcamTitle:"Vitais por imagem",vitcamSub:"Fotografe o monitor e a IA extrai os valores",vitcamDrop:"Toque para fotografar ou selecionar imagem",vitcamAnalyze:"Analisar imagem",vitcamApply:"Aplicar vitais",vitcamApplied:"Vitais aplicados",vitcamError:"Nao foi possivel ler a imagem. Tente com melhor iluminacao.",vitcamAnalyzing:"Analisando imagem...",
-    prehTitle:"Notificacao Pre-hospitalar",prehSub:"Aviso de chegada ao hospital",prehAge:"Idade aprox.",prehSex:"Sexo",prehSexM:"M",prehSexF:"F",prehMechanism:"Mecanismo / motivo",prehVitals:"Sinais vitais",prehTx:"Tratamento pre-hospitalar",prehTxPh:"Ex: O2 15L/min, acesso venoso, adrenalina 1mg...",prehETA:"ETA (minutos)",prehSend:"Enviar notificacao",prehSent:"Notificacao enviada",prehCopied:"Notificacao copiada",
-    handoffTitle:"Resumo de Turno",handoffSub:"Relatorio de fechamento e passagem de plantao",handoffGenerate:"Gerar resumo",handoffNotes:"Notas de passagem",handoffNotesPh:"Pendencias, observacoes criticas, pacientes a vigiar...",handoffShare:"Compartilhar relatorio",handoffCopy:"Relatorio copiado",handoffShift:"Turno atual (ultimas 8h)",handoffPending:"Pendentes",handoffAttended:"Atendidos",handoffCritical:"Criticos",handoffTotal:"Total",
-    dospTitle:"Calculadora Dose Pediatrica",dospWeight:"Peso do paciente (kg)",dospWeightPh:"Ex: 20",dospConc:"Concentracao disponivel",dospDrug:"Selecione medicamento",dospDose:"Dose calculada",dospVol:"Volume",dospMax:"Dose maxima",dospFreq:"Frequencia",dospWarn:"Dose supera o maximo recomendado. Usar dose maxima.",dospNoData:"Selecione medicamento e peso.",
-    mciMode:"MODO MCI",mciActive:"MCI ATIVO",mciSetup:"Ativar Modo MCI",mciSetupSub:"Incidente com multiplas vitimas — triagem START rapida",mciName:"Nome do incidente",mciNamePh:"Ex: Acidente rodoviario rodovia 7",mciActivate:"Ativar MCI",mciDeactivate:"Desativar MCI",mciPatient:"Paciente #",mciImmediate:"IMEDIATO",mciDelayed:"DIFERIDO",mciMinor:"MENOR",mciExpectant:"EXPECTANTE",mciFullTriage:"Triagem completa",mciConfirmEnd:"Desativar MCI e voltar ao modo normal?",mciTotal:"Total",
-    search:"Buscar",myMeds:"Meus meds",alerts:"Alertas",inter:"Interac.",
-    searchDrug:"Buscar medicamento",consultAI:"Consultar IA",
-    newMed:"Novo medicamento",dose:"Dose",freq:"Frequencia",hour:"Hora",notes:"Notas",addMed:"+ Adicionar",
-    addList:"Adicionar lista",verify:"Verificar com IA",
-    recentT:"Ultimas triagens",userMgmt:"Gestao usuarios",histTitle:"Historico triagens",
-    appearance:"Aparencia",darkMode:"Modo escuro",darkSub:"Interface fundo escuro",account:"Conta",zoomMode:"Tamanho do texto",zoomSub:"Ajuste para melhor visibilidade",
-    reminders:"Lembretes de hoje",alarmsNote:"Alarmes soam enquanto app esta aberto.",
-    hc:"Historico",
-    signOut:"Sair",
-    loading:"Carregando...",
-    painFacialOr:"Ou use a escala facial",
-    analyzing:"Analisando dados...",
-    analyzingSub:"IA avalia sinais vitais e sintomas.",
-    immAttn:"ATENCAO IMEDIATA",
-    urgent:"URGENTE",
-    canWait:"PODE ESPERAR",
-    adultLbl:"Adulto (18-59)",
-    elderLbl:"Terceira idade (60+)",
-    pregLbl:"Gestante",
-    childLbl:"Pediatrico (0-12)",
-    f0:"Sem dor",
-    f2:"Muito leve",
-    f4:"Leve",
-    f6:"Moderado",
-    f8:"Forte",
-    f10:"Insuportavel",
-    hc:"Historico",
-    newHC:"Novo historico",
-    patientData:"Dados do paciente",
-    medHistory:"Antecedentes medicos",
-    allergies:"Alergias conhecidas",
-    currentMeds:"Medicacao atual",
-    additionalNotes:"Notas adicionais",
-    saveHC:"Salvar historico medico",
-    painScale:"Escala de dor",
-    painNumeric:"Escala numerica (0-10)",
-    painFacial:"Escala facial",
-    painFacialSub:"Para criancas ou dificuldades de expressao",
-    noPain:"Sem dor",
-    unbearable:"Insuportavel",
-    patientType:"Tipo de paciente",
-    mainReason:"Motivo principal",
-    consciousness:"Nivel de consciencia",
-    vitals:"Sinais vitais",
-    additionalSymptoms:"Sintomas adicionais",
-    childAge:"Idade da crianca",
-    gestWeeks:"Semanas de gestacao",
-    symptomDetail:"Caracteristicas do sintoma",
-    clinicalAnalysis:"Analise clinica",
-    priorityActions:"Acoes prioritarias",
-    criticalAlerts:"Alertas criticas",
-    interDetail:"Detalhe por medicamento",
-    whySimple:"Por que? Explicacao simples",
-    sameFamily:"Mesmo efeito — possivel duplicacao",
-    seeDoctor:"Consulte seu medico antes de tomar juntos",
-    extractedByAI:"Dados extraidos pela IA",
-    photoSub:"A IA pode extrair antecedentes de documentos medicos",
-    tapPhoto:"Toque para tirar foto ou enviar imagem",
-    analyzingDoc:"Analisando documento com IA...",
-    noMedicalInfo:"Sem informacao medica encontrada.",
-    noHC:"Sem historicos medicos ainda.",
-    male:"Masculino",
-    female:"Feminino",
-    other:"Outro",
-    checkInter:"Verificar interacoes",disclaimer:"Ferramenta de apoio. Decisao final equipe medica.",
-    newPatient:"Novo paciente",resetSent:"Email enviado.",resetErr:"Nao foi possivel enviar.",
-    interDesc:"Adicione 2 ou mais medicamentos para verificar.",
-    step:"Passo",of:"de",back:"Voltar",continueBtn:"Continuar",analyze:"Analisar",analyzingLabel:"AVALIANDO RISCO CLINICO",
-    selectProfile:"Selecione o perfil do paciente.",selectSymptom:"Selecione o sintoma dominante.",evalAlert:"Avalie o nivel de consciencia.",enterVitals:"Insira os valores disponiveis.",selectApply:"Selecione as que se aplicam.",markApply:"Marque todas as que se aplicam.",
-    teenLbl:"Adolescente (13-17)",pedNote:"Paciente pediatrico / adolescente",pedNoteSub:"Preencher com pai, mae ou responsavel.",
-    chestPainL:"Dor no peito",breathingL:"Dificuldade para respirar",traumaL:"Trauma / golpe / ferida",abdominalL:"Dor abdominal / vomito",neuroL:"Convulsao / perda de consciencia",feverL:"Febre alta",otherL:"Outro / sintomas gerais",
-    consc1:"Alerta — responde normalmente",consc2:"Responde apenas a voz",consc3:"Responde apenas a dor",consc4:"Nao responde (inconsciente)",
-    sym1:"Sangramento ativo",sym2:"Palidez / sudoracao fria",sym3:"Tontura / perda de equilibrio",sym4:"Cianose (labios ou unhas azulados)",sym5:"Temperatura >39C",sym6:"Fraqueza muscular intensa",sym7:"Nenhum dos anteriores",
-    vSysBP:"PA sistolica (mmHg)",vDiaBP:"PA diastolica (mmHg)",vHR:"Frec. cardiaca (bpm)",vSpO2:"Saturacao O2 (%)",vTemp:"Temperatura (C)",vRR:"Frec. respiratoria (rpm)",
-    welcomeHello:"Bem-vindo",changePass:"Alterar senha",curPass:"Senha atual",newPass:"Nova senha",confirmPass:"Confirmar senha",savePass:"Salvar",passChanged:"Senha atualizada.",passError:"Erro ao alterar senha.",passMatch:"As senhas nao coincidem.",passShort:"Minimo 6 caracteres.",reauth:"Senha atual incorreta.",photoUpdated:"Foto atualizada.",
-    mobilityLbl:"Mobilidade / capacidade reduzida",mobilityNote:"Enfermeiro ou responsavel deve estar presente",mobilityNoteSub:"Este paciente precisa de assistencia durante a avaliacao. Certifique-se de ter o apoio necessario antes de continuar.",
-    ageErrorPed:"Idade invalida para paciente pediatrico. Faixa valida: 0 a 12 anos.",ageErrorTeen:"Idade invalida para adolescente. Faixa valida: 13 a 17 anos.",
-    rememberMe:"Lembrar neste dispositivo",rememberWarn:"As credenciais serao salvas neste dispositivo. Nao use esta opcao em dispositivos compartilhados.",rememberConfirm:"Entendido, salvar",rememberCancel:"Cancelar",
-    inactWarn:"Sua sessao sera encerrada em breve por inatividade.",stayActive:"Continuar ativo",sessionOut:"Sessao encerrada por inatividade.",
-    voiceMode:"Modo Voz",voiceListening:"Ouvindo...",voiceHeard:"Entendido:",voiceNotUnderstood:"Nao entendi, repita por favor.",voiceNotSupported:"Seu navegador nao suporta comandos de voz.",voiceSayNumber:"Diga o numero da sua opcao.",voiceSayScale:"Diga um numero de zero a dez.",voiceSelectMulti:"Diga o numero de outra opcao ou diga proximo para continuar.",voiceConfirmed:"Selecionado:",voiceNext:"Proximo.",
-    notesFabTitle:"Anotacoes",notesPh:"Escreva observacoes clinicas relevantes (historico, alergias, medicacao atual, contexto especial)...",notesSave:"Salvar notas",notesIncluded:"Notas incluidas na analise",notesLabel:"ANOTACOES CLINICAS",notesChars:"caracteres",
-    noData:"Sem dados.",
-    countryLabel:"Pais",countrySub:"Adapta terminologia e sistema de triagem.",
-    insLabel:"Convenio / Plano de saude",
-    nearbyTitle:"Centros de saude proximos",nearbyEpsLbl:"Seu convenio",nearbyBtn:"Buscar centros",nearbyLocating:"Obtendo localizacao...",nearbyNone:"Sem resultados proximos.",nearbyError:"Nao foi possivel obter a localizacao.",
-    chartTitle:"Estatisticas",chartDay:"Hoje",chartWeek:"Semana",chartMonth:"Mes",chartYear:"Ano",chartByColor:"Por classificacao",chartByType:"Por tipo de paciente",chartByMotivo:"Por motivo",chartNoData:"Dados insuficientes",
-    filterAll:"Todos",filterByMotivo:"Por motivo",
-    histAll:"Todos",statTotal:"Total",statCritical:"Criticos",statUrgent:"Urgentes",statStable:"Estaveis",
-    nearbySearching:"Buscando...",nearbyFoundN:"centros encontrados",
-    histLegend:"Legenda",legendCritical:"Atencao imediata",legendUrgent:"Atencao urgente",legendStable:"Pode esperar",legendNotes:"Anotacoes clinicas",legendPerformedBy:"Realizado por",
-    mPecho:"Dor no peito",mDisnea:"Dispneia",mTrauma:"Trauma",mAbdominal:"Dor abdominal",mNeuro:"Neurologico",mFiebre:"Febre",mOtro:"Outro",
-    tAdulto:"Adulto",tMayor:"Idoso",tNino:"Crianca",tAdol:"Adol.",tEmbar:"Gest.",tMovil:"Movil.",
-    noMeds:"Sem medicamentos.",myMedsLabel:"Meus medicamentos",noReminders:"Adicione medicamentos para ver lembretes.",medAdded:"Medicamento adicionado",medDeleted:"Removido",medActivated:"Ativado",medDeactivated:"Desativado",
-    clinicalNotes:"Anotacoes clinicas",clinicalNotesSub:"Revise e complete com informacoes relevantes do paciente.",notesHint:"Modifique se o paciente relatar alergias, medicacao atual ou antecedentes relevantes.",
-    defaultNotes:"Paciente nega alergias medicamentosas conhecidas e nao apresenta antecedentes patologicos de relevancia clinica no momento da avaliacao. Sem medicacao habitual em uso. Sem historico de cirurgias, hospitalizacoes recentes ou doencas cronicas diagnosticadas. Sem informacoes adicionais disponiveis que alterem o manejo inicial.",
-  },
-  fr:{sub:"Systeme medical intelligent",login:"Se connecter",register:"Inscription",cont:"Continuer",forgot:"Mot de passe oublie",google:"Continuer avec Google",
-    ptnTitle:"Acces patient",ptnSub:"Entrez votre numero d identification pour acceder a votre dossier",staffLink:"Personnel medical / Administrateur",patientEnter:"Acceder",backToPatient:"← Retour",nameLbl:"Nom",emailLbl:"Email",passLbl:"Mot de passe",orDivider:"ou",idPlaceholder:"N.º ID",lookupTitle:"Identifier le patient",lookupSub:"Entrez le numero d identification pour charger le dossier clinique",lookupSearch:"Rechercher",lookupSkip:"Continuer sans patient enregistre",
-    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Historique",cola:"File",config:"Reglages",prof:"Profil",
-    colaTitle:"File d attente",colaPending:"En attente",colaAttended:"Pris en charge",colaMarkDone:"Pris en charge",colaUndone:"En attente",colaEmpty:"Aucun patient en attente",colaShift:"patients ce quart",colaOverdue:"DEPASSE",colaRemaining:"restantes",colaAgo:"il y a",colaMin:"min",colaRefresh:"Actualiser",
-    gcsTitle:"Echelle de Glasgow",gcsSub:"Evaluation quantitative de la conscience",gcsEye:"Ouverture des yeux",gcsVerbal:"Reponse verbale",gcsMotor:"Reponse motrice",gcsSevLeve:"Leger",gcsSevMod:"Modere",gcsSevGrave:"Grave",gcsApply:"Appliquer au triage",gcsBtn:"Calculer Glasgow",gcsApplied:"GCS applique",
-    vitcamTitle:"Constantes par image",vitcamSub:"Photographiez le moniteur et l IA extrait les valeurs",vitcamDrop:"Touchez pour photographier ou selectionner une image",vitcamAnalyze:"Analyser l image",vitcamApply:"Appliquer les constantes",vitcamApplied:"Constantes appliquees",vitcamError:"Impossible de lire l image. Essayez avec un meilleur eclairage.",vitcamAnalyzing:"Analyse en cours...",
-    prehTitle:"Notification Pre-hospitaliere",prehSub:"Avis d arrivee a l hopital",prehAge:"Age approx.",prehSex:"Sexe",prehSexM:"H",prehSexF:"F",prehMechanism:"Mecanisme / motif",prehVitals:"Signes vitaux",prehTx:"Traitement pre-hospitalier",prehTxPh:"Ex: O2 15L/min, voie veineuse, adrenaline 1mg...",prehETA:"DDA (minutes)",prehSend:"Envoyer la notification",prehSent:"Notification envoyee",prehCopied:"Notification copiee",
-    handoffTitle:"Resume de Garde",handoffSub:"Rapport de cloture et passation de garde",handoffGenerate:"Generer le resume",handoffNotes:"Notes de passation",handoffNotesPh:"En attente, observations critiques, patients a surveiller...",handoffShare:"Partager le rapport",handoffCopy:"Rapport copie",handoffShift:"Garde actuelle (8 dernieres heures)",handoffPending:"En attente",handoffAttended:"Pris en charge",handoffCritical:"Critiques",handoffTotal:"Total",
-    dospTitle:"Calculateur Dose Pediatrique",dospWeight:"Poids du patient (kg)",dospWeightPh:"Ex: 20",dospConc:"Concentration disponible",dospDrug:"Selectionner medicament",dospDose:"Dose calculee",dospVol:"Volume",dospMax:"Dose maximale",dospFreq:"Frequence",dospWarn:"La dose depasse le maximum recommande. Utiliser la dose maximale.",dospNoData:"Selectionnez medicament et poids.",
-    mciMode:"MODE MCI",mciActive:"MCI ACTIF",mciSetup:"Activer Mode MCI",mciSetupSub:"Incident a victimes multiples — triage START rapide",mciName:"Nom de l incident",mciNamePh:"Ex: Accident autoroute 7",mciActivate:"Activer MCI",mciDeactivate:"Desactiver MCI",mciPatient:"Patient #",mciImmediate:"IMMEDIAT",mciDelayed:"DIFFERE",mciMinor:"MINEUR",mciExpectant:"ATTENDU",mciFullTriage:"Triage complet",mciConfirmEnd:"Desactiver MCI et revenir au mode normal?",mciTotal:"Total",
-    search:"Chercher",myMeds:"Mes meds",alerts:"Alertes",inter:"Interact.",
-    searchDrug:"Rechercher medicament",consultAI:"Consulter IA",
-    newMed:"Nouveau medicament",dose:"Dose",freq:"Frequence",hour:"Heure",notes:"Notes",addMed:"+ Ajouter",
-    addList:"Ajouter liste",verify:"Verifier IA",
-    recentT:"Derniers triages",userMgmt:"Gestion utilisateurs",histTitle:"Historique triages",
-    appearance:"Apparence",darkMode:"Mode sombre",darkSub:"Interface fond sombre",account:"Compte",zoomMode:"Taille du texte",zoomSub:"Ajustez pour une meilleure visibilite",
-    reminders:"Rappels du jour",alarmsNote:"Alarmes actives quand app ouverte.",
-    hc:"Dossier",
-    signOut:"Deconnexion",
-    loading:"Chargement...",
-    painFacialOr:"Ou utiliser echelle faciale",
-    analyzing:"Analyse en cours...",
-    analyzingSub:"IA evalue les signes vitaux.",
-    immAttn:"ATTENTION IMMEDIATE",
-    urgent:"URGENT",
-    canWait:"PEUT ATTENDRE",
-    adultLbl:"Adulte (18-59)",
-    elderLbl:"Personne agee (60+)",
-    pregLbl:"Enceinte",
-    childLbl:"Pediatrique (0-12)",
-    f0:"Sans douleur",
-    f2:"Tres leger",
-    f4:"Leger",
-    f6:"Modere",
-    f8:"Fort",
-    f10:"Insupportable",
-    hc:"Dossier",
-    newHC:"Nouveau dossier",
-    patientData:"Donnees patient",
-    medHistory:"Antecedents medicaux",
-    allergies:"Allergies connues",
-    currentMeds:"Medicaments actuels",
-    additionalNotes:"Notes supplementaires",
-    saveHC:"Enregistrer dossier medical",
-    painScale:"Echelle douleur",
-    painNumeric:"Echelle numerique (0-10)",
-    painFacial:"Echelle faciale",
-    painFacialSub:"Pour enfants ou difficultes expression",
-    noPain:"Sans douleur",
-    unbearable:"Insupportable",
-    patientType:"Type de patient",
-    mainReason:"Motif principal",
-    consciousness:"Niveau de conscience",
-    vitals:"Signes vitaux",
-    additionalSymptoms:"Symptomes supplementaires",
-    childAge:"Age de enfant",
-    gestWeeks:"Semaines de grossesse",
-    symptomDetail:"Caracteristiques du symptome",
-    clinicalAnalysis:"Analyse clinique",
-    priorityActions:"Actions prioritaires",
-    criticalAlerts:"Alertes critiques",
-    interDetail:"Detail par medicament",
-    whySimple:"Pourquoi? Explication simple",
-    sameFamily:"Meme effet — duplication possible",
-    seeDoctor:"Consultez votre medecin avant de prendre ensemble",
-    extractedByAI:"Donnees extraites par IA",
-    photoSub:"IA peut extraire antecedents de documents medicaux",
-    tapPhoto:"Appuyez pour prendre photo ou importer image",
-    analyzingDoc:"Analyse du document par IA...",
-    noMedicalInfo:"Aucune information medicale trouvee.",
-    noHC:"Aucun dossier medical encore.",
-    male:"Masculin",
-    female:"Feminin",
-    other:"Autre",
-    checkInter:"Verifier interactions",disclaimer:"Outil aide. Decision finale personnel medical.",
-    newPatient:"Nouveau patient",resetSent:"Email envoye.",resetErr:"Impossible envoyer.",
-    interDesc:"Ajoutez 2 medicaments ou plus pour verifier.",
-    step:"Etape",of:"sur",back:"Retour",continueBtn:"Continuer",analyze:"Analyser",analyzingLabel:"EVALUATION RISQUE CLINIQUE",
-    selectProfile:"Selectionnez le profil patient.",selectSymptom:"Selectionnez le symptome dominant.",evalAlert:"Evaluez le niveau de conscience.",enterVitals:"Saisissez les valeurs disponibles.",selectApply:"Selectionnez ce qui s'applique.",markApply:"Cochez tout ce qui s'applique.",
-    teenLbl:"Adolescent (13-17)",pedNote:"Patient pediatrique / adolescent",pedNoteSub:"Remplir avec parent ou tuteur.",
-    chestPainL:"Douleur thoracique",breathingL:"Difficulte respiratoire",traumaL:"Traumatisme / blessure",abdominalL:"Douleur abdominale / vomissement",neuroL:"Convulsion / perte de conscience",feverL:"Forte fievre",otherL:"Autre / symptomes generaux",
-    consc1:"Alerte — repond normalement",consc2:"Repond uniquement a la voix",consc3:"Repond uniquement a la douleur",consc4:"Ne repond pas (inconscient)",
-    sym1:"Saignement actif",sym2:"Paleur / sudation froide",sym3:"Vertige / perte d equilibre",sym4:"Cyanose (levres ou ongles bleus)",sym5:"Temperature >39C",sym6:"Faiblesse musculaire intense",sym7:"Aucun des precedents",
-    vSysBP:"PA systolique (mmHg)",vDiaBP:"PA diastolique (mmHg)",vHR:"Freq. cardiaque (bpm)",vSpO2:"Saturation O2 (%)",vTemp:"Temperature (C)",vRR:"Freq. respiratoire (rpm)",
-    welcomeHello:"Bienvenue",changePass:"Changer mot de passe",curPass:"Mot de passe actuel",newPass:"Nouveau mot de passe",confirmPass:"Confirmer mot de passe",savePass:"Enregistrer",passChanged:"Mot de passe mis a jour.",passError:"Erreur lors du changement.",passMatch:"Les mots de passe ne correspondent pas.",passShort:"Minimum 6 caracteres.",reauth:"Mot de passe actuel incorrect.",photoUpdated:"Photo mise a jour.",
-    mobilityLbl:"Mobilite / capacite reduite",mobilityNote:"Un infirmier ou tuteur doit etre present",mobilityNoteSub:"Ce patient necessite une assistance lors de l evaluation. Assurez-vous du soutien necessaire avant de continuer.",
-    ageErrorPed:"Age invalide pour patient pediatrique. Plage valide: 0 a 12 ans.",ageErrorTeen:"Age invalide pour adolescent. Plage valide: 13 a 17 ans.",
-    rememberMe:"Se souvenir sur cet appareil",rememberWarn:"Les identifiants seront sauvegardes sur cet appareil. N utilisez pas cette option sur des appareils partages.",rememberConfirm:"Compris, sauvegarder",rememberCancel:"Annuler",
-    inactWarn:"Votre session se fermera bientot par inactivite.",stayActive:"Rester actif",sessionOut:"Session fermee par inactivite.",
-    voiceMode:"Mode Vocal",voiceListening:"J ecoute...",voiceHeard:"Compris:",voiceNotUnderstood:"Je n ai pas compris, repetez.",voiceNotSupported:"Votre navigateur ne supporte pas les commandes vocales.",voiceSayNumber:"Dites le numero de votre option.",voiceSayScale:"Dites un nombre de zero a dix.",voiceSelectMulti:"Dites un autre numero ou dites suivant pour continuer.",voiceConfirmed:"Selectionne:",voiceNext:"Suivant.",
-    notesFabTitle:"Annotations",notesPh:"Ecrivez les observations cliniques pertinentes (antecedents, allergies, medicaments actuels, contexte special)...",notesSave:"Enregistrer",notesIncluded:"Notes incluses dans l analyse",notesLabel:"NOTES CLINIQUES",notesChars:"caracteres",
-    noData:"Aucune donnee.",
-    countryLabel:"Pays",countrySub:"Adapte la terminologie et le systeme de triage.",
-    insLabel:"Assurance maladie",
-    nearbyTitle:"Centres de sante proches",nearbyEpsLbl:"Votre assurance",nearbyBtn:"Rechercher centres",nearbyLocating:"Localisation en cours...",nearbyNone:"Aucun resultat proche.",nearbyError:"Impossible d obtenir la localisation.",
-    chartTitle:"Statistiques",chartDay:"Aujourd hui",chartWeek:"Semaine",chartMonth:"Mois",chartYear:"Annee",chartByColor:"Par classification",chartByType:"Par type de patient",chartByMotivo:"Par motif",chartNoData:"Donnees insuffisantes",
-    filterAll:"Tous",filterByMotivo:"Par motif",
-    histAll:"Tous",statTotal:"Total",statCritical:"Critiques",statUrgent:"Urgents",statStable:"Stables",
-    nearbySearching:"Recherche...",nearbyFoundN:"centres trouves",
-    histLegend:"Legende",legendCritical:"Soins immediats",legendUrgent:"Soins urgents",legendStable:"Peut attendre",legendNotes:"Notes cliniques",legendPerformedBy:"Realise par",
-    mPecho:"Douleur thoracique",mDisnea:"Dyspnee",mTrauma:"Trauma",mAbdominal:"Douleur abdominale",mNeuro:"Neurologique",mFiebre:"Fievre",mOtro:"Autre",
-    tAdulto:"Adulte",tMayor:"Age",tNino:"Enfant",tAdol:"Adol.",tEmbar:"Gros.",tMovil:"Mobil.",
-    noMeds:"Aucun medicament.",myMedsLabel:"Mes medicaments",noReminders:"Ajoutez des medicaments pour voir les rappels.",medAdded:"Medicament ajoute",medDeleted:"Supprime",medActivated:"Active",medDeactivated:"Desactive",
-    clinicalNotes:"Annotations cliniques",clinicalNotesSub:"Reviser et completer avec les informations pertinentes du patient.",notesHint:"Modifier si le patient signale des allergies, une medication ou des antecedents pertinents.",
-    defaultNotes:"Le patient ne signale pas d'allergies medicamenteuses connues ni d'antecedents pathologiques cliniquement pertinents au moment de l'evaluation. Aucun traitement medicamenteux habituel en cours. Pas de chirurgies anterieures, d'hospitalisations recentes ni de maladies chroniques diagnostiquees. Aucune information contextuelle supplementaire disponible susceptible de modifier la prise en charge initiale.",
-  },
-  de:{sub:"Intelligentes medizinisches System",login:"Anmelden",register:"Registrieren",cont:"Weiter",forgot:"Passwort vergessen",google:"Mit Google fortfahren",
-    ptnTitle:"Patientenzugang",ptnSub:"Geben Sie Ihre Identifikationsnummer ein",staffLink:"Medizinisches Personal / Administrator",patientEnter:"Eintreten",backToPatient:"← Zuruck",nameLbl:"Name",emailLbl:"E-Mail",passLbl:"Passwort",orDivider:"oder",idPlaceholder:"ID-Nummer",lookupTitle:"Patient identifizieren",lookupSub:"ID-Nummer eingeben um Krankenakte zu laden",lookupSearch:"Suchen",lookupSkip:"Ohne registrierten Patienten",
-    dash:"Dashboard",triage:"Triage",meds:"Meds",hist:"Verlauf",cola:"Warteschlange",config:"Einstellungen",prof:"Profil",
-    colaTitle:"Warteschlange",colaPending:"Wartend",colaAttended:"Behandelt",colaMarkDone:"Behandelt",colaUndone:"Wartend",colaEmpty:"Keine wartenden Patienten",colaShift:"Patienten dieser Schicht",colaOverdue:"UBERSCHRITTEN",colaRemaining:"verbleibend",colaAgo:"vor",colaMin:"min",colaRefresh:"Aktualisieren",
-    gcsTitle:"Glasgow-Koma-Skala",gcsSub:"Quantitative Bewusstseinsbewertung",gcsEye:"Augenbewegung",gcsVerbal:"Verbale Reaktion",gcsMotor:"Motorische Reaktion",gcsSevLeve:"Leicht",gcsSevMod:"Maessig",gcsSevGrave:"Schwer",gcsApply:"Auf Triage anwenden",gcsBtn:"Glasgow berechnen",gcsApplied:"GCS angewendet",
-    vitcamTitle:"Vitalwerte per Kamera",vitcamSub:"Monitor fotografieren und KI extrahiert die Werte",vitcamDrop:"Zum Fotografieren oder Bild auswaehlen tippen",vitcamAnalyze:"Bild analysieren",vitcamApply:"Vitalwerte uebernehmen",vitcamApplied:"Vitalwerte uebernommen",vitcamError:"Bild konnte nicht gelesen werden. Bessere Beleuchtung versuchen.",vitcamAnalyzing:"Bild wird analysiert...",
-    prehTitle:"Praeklinische Meldung",prehSub:"Ankunftsmeldung an das Krankenhaus",prehAge:"Ungefaehres Alter",prehSex:"Geschlecht",prehSexM:"M",prehSexF:"W",prehMechanism:"Unfallmechanismus / Grund",prehVitals:"Vitalzeichen",prehTx:"Praeklinische Behandlung",prehTxPh:"z.B.: O2 15L/min, IV-Zugang, Epinephrin 1mg...",prehETA:"ETA (Minuten)",prehSend:"Meldung senden",prehSent:"Meldung gesendet",prehCopied:"Meldung kopiert",
-    handoffTitle:"Schichtbericht",handoffSub:"Schichtabschluss und Uebergabebericht",handoffGenerate:"Bericht erstellen",handoffNotes:"Uebergabenotizen",handoffNotesPh:"Offene Punkte, kritische Beobachtungen, zu ueberwachende Patienten...",handoffShare:"Bericht teilen",handoffCopy:"Bericht kopiert",handoffShift:"Aktuelle Schicht (letzte 8 Std.)",handoffPending:"Wartend",handoffAttended:"Behandelt",handoffCritical:"Kritisch",handoffTotal:"Gesamt",
-    dospTitle:"Paediatrischer Dosisrechner",dospWeight:"Gewicht des Patienten (kg)",dospWeightPh:"z.B.: 20",dospConc:"Verfuegbare Konzentration",dospDrug:"Medikament auswaehlen",dospDose:"Berechnete Dosis",dospVol:"Volumen",dospMax:"Maximaldosis",dospFreq:"Haeufigkeit",dospWarn:"Dosis ueberschreitet das empfohlene Maximum. Maximaldosis verwenden.",dospNoData:"Medikament und Gewicht auswaehlen.",
-    mciMode:"MCI-MODUS",mciActive:"MCI AKTIV",mciSetup:"MCI-Modus aktivieren",mciSetupSub:"Massenanfall von Verletzten — schnelles START-Triage",mciName:"Vorfallsname",mciNamePh:"z.B.: Verkehrsunfall Bundesstr. 7",mciActivate:"MCI aktivieren",mciDeactivate:"MCI deaktivieren",mciPatient:"Patient #",mciImmediate:"SOFORT",mciDelayed:"AUFGESCHOBEN",mciMinor:"LEICHT",mciExpectant:"ERWARTEND",mciFullTriage:"Vollstaendiges Triage",mciConfirmEnd:"MCI deaktivieren und zum normalen Modus zurueckkehren?",mciTotal:"Gesamt",
-    search:"Suchen",myMeds:"Meine Meds",alerts:"Alarme",inter:"Interakt.",
-    searchDrug:"Medikament suchen",consultAI:"KI befragen",
-    newMed:"Neues Medikament",dose:"Dosis",freq:"Haufigkeit",hour:"Uhrzeit",notes:"Notizen",addMed:"+ Hinzufugen",
-    addList:"Zur Liste",verify:"Mit KI prufen",
-    recentT:"Letzte Triagen",userMgmt:"Benutzerverwaltung",histTitle:"Triage-Verlauf",
-    appearance:"Erscheinungsbild",darkMode:"Dunkelmodus",darkSub:"Dunkler Hintergrund",account:"Konto",zoomMode:"Textgrosse",zoomSub:"Anpassen fur bessere Sichtbarkeit",
-    reminders:"Heutige Erinnerungen",alarmsNote:"Alarme wenn App geoffnet.",
-    hc:"Akte",
-    signOut:"Abmelden",
-    loading:"Laden...",
-    painFacialOr:"Oder Gesichtsskala verwenden",
-    analyzing:"Daten werden analysiert...",
-    analyzingSub:"KI bewertet Vitalzeichen.",
-    immAttn:"SOFORTIGE AUFMERKSAMKEIT",
-    urgent:"DRINGEND",
-    canWait:"KANN WARTEN",
-    adultLbl:"Erwachsener (18-59)",
-    elderLbl:"Senioren (60+)",
-    pregLbl:"Schwangere",
-    childLbl:"Padiatrisch (0-12)",
-    f0:"Kein Schmerz",
-    f2:"Sehr leicht",
-    f4:"Leicht",
-    f6:"Maessig",
-    f8:"Stark",
-    f10:"Unertraglich",
-    hc:"Akte",
-    newHC:"Neue Akte",
-    patientData:"Patientendaten",
-    medHistory:"Krankengeschichte",
-    allergies:"Bekannte Allergien",
-    currentMeds:"Aktuelle Medikamente",
-    additionalNotes:"Zusatzliche Notizen",
-    saveHC:"Krankenakte speichern",
-    painScale:"Schmerzskala",
-    painNumeric:"Numerische Skala (0-10)",
-    painFacial:"Gesichtsskala",
-    painFacialSub:"Fur Kinder oder Ausdrucksschwierigkeiten",
-    noPain:"Kein Schmerz",
-    unbearable:"Unertraglich",
-    patientType:"Patientenart",
-    mainReason:"Hauptgrund",
-    consciousness:"Bewusstseinslevel",
-    vitals:"Vitalzeichen",
-    additionalSymptoms:"Weitere Symptome",
-    childAge:"Alter des Kindes",
-    gestWeeks:"Schwangerschaftswochen",
-    symptomDetail:"Symptommerkmale",
-    clinicalAnalysis:"Klinische Analyse",
-    priorityActions:"Prioritatsmanahmen",
-    criticalAlerts:"Kritische Warnungen",
-    interDetail:"Detail pro Medikament",
-    whySimple:"Warum? Einfache Erklarung",
-    sameFamily:"Gleicher Effekt — mogliche Duplikation",
-    seeDoctor:"Arzt konsultieren bevor Sie diese zusammen nehmen",
-    extractedByAI:"Von KI extrahierte Daten",
-    photoSub:"KI kann Vorgeschichte aus medizinischen Dokumenten extrahieren",
-    tapPhoto:"Tippen um Foto zu machen oder Bild hochzuladen",
-    analyzingDoc:"Dokument wird analysiert...",
-    noMedicalInfo:"Keine medizinischen Informationen gefunden.",
-    noHC:"Noch keine Krankenakten.",
-    male:"Mannlich",
-    female:"Weiblich",
-    other:"Andere",
-    checkInter:"Wechselwirkungen prufen",disclaimer:"Hilfswerkzeug. Endentscheidung Medizinpersonal.",
-    newPatient:"Neuer Patient",resetSent:"Email gesendet.",resetErr:"Email fehlgeschlagen.",
-    interDesc:"Fugen Sie 2 oder mehr Medikamente hinzu.",
-    step:"Schritt",of:"von",back:"Zuruck",continueBtn:"Weiter",analyze:"Analysieren",analyzingLabel:"KLINISCHES RISIKO BEWERTEN",
-    selectProfile:"Patientenprofil auswahlen.",selectSymptom:"Hauptsymptom auswahlen.",evalAlert:"Bewusstseinslevel einschatzen.",enterVitals:"Verfugbare Werte eingeben.",selectApply:"Alle Zutreffenden auswahlen.",markApply:"Alle Zutreffenden ankreuzen.",
-    teenLbl:"Jugendlicher (13-17)",pedNote:"Padiatrischer / jugendlicher Patient",pedNoteSub:"Mit Elternteil oder Vormund ausfullen.",
-    chestPainL:"Brustschmerzen",breathingL:"Atembeschwerden",traumaL:"Trauma / Verletzung",abdominalL:"Bauchschmerzen / Erbrechen",neuroL:"Krampf / Bewusstlosigkeit",feverL:"Hohes Fieber",otherL:"Sonstiges / allgemeine Symptome",
-    consc1:"Wach — reagiert normal",consc2:"Reagiert nur auf Sprache",consc3:"Reagiert nur auf Schmerz",consc4:"Reagiert nicht (bewusstlos)",
-    sym1:"Aktive Blutung",sym2:"Blasse / kalter Schweiss",sym3:"Schwindel / Gleichgewichtsverlust",sym4:"Zyanose (blaue Lippen oder Nagel)",sym5:"Temperatur >39C",sym6:"Starke Muskelschwache",sym7:"Keines der oben genannten",
-    vSysBP:"Syst. Blutdruck (mmHg)",vDiaBP:"Diast. Blutdruck (mmHg)",vHR:"Herzfrequenz (bpm)",vSpO2:"O2-Sattigung (%)",vTemp:"Temperatur (C)",vRR:"Atemfrequenz (rpm)",
-    welcomeHello:"Willkommen",changePass:"Passwort andern",curPass:"Aktuelles Passwort",newPass:"Neues Passwort",confirmPass:"Passwort bestatigen",savePass:"Speichern",passChanged:"Passwort aktualisiert.",passError:"Fehler beim Andern.",passMatch:"Passworter stimmen nicht uberein.",passShort:"Mindestens 6 Zeichen.",reauth:"Aktuelles Passwort falsch.",photoUpdated:"Foto aktualisiert.",
-    mobilityLbl:"Eingeschrankte Mobilitat",mobilityNote:"Pflegeperson oder Vormund muss anwesend sein",mobilityNoteSub:"Dieser Patient benotigt Assistenz wahrend der Bewertung. Stellen Sie sicher dass die notwendige Unterstutzung vorhanden ist.",
-    ageErrorPed:"Ungultiges Alter fur padiatrischen Patienten. Gultig: 0 bis 12 Jahre.",ageErrorTeen:"Ungultiges Alter fur Jugendlichen. Gultig: 13 bis 17 Jahre.",
-    rememberMe:"Auf diesem Gerat merken",rememberWarn:"Anmeldedaten werden auf diesem Gerat gespeichert. Nicht auf gemeinsam genutzten Geraten verwenden.",rememberConfirm:"Verstanden, speichern",rememberCancel:"Abbrechen",
-    inactWarn:"Ihre Sitzung wird bald wegen Inaktivitat geschlossen.",stayActive:"Aktiv bleiben",sessionOut:"Sitzung wegen Inaktivitat beendet.",
-    voiceMode:"Sprachmodus",voiceListening:"Ich hore...",voiceHeard:"Verstanden:",voiceNotUnderstood:"Nicht verstanden, bitte wiederholen.",voiceNotSupported:"Ihr Browser unterstutzt keine Sprachbefehle.",voiceSayNumber:"Sagen Sie die Nummer Ihrer Option.",voiceSayScale:"Sagen Sie eine Zahl von null bis zehn.",voiceSelectMulti:"Sagen Sie eine weitere Nummer oder weiter um fortzufahren.",voiceConfirmed:"Ausgewahlt:",voiceNext:"Weiter.",
-    notesFabTitle:"Anmerkungen",notesPh:"Klinische Beobachtungen (Vorgeschichte, Allergien, aktuelle Medikation, besonderer Kontext)...",notesSave:"Speichern",notesIncluded:"Notizen in der Analyse enthalten",notesLabel:"KLINISCHE ANMERKUNGEN",notesChars:"Zeichen",
-    noData:"Keine Daten.",
-    countryLabel:"Land",countrySub:"Passt Terminologie und Triage-System an.",
-    insLabel:"Krankenkasse",
-    nearbyTitle:"Nahegelegene Gesundheitszentren",nearbyEpsLbl:"Ihre Krankenkasse",nearbyBtn:"Zentren suchen",nearbyLocating:"Standort wird ermittelt...",nearbyNone:"Keine nahegelegenen Ergebnisse.",nearbyError:"Standort konnte nicht ermittelt werden.",
-    chartTitle:"Statistiken",chartDay:"Heute",chartWeek:"Woche",chartMonth:"Monat",chartYear:"Jahr",chartByColor:"Nach Klassifikation",chartByType:"Nach Patientenart",chartByMotivo:"Nach Grund",chartNoData:"Nicht genug Daten",
-    filterAll:"Alle",filterByMotivo:"Nach Grund",
-    histAll:"Alle",statTotal:"Gesamt",statCritical:"Kritisch",statUrgent:"Dringend",statStable:"Stabil",
-    nearbySearching:"Suche...",nearbyFoundN:"Zentren gefunden",
-    histLegend:"Legende",legendCritical:"Sofortige Versorgung",legendUrgent:"Dringende Versorgung",legendStable:"Kann warten",legendNotes:"Klinische Notizen",legendPerformedBy:"Durchgefuhrt von",
-    mPecho:"Brustschmerz",mDisnea:"Dyspnoe",mTrauma:"Trauma",mAbdominal:"Bauchschmerz",mNeuro:"Neurologisch",mFiebre:"Fieber",mOtro:"Andere",
-    tAdulto:"Erwach.",tMayor:"Senior",tNino:"Kind",tAdol:"Jugend.",tEmbar:"Schwan.",tMovil:"Mobil.",
-    noMeds:"Keine Medikamente.",myMedsLabel:"Meine Medikamente",noReminders:"Medikamente hinzufugen um Erinnerungen zu sehen.",medAdded:"Medikament hinzugefugt",medDeleted:"Entfernt",medActivated:"Aktiviert",medDeactivated:"Deaktiviert",
-    clinicalNotes:"Klinische Anmerkungen",clinicalNotesSub:"Pruefen und mit relevanten Patienteninformationen erganzen.",notesHint:"Aendern wenn der Patient Allergien, aktuelle Medikation oder relevante Vorerkrankungen berichtet.",
-    defaultNotes:"Der Patient berichtet keine bekannten Medikamentenallergien und keine klinisch relevanten pathologischen Vorerkrankungen zum Zeitpunkt der Beurteilung. Keine regelmaessige Medikation in Einnahme. Keine frueheren Operationen, kuerzliche Krankenhausaufenthalte oder diagnostizierte chronische Erkrankungen. Keine zusaetzlichen Kontextinformationen verfuegbar, die das initiale Management beeinflussen wuerden.",
-  },
-  ja:{sub:"インテリジェント医療システム",login:"ログイン",register:"登録",cont:"続ける",forgot:"パスワードを忘れた",google:"Googleで続ける",
-    ptnTitle:"患者アクセス",ptnSub:"IDを入力して病歴にアクセス",staffLink:"医療スタッフ / 管理者",patientEnter:"入る",backToPatient:"← 戻る",nameLbl:"名前",emailLbl:"メール",passLbl:"パスワード",orDivider:"または",idPlaceholder:"ID番号",lookupTitle:"患者を識別",lookupSub:"IDを入力して病歴を自動ロード",lookupSearch:"検索",lookupSkip:"未登録の患者で続ける",
-    dash:"ダッシュボード",triage:"トリアージ",meds:"薬",hist:"履歴",cola:"待機列",config:"設定",prof:"プロフィール",
-    colaTitle:"待機列",colaPending:"待機中",colaAttended:"対応済",colaMarkDone:"対応済",colaUndone:"待機中",colaEmpty:"待機患者なし",colaShift:"このシフトの患者",colaOverdue:"超過",colaRemaining:"残り",colaAgo:"前",colaMin:"分",colaRefresh:"更新",
-    gcsTitle:"グラスゴー昏睡尺度",gcsSub:"意識レベルの定量評価",gcsEye:"開眼",gcsVerbal:"言語反応",gcsMotor:"運動反応",gcsSevLeve:"軽度",gcsSevMod:"中等度",gcsSevGrave:"重度",gcsApply:"トリアージに適用",gcsBtn:"Glasgow計算",gcsApplied:"GCS適用済",
-    vitcamTitle:"画像からバイタル",vitcamSub:"モニターを撮影するとAIが値を抽出します",vitcamDrop:"タップして撮影または画像選択",vitcamAnalyze:"画像を分析",vitcamApply:"バイタルを適用",vitcamApplied:"バイタル適用済",vitcamError:"画像を読み取れませんでした。照明を改善してください。",vitcamAnalyzing:"画像分析中...",
-    prehTitle:"病院前通知",prehSub:"病院への到着連絡",prehAge:"推定年齢",prehSex:"性別",prehSexM:"男",prehSexF:"女",prehMechanism:"受傷機転・主訴",prehVitals:"バイタルサイン",prehTx:"病院前処置",prehTxPh:"例: O2 15L/min、静脈路確保、アドレナリン1mg...",prehETA:"ETA（分）",prehSend:"通知送信",prehSent:"通知送信済",prehCopied:"通知コピー済",
-    handoffTitle:"シフトサマリー",handoffSub:"シフト終了・引継ぎ報告",handoffGenerate:"サマリー生成",handoffNotes:"引継ぎメモ",handoffNotesPh:"未対応案件、重要観察事項、要監視患者...",handoffShare:"レポート共有",handoffCopy:"レポートコピー済",handoffShift:"現在シフト(直近8時間)",handoffPending:"待機中",handoffAttended:"対応済",handoffCritical:"重症",handoffTotal:"合計",
-    dospTitle:"小児薬剤量計算",dospWeight:"体重 (kg)",dospWeightPh:"例: 20",dospConc:"利用可能な濃度",dospDrug:"薬剤選択",dospDose:"計算用量",dospVol:"容量",dospMax:"最大用量",dospFreq:"投与間隔",dospWarn:"用量が推奨最大値を超えています。最大用量を使用してください。",dospNoData:"薬剤と体重を選択してください。",
-    mciMode:"MCIモード",mciActive:"MCI有効",mciSetup:"MCIモードを有効化",mciSetupSub:"多数傷病者事故 — 迅速STARTトリアージ",mciName:"事故名",mciNamePh:"例: 国道7号交通事故",mciActivate:"MCI有効化",mciDeactivate:"MCI無効化",mciPatient:"患者 #",mciImmediate:"即時",mciDelayed:"遅延",mciMinor:"軽症",mciExpectant:"期待的",mciFullTriage:"完全トリアージ",mciConfirmEnd:"MCIを無効化して通常モードに戻りますか？",mciTotal:"合計",
-    search:"検索",myMeds:"マイ薬",alerts:"アラート",inter:"相互作用",
-    searchDrug:"薬を検索",consultAI:"AIに相談",
-    newMed:"新しい薬",dose:"用量",freq:"頻度",hour:"時間",notes:"メモ",addMed:"+ 追加",
-    addList:"リストに追加",verify:"AIで確認",
-    recentT:"最近のトリアージ",userMgmt:"ユーザー管理",histTitle:"トリアージ履歴",
-    appearance:"外観",darkMode:"ダークモード",darkSub:"暗い背景のインターフェース",account:"アカウント",zoomMode:"文字サイズ",zoomSub:"見やすさを調整",
-    reminders:"今日のリマインダー",alarmsNote:"アプリが開いている間、アラームが鳴ります。",
-    hc:"カルテ",
-    signOut:"サインアウト",
-    loading:"読み込み中...",
-    painFacialOr:"または表情スケールを使用",
-    analyzing:"データを分析中...",
-    analyzingSub:"AIがバイタルサインと症状を評価します。",
-    immAttn:"即時対応が必要",
-    urgent:"緊急",
-    canWait:"待機可能",
-    adultLbl:"成人 (18-59)",
-    elderLbl:"高齢者 (60+)",
-    pregLbl:"妊婦",
-    childLbl:"小児 (0-12)",
-    f0:"痛みなし",
-    f2:"非常に軽い",
-    f4:"軽い",
-    f6:"中程度",
-    f8:"強い",
-    f10:"耐えられない",
-    newHC:"新しいカルテ",
-    patientData:"患者データ",
-    medHistory:"病歴",
-    allergies:"既知のアレルギー",
-    currentMeds:"現在の薬",
-    additionalNotes:"追加メモ",
-    saveHC:"カルテを保存",
-    painScale:"痛みスケール",
-    painNumeric:"数値スケール (0-10)",
-    painFacial:"表情スケール",
-    painFacialSub:"子供または表現困難者向け",
-    noPain:"痛みなし",
-    unbearable:"耐えられない",
-    patientType:"患者タイプ",
-    mainReason:"主な受診理由",
-    consciousness:"意識レベル",
-    vitals:"バイタルサイン",
-    additionalSymptoms:"追加症状",
-    childAge:"子供の年齢",
-    gestWeeks:"妊娠週数",
-    symptomDetail:"症状の特徴",
-    clinicalAnalysis:"臨床分析",
-    priorityActions:"優先対応",
-    criticalAlerts:"重大アラート",
-    interDetail:"薬ごとの詳細",
-    whySimple:"なぜ？わかりやすい説明",
-    sameFamily:"同じ効果 — 重複の可能性",
-    seeDoctor:"これらを一緒に服用する前に医師に相談してください",
-    extractedByAI:"AIが抽出したデータ",
-    photoSub:"AIが医療文書から病歴を抽出できます",
-    tapPhoto:"タップして写真を撮るか画像をアップロード",
-    analyzingDoc:"AIでドキュメントを分析中...",
-    noMedicalInfo:"医療情報が見つかりません。手動で入力してください。",
-    noHC:"カルテはまだありません。",
-    male:"男性",
-    female:"女性",
-    other:"その他",
-    checkInter:"相互作用を確認",disclaimer:"補助ツールです。最終判断は医療スタッフが行います。",
-    newPatient:"新しい患者",resetSent:"回復メールを送信しました。",resetErr:"送信できませんでした。",
-    interDesc:"確認するために2つ以上の薬を追加してください。",
-    step:"ステップ",of:"/",back:"戻る",continueBtn:"続ける",analyze:"分析",analyzingLabel:"臨床リスクを評価中",
-    selectProfile:"患者プロフィールを選択してください。",selectSymptom:"主な症状を選択してください。",evalAlert:"意識レベルを評価してください。",enterVitals:"利用可能な値を入力してください。",selectApply:"該当するものをすべて選択してください。",markApply:"該当するものすべてにチェックを入れてください。",
-    teenLbl:"青少年 (13-17)",pedNote:"小児科 / 青少年患者",pedNoteSub:"保護者または後見人と一緒に記入してください。",
-    chestPainL:"胸痛",breathingL:"呼吸困難",traumaL:"外傷 / 怪我",abdominalL:"腹痛 / 嘔吐",neuroL:"けいれん / 意識消失",feverL:"高熱",otherL:"その他 / 一般的な症状",
-    consc1:"覚醒 — 正常に反応",consc2:"声にのみ反応",consc3:"痛みにのみ反応",consc4:"反応なし（意識不明）",
-    sym1:"活動性出血",sym2:"蒼白 / 冷汗",sym3:"めまい / バランス消失",sym4:"チアノーゼ（唇や爪が青い）",sym5:"体温 >39C",sym6:"重度の筋力低下",sym7:"上記なし",
-    vSysBP:"収縮期血圧 (mmHg)",vDiaBP:"拡張期血圧 (mmHg)",vHR:"心拍数 (bpm)",vSpO2:"O2飽和度 (%)",vTemp:"体温 (C)",vRR:"呼吸数 (rpm)",
-    welcomeHello:"ようこそ",changePass:"パスワード変更",curPass:"現在のパスワード",newPass:"新しいパスワード",confirmPass:"パスワード確認",savePass:"保存",passChanged:"パスワードが更新されました。",passError:"パスワード変更エラー。",passMatch:"パスワードが一致しません。",passShort:"最低6文字必要です。",reauth:"現在のパスワードが間違っています。",photoUpdated:"写真が更新されました。",
-    mobilityLbl:"移動能力 / 機能低下",mobilityNote:"看護師または後見人の立会いが必要",mobilityNoteSub:"この患者は評価中に支援が必要です。続行前に必要なサポートがあることを確認してください。",
-    ageErrorPed:"小児患者の年齢が無効です。有効範囲：0〜12歳。",ageErrorTeen:"青少年の年齢が無効です。有効範囲：13〜17歳。",
-    rememberMe:"このデバイスで記憶する",rememberWarn:"このデバイスに認証情報が保存されます。共有または公共のデバイスでは使用しないでください。",rememberConfirm:"了解、保存する",rememberCancel:"キャンセル",
-    inactWarn:"非アクティブのためセッションが間もなく終了します。",stayActive:"アクティブを維持",sessionOut:"非アクティブのためセッションが終了しました。",
-    voiceMode:"音声モード",voiceListening:"聞いています...",voiceHeard:"了解：",voiceNotUnderstood:"聞き取れませんでした。もう一度言ってください。",voiceNotSupported:"お使いのブラウザは音声コマンドをサポートしていません。",voiceSayNumber:"オプションの番号を言ってください。",voiceSayScale:"0から10の数字を言ってください。",voiceSelectMulti:"別のオプション番号を言うか、「次へ」と言って続けてください。",voiceConfirmed:"選択済み：",voiceNext:"次へ。",
-    notesFabTitle:"メモ",notesPh:"臨床観察メモを記入してください（病歴、アレルギー、現在の薬、特殊な状況）...",notesSave:"メモを保存",notesIncluded:"分析にメモが含まれています",notesLabel:"臨床メモ",notesChars:"文字",
-    noData:"データなし。",
-    countryLabel:"国",countrySub:"用語とトリアージシステムを調整します。",
-    insLabel:"健康保険組合",
-    nearbyTitle:"近くの医療施設",nearbyEpsLbl:"あなたの健康保険",nearbyBtn:"施設を検索",nearbyLocating:"位置情報を取得中...",nearbyNone:"近くに結果がありません。",nearbyError:"位置情報を取得できませんでした。",
-    chartTitle:"統計",chartDay:"今日",chartWeek:"週",chartMonth:"月",chartYear:"年",chartByColor:"分類別",chartByType:"患者タイプ別",chartByMotivo:"理由別",chartNoData:"データが不十分です",
-    filterAll:"すべて",filterByMotivo:"理由別",
-    histAll:"すべて",statTotal:"合計",statCritical:"重篤",statUrgent:"緊急",statStable:"安定",
-    nearbySearching:"検索中...",nearbyFoundN:"施設が見つかりました",
-    histLegend:"凡例",legendCritical:"即時対応",legendUrgent:"緊急対応",legendStable:"待機可能",legendNotes:"臨床メモあり",legendPerformedBy:"実施者",
-    mPecho:"胸痛",mDisnea:"呼吸困難",mTrauma:"外傷",mAbdominal:"腹痛",mNeuro:"神経",mFiebre:"発熱",mOtro:"その他",
-    tAdulto:"成人",tMayor:"高齢",tNino:"小児",tAdol:"青少年",tEmbar:"妊婦",tMovil:"行動障害",
-    noMeds:"薬なし。",myMedsLabel:"私の薬",noReminders:"薬を追加してリマインダーを見てください。",medAdded:"薬が追加されました",medDeleted:"削除されました",medActivated:"有効化",medDeactivated:"無効化",
-    clinicalNotes:"臨床注釈",clinicalNotesSub:"患者の関連情報を確認し記入してください。",notesHint:"患者がアレルギー、現在の薬または既往歴を報告した場合は修正してください。",
-    defaultNotes:"患者は既知の薬物アレルギーを否定し、評価時点で臨床的に関連する病理学的既往歴なし。定期薬の服用なし。過去の手術、最近の入院または診断された慢性疾患なし。初期管理に影響する追加情報なし。",
-  }
-};
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE",ja:"JA"};
 let CL=localStorage.getItem("ms_lang")||"es";
 function t(k){return(L[CL]||L.es)[k]||k;}
@@ -2622,6 +1811,7 @@ function initAuth(){
         }
       }catch(e){CR="medico";}
       showApp();
+      logAudit("login",{method:user.providerData?.[0]?.providerId||"unknown"});
     }else{showAuthScreen();}
   });
 }
@@ -2724,6 +1914,7 @@ async function doSignOut(){
   ["dr","ir"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML="";});
   if(_hcUnsub){_hcUnsub();_hcUnsub=null;}_hcCache={};
   if(CR==="paciente"){CR=null;CU=null;showAuthScreen();return;}
+  await logAudit("logout");
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
 }
 
@@ -2785,8 +1976,6 @@ function confirmRemember(ok){
 
 // ── INACTIVITY TIMEOUT ──
 let _lastActive=Date.now(),_inactTimer=null,_warnShown=false;
-const INACT_MS=20*60*1000;   // 20 min
-const WARN_MS=18*60*1000;    // warn at 18 min
 
 function resetActivity(){
   _lastActive=Date.now();_warnShown=false;
@@ -3542,9 +2731,9 @@ async function loadHist(){
   if(!FB||!CU)return;
   const el=document.getElementById("histList");el.innerHTML=`<div class="ldg"><div class="sp"></div>${t('loading')||'Cargando...'}</div>`;
   try{
-    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(100)));
-    if(snap.empty){_histDocs=[];el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos aun."}</div></div>`;return;}
-    _histDocs=snap.docs.map(d=>d.data());
+    const{empty,docs}=await getTriagesHistory(FB);
+    if(empty){_histDocs=[];el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos aun."}</div></div>`;return;}
+    _histDocs=docs;
     renderHist();
   }catch(e){el.innerHTML=`<div class="empty"><div class="etx">Error cargando historial.</div></div>`;}
 }
@@ -4048,48 +3237,7 @@ function _showDefaultDrugs(){
 }
 
 // TRIAGE STEPS
-function getSteps(){
-  const tx=L[CL]||L.es;
-  return [
-    {id:"tipo",title:tx.patientType||"Tipo de paciente",sub:tx.selectProfile||"Seleccione el perfil.",t:"opts",opts:[
-      {ic:"👶",l:tx.childLbl||"Pediatrico (0-12)",v:"nino"},
-      {ic:"🧒",l:tx.teenLbl||"Adolescente (13-17)",v:"adolescente"},
-      {ic:"🧑",l:tx.adultLbl||"Adulto (18-59)",v:"adulto"},
-      {ic:"👴",l:tx.elderLbl||"Tercera edad (60+)",v:"adulto_mayor"},
-      {ic:"🤰",l:tx.pregLbl||"Embarazada",v:"embarazada"},
-      {ic:"♿",l:tx.mobilityLbl||"Movilidad / capacidad reducida",v:"movilidad"}]},
-    {id:"motivo",title:tx.mainReason||"Motivo de consulta",sub:tx.selectSymptom||"Seleccione el sintoma dominante.",t:"opts",opts:[
-      {ic:"💔",l:tx.chestPainL||"Dolor en el pecho",v:"dolor_pecho"},
-      {ic:"🫁",l:tx.breathingL||"Dificultad para respirar",v:"disnea"},
-      {ic:"🤕",l:tx.traumaL||"Trauma / golpe / herida",v:"trauma"},
-      {ic:"🤢",l:tx.abdominalL||"Dolor abdominal / vomito",v:"abdominal"},
-      {ic:"🧠",l:tx.neuroL||"Convulsion / perdida de consciencia",v:"neuro"},
-      {ic:"🌡️",l:tx.feverL||"Fiebre alta",v:"fiebre"},
-      {ic:"😰",l:tx.otherL||"Otro / sintomas generales",v:"otro"}]},
-    {id:"otraDesc",title:"Describe el síntoma principal",sub:"Breve descripción del motivo de consulta para el asistente de IA.",t:"freetext",placeholder:"Ej: dolor de cabeza desde ayer, erupciones en la piel, cansancio extremo...",hint:"Este texto ayuda al Copilot y a la IA a dar sugerencias más precisas. Puede dejarse vacío.",skip:d=>d.motivo!=="otro"},
-    {id:"consc",title:tx.consciousness||"Nivel de consciencia",sub:tx.evalAlert||"Evalua el estado de alerta.",t:"opts",opts:[
-      {ic:"👁️",l:tx.consc1||"Alerta — responde normalmente",v:"alerta"},
-      {ic:"🗣️",l:tx.consc2||"Responde solo a voz",v:"voz"},
-      {ic:"✊",l:tx.consc3||"Responde solo al dolor",v:"dolor_e"},
-      {ic:"❌",l:tx.consc4||"No responde (inconsciente)",v:"inconsc"}]},
-    {id:"vit",title:tx.vitals||"Signos vitales",sub:tx.enterVitals||"Ingrese los valores disponibles.",t:"vitals"},
-    {id:"dolor",title:tx.painScale||"Escala de dolor",sub:tx.painNumeric||"Nivel 0 a 10.",t:"scale_enhanced"},
-    {id:"sintoma_detalle",title:tx.symptomDetail||"Caracteristicas del sintoma",sub:tx.selectApply||"Selecciona las que apliquen.",t:"symptom_detail"},
-    {id:"sint",title:tx.additionalSymptoms||"Sintomas adicionales",sub:tx.markApply||"Marque todos los que apliquen.",t:"multi",opts:[
-      {ic:"🩸",l:tx.sym1||"Sangrado activo",v:"sangrado"},
-      {ic:"💧",l:tx.sym2||"Palidez o sudoracion fria",v:"palido"},
-      {ic:"🌀",l:tx.sym3||"Mareo / perdida de equilibrio",v:"mareo"},
-      {ic:"👄",l:tx.sym4||"Cianosis (labios o unas azulados)",v:"cianosis"},
-      {ic:"🔥",l:tx.sym5||"Temperatura >39C",v:"temp_alta"},
-      {ic:"📉",l:tx.sym6||"Debilidad muscular intensa",v:"debilidad"},
-      {ic:"❌",l:tx.sym7||"Ninguno de los anteriores",v:"ninguno"}]},
-    {id:"enino",title:tx.childAge||"Edad",sub:tx.selectApply||"Ingrese la edad en anos.",t:"num",unit:"años",min:0,max:17,skip:d=>d.tipo!=="nino"&&d.tipo!=="adolescente"},
-    {id:"semanas",title:tx.gestWeeks||"Semanas de gestacion",sub:tx.selectApply||"Semanas aproximadas.",t:"num",unit:"semanas",min:1,max:42,skip:d=>d.tipo!=="embarazada"},
-    {id:"notas",title:tx.clinicalNotes||"Anotaciones clinicas",sub:tx.clinicalNotesSub||"Revise y complete con informacion relevante del paciente.",t:"notes_step",
-      defaultMsg:tx.defaultNotes||"El paciente no refiere alergias medicamentosas conocidas ni antecedentes patologicos de relevancia clinica al momento de la evaluacion. No reporta medicacion habitual en curso. Sin historia previa de cirugias, hospitalizaciones recientes ni enfermedades cronicas diagnosticadas.",
-      hint:tx.notesHint||"Modifique si el paciente refiere alergias, medicacion actual o antecedentes patologicos."},
-  ];
-}
+function getSteps(){return _getStepsModule(L,CL);}
 const STEPS=getSteps();
 function aSteps(){return getSteps().filter(s=>!s.skip||!s.skip(TD));}
 
@@ -4288,40 +3436,7 @@ async function callAI(){
       </div>`;
     return;
   }
-  const mM={dolor_pecho:"Dolor pecho",disnea:"Dif. respirar",trauma:"Trauma",abdominal:"Dolor abdominal",neuro:"Convulsion/inconsciencia",fiebre:"Fiebre alta",otro:"Otro"};
-  const cM={alerta:"Alerta",voz:"Solo a voz",dolor_e:"Solo al dolor",inconsc:"Inconsciente"};
-  const tM={adulto:"Adulto 18-59",adulto_mayor:"Adulto mayor 60+",embarazada:"Embarazada",nino:`Nino ${TD.enino||"?"} anos`};
-  const sM={sangrado:"Sangrado",palido:"Palidez/sudoracion",mareo:"Mareo",cianosis:"Cianosis",temp_alta:"Temp>39C",debilidad:"Debilidad",ninguno:"Ninguno"};
-  const vt=TD.vit||{};
-  const vtx=[vt.ps?`PA:${vt.ps}/${vt.pd||"?"}`:null,vt.fc?`FC:${vt.fc}lpm`:null,vt.sat?`SatO2:${vt.sat}%`:null,vt.tem?`T:${vt.tem}C`:null,vt.fr?`FR:${vt.fr}rpm`:null].filter(Boolean).join(" ")||"No disponibles";
-  const sx=TD.sint?TD.sint.map(s=>sM[s]||s).join(", "):"No indicados";
-  const pedN=TD.tipo==="nino"?`
-NINO: ${TD.enino||"?"} anos. Usa rangos pediatricos.`:"";
-  const notasExtra=TD.notas&&TD.notas.trim()?`\nAnotaciones clinicas del profesional: ${TD.notas.trim()}`:"";
-  const otraDescExtra=TD.motivo==="otro"&&TD.otraDesc&&TD.otraDesc.trim()?`\nDescripcion del sintoma (texto libre): ${TD.otraDesc.trim()}`:"";
-  let hcExtra="";
-  if(_patientHC){
-    const ant=(_patientHC.antecedentes||[]).join(", ");
-    const ale=(_patientHC.alergias||[]).join(", ");
-    const med=(_patientHC.medicacion||[]).join(", ");
-    const nts=_patientHC.notes||"";
-    hcExtra=`\n--- HISTORIA CLÍNICA REGISTRADA ---\nPaciente: ${_patientHC.name||""}, ${_patientHC.age||"?"}años, ${_patientHC.sex==="M"?"Masculino":"Femenino"}`;
-    if(ant)hcExtra+=`\nAntecedentes: ${ant}`;
-    if(ale)hcExtra+=`\nAlergias conocidas: ${ale}`;
-    if(med)hcExtra+=`\nMedicación actual: ${med}`;
-    if(nts)hcExtra+=`\nNotas previas: ${nts}`;
-    hcExtra+="\nConsidera esta historia clínica en tu clasificación y alertas.";
-  }
-  const _lr=({es:'español',en:'English',pt:'português',fr:'français',de:'Deutsch',ja:'日本語'})[CL]||'español';
-  const prompt=`Experto triage hospitalario ESI/Manchester.${pedN}
-PACIENTE: ${tM[TD.tipo]||TD.tipo}
-Motivo: ${mM[TD.motivo]||TD.motivo}
-Consciencia: ${cM[TD.consc]||TD.consc}
-Vitales: ${vtx}
-Dolor: ${TD.dolor!==undefined?TD.dolor:"N/A"}/10
-Sintomas: ${sx}${TD.semanas?`\nSemanas: ${TD.semanas}`:""}${otraDescExtra}${notasExtra}${hcExtra}
-Responde con todos los valores textuales en ${_lr}. SOLO JSON sin backticks:
-{"clasificacion":"ROJO"|"AMARILLO"|"VERDE","justificacion":"max 2 oraciones","acciones":["...","...","..."],"alertas_criticas":[],"tiempo_atencion":"...","red_flags":["..."],"suggested_tests":["..."],"protocol_hint":"nombre del protocolo clinico o null"}`;
+  const prompt=buildTriagePrompt(TD,CL,_patientHC);
   try{
     const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:750,messages:[{role:"user",content:prompt}]})});
     const d=await r.json();
@@ -4330,7 +3445,7 @@ Responde con todos los valores textuales en ${_lr}. SOLO JSON sin backticks:
     if(FB&&CU&&CR!=="paciente"){
       const triageData={...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userName:uName(),userRole:CR||"",userEmail:CU?.email||"",userId:CU?.uid||""};
       if(!navigator.onLine){_queueOfflineTriage(triageData);}
-      else{try{await FB.addDoc(FB.collection(FB.db,"triages"),{...triageData,createdAt:FB.serverTimestamp()});}catch(e){_queueOfflineTriage(triageData);}}
+      else{try{await saveTriage(FB,{...triageData,createdAt:FB.serverTimestamp()});logAudit("triage_completed",{clasificacion:res.clasificacion,motivo:TD.motivo,tipo:TD.tipo});}catch(e){_queueOfflineTriage(triageData);}}
     }
     rResult(res);
   }catch(e){
@@ -4405,6 +3520,20 @@ function rResult(r){
       </div></div></div>`;
   }
 
+  // CURB-65 (pneumonia severity) — shown for fever/dyspnea in adult patients
+  let curb65Html="";
+  if((TD.motivo==="fiebre"||TD.motivo==="disnea")&&(TD.tipo==="adulto"||TD.tipo==="adulto_mayor")){
+    const _c65=calcCURB65({confusion:TD.consc&&TD.consc!=="alerta",urea_high:false,rr:parseFloat(vt.fr)||0,sbp:parseFloat(vt.ps)||0,dbp:parseFloat(vt.pd)||0,age:TD.tipo==="adulto_mayor"?70:40});
+    const _rc65=_c65.risk==="high"?"crit":_c65.risk==="medium"?"warn":"ok";
+    curb65Html=`<div class="card"><div style="display:flex;align-items:center;gap:10px">
+      <div class="score-ring ${_rc65}" style="font-size:.95rem">${_c65.score}/5</div>
+      <div><div style="font-weight:700;font-size:.88rem">CURB-65 — <span style="color:${_c65.color}">${_c65.label}</span></div>
+      ${_c65.details.length?`<div style="font-size:.71rem;color:var(--mu);margin-top:3px">${_c65.details.join(" · ")}</div>`:`<div style="font-size:.71rem;color:var(--mu);margin-top:3px">Sin criterios de gravedad detectados</div>`}
+      <div style="font-size:.62rem;color:var(--mu);margin-top:3px;font-style:italic">Urea no evaluada en triage — verificar laboratorio</div>
+      ${_c65.risk==="high"?`<div style="font-size:.67rem;color:var(--rd);margin-top:4px;font-weight:700">CURB-65 ≥ 3 → Hospitalización / valorar UCI.</div>`:_c65.risk==="medium"?`<div style="font-size:.67rem;color:var(--yw);margin-top:4px;font-weight:600">CURB-65 = 2 → Valorar hospitalización.</div>`:""}
+      </div></div></div>`;
+  }
+
   const tM2={adulto:t("adultLbl")||"Adulto",adulto_mayor:t("elderLbl")||"Tercera edad",embarazada:t("pregLbl")||"Embarazada",nino:t("childLbl")||"Pediatrico",adolescente:t("teenLbl")||"Adolescente"};
   const dc={normal:"var(--gn)",warning:"var(--yw)",critical:"var(--rd)"};
   const vcs=[vt.ps?{l:"PA",v:`${vt.ps}/${vt.pd||"—"}`,s:chkPA(vt.ps)}:null,vt.fc?{l:"FC",v:`${vt.fc} lpm`,s:chkFC(vt.fc)}:null,vt.sat?{l:"SatO₂",v:`${vt.sat}%`,s:chkSat(vt.sat)}:null,vt.tem?{l:"Temp",v:`${vt.tem}°C`,s:chkT(vt.tem)}:null,vt.fr?{l:"FR",v:`${vt.fr} rpm`,s:chkFR(vt.fr)}:null].filter(Boolean);
@@ -4419,7 +3548,7 @@ function rResult(r){
       <span class="chip">${tM2[TD.tipo]||""}</span>${TD.semanas?`<span class="chip">${TD.semanas} sem.</span>`:""}${TD.enino?`<span class="chip">${TD.enino} años</span>`:""}
       <span class="chip">Dolor: ${TD.dolor}/10</span></div></div>
     <div class="card"><div class="clabel" data-i18n="clinicalAnalysis">${t("clinicalAnalysis")||"Analisis clinico"}</div><div style="font-size:.83rem;line-height:1.65">${r.justificacion}</div>${alH}</div>
-    ${qsofaHtml}${news2Html}${siHtml}
+    ${qsofaHtml}${news2Html}${siHtml}${curb65Html}
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
     ${timelineHtml}
     ${copilotResultHtml}
@@ -4528,11 +3657,6 @@ function exportTriagePDF(){
 
   pdf.save(`triage-${r.clasificacion}-${Date.now()}.pdf`);
 }
-function chkPA(s){s=parseFloat(s);return s<90||s>180?"critical":s<100||s>150?"warning":"normal";}
-function chkFC(f){f=parseFloat(f);return f<50||f>130?"critical":f<60||f>100?"warning":"normal";}
-function chkSat(s){s=parseFloat(s);return s<90?"critical":s<95?"warning":"normal";}
-function chkT(t){t=parseFloat(t);return t>40||t<35?"critical":t>38.5||t<36?"warning":"normal";}
-function chkFR(f){f=parseFloat(f);return f<8||f>30?"critical":f<12||f>24?"warning":"normal";}
 
 // DRUG SEARCH
 async function buscarDrug(){
@@ -5203,7 +4327,6 @@ function _renderPresence(docs){
   bar.innerHTML=`<div style="font-size:.62rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:1px;width:100%;margin-bottom:2px">🟢 Conectados ahora (${docs.length})</div>${docs.map(d=>`<div class="presence-chip"><span class="pdot"></span>${d.name||d.email?.split("@")[0]||"Usuario"}<span style="font-size:.55rem;opacity:.65;margin-left:2px">${rl[d.role]||""}</span></div>`).join("")}`;
 }
 
-const COLA_DEADLINE={ROJO:15,AMARILLO:30,VERDE:120}; // minutos
 
 function _stopColaTimer(){
   if(_colaInterval){clearInterval(_colaInterval);_colaInterval=null;}
@@ -5229,9 +4352,7 @@ function loadCola(){
   window._queueUnsub?.();window._queueUnsub=null;
   // Server-side 12h filter — Firestore returns only relevant docs (no client-side filtering)
   const since=new Date(Date.now()-12*60*60*1000);
-  const q=FB.query(FB.collection(FB.db,"triages"),FB.where("createdAt",">=",since),FB.orderBy("createdAt","desc"),FB.limit(60));
-  window._queueUnsub=FB.onSnapshot(q,(snap)=>{
-    const newData=snap.docs.map(d=>({id:d.id,...d.data()}));
+  window._queueUnsub=subscribeTriageQueue(FB,since,(newData)=>{
     // Detect new critical patients — alert staff
     if(_prevColaIds.size>0){
       const newRojo=newData.filter(d=>d.clasificacion==="ROJO"&&!d.atendido&&!_prevColaIds.has(d.id));
@@ -5259,6 +4380,37 @@ function setColaFilter(f,btn){
   document.querySelectorAll("[data-cf]").forEach(b=>b.classList.remove("on"));
   if(btn)btn.classList.add("on");
   _renderCola();
+}
+
+// Queue drag-and-drop (local reorder only — does not persist to Firestore)
+let _colaDragId=null;
+function _colaDragStart(e,el){
+  _colaDragId=el.dataset.id;
+  e.dataTransfer.effectAllowed="move";
+  setTimeout(()=>{if(el)el.style.opacity="0.35";},0);
+}
+function _colaDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect="move";
+  const card=e.target.closest(".cola-card");
+  if(card){document.querySelectorAll(".cola-card").forEach(c=>c.classList.remove("drag-over"));if(card.dataset.id!==_colaDragId)card.classList.add("drag-over");}
+}
+function _colaDrop(e,el){
+  e.preventDefault();
+  document.querySelectorAll(".cola-card").forEach(c=>c.classList.remove("drag-over"));
+  const toId=el.dataset.id;
+  if(!_colaDragId||_colaDragId===toId)return;
+  const fromIdx=_colaData.findIndex(d=>d.id===_colaDragId);
+  const toIdx=_colaData.findIndex(d=>d.id===toId);
+  if(fromIdx<0||toIdx<0)return;
+  if(_colaData[fromIdx].atendido!==_colaData[toIdx].atendido)return;
+  const[item]=_colaData.splice(fromIdx,1);
+  _colaData.splice(toIdx,0,item);
+  _renderCola();
+}
+function _colaDragEnd(){
+  _colaDragId=null;
+  document.querySelectorAll(".cola-card").forEach(c=>{c.style.opacity="";c.classList.remove("drag-over");});
 }
 
 function _renderCola(){
@@ -5366,7 +4518,7 @@ function _renderCola(){
     const atendidoAt=d.atendidoAt?.toDate?.();
     const doneLabel=atendidoAt?`<div class="cola-done-lbl">✓ ${String(atendidoAt.getHours()).padStart(2,"0")}:${String(atendidoAt.getMinutes()).padStart(2,"0")}</div>`:`<div class="cola-done-lbl">✓ ${tx.colaAttended||"Atendido"}</div>`;
 
-    return `<div class="cola-card${isDone?" done":""}${dlClass==="over"&&!isDone?" vencido":""}" id="colacard-${d.id}" style="${isNew?"animation:fadeUp .4s both":""}">
+    return `<div class="cola-card${isDone?" done":""}${dlClass==="over"&&!isDone?" vencido":""}" id="colacard-${d.id}" data-id="${d.id}" draggable="${!isDone}" ondragstart="_colaDragStart(event,this)" ondragover="_colaDragOver(event)" ondrop="_colaDrop(event,this)" ondragend="_colaDragEnd()" style="${isNew?"animation:fadeUp .4s both":""}">
       <div class="cola-bar2 ${cc}"></div>
       <div class="cola-body">
         <div class="cola-top">
@@ -5439,16 +4591,13 @@ async function markCola(id,done){
   const card=document.getElementById("colacard-"+id);
   if(card)card.style.opacity="0.5";
   try{
-    await FB.updateDoc(FB.doc(FB.db,"triages",id),{
-      atendido:done,
-      atendidoAt:done?FB.serverTimestamp():null,
-      atendidoPor:done?uName():"",
-    });
+    await updateTriageAttended(FB,id,done,uName());
     const idx=_colaData.findIndex(d=>d.id===id);
     if(idx>=0){
       _colaData[idx].atendido=done;
       _colaData[idx].atendidoAt=done?{toDate:()=>new Date()}:null;
     }
+    logAudit("queue_status_changed",{patientId:id,done});
     _renderCola();
     toast(done?t("colaAttended")||"Paciente atendido":"Marcado como pendiente");
   }catch(e){
@@ -5572,12 +4721,7 @@ async function _syncOfflineQueue(){
   if(!FB||!CU)return;
   const queue=JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||"[]");
   if(!queue.length)return;
-  const remaining=[];
-  for(const item of queue){
-    try{
-      await FB.addDoc(FB.collection(FB.db,"triages"),{...item,syncedAt:FB.serverTimestamp()});
-    }catch(e){remaining.push(item);}
-  }
+  const remaining=await _syncOfflineQueueFn(FB,queue);
   localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(remaining));
   if(remaining.length<queue.length){
     const synced=queue.length-remaining.length;
@@ -5875,7 +5019,7 @@ async function quickMCI(clasificacion){
   _updateMCIBanner();
   if(FB&&CU){
     try{
-      await FB.addDoc(FB.collection(FB.db,"triages"),{
+      await saveTriage(FB,{
         clasificacion,tipo:"MCI",motivo:_mciName,notas:"Triage START rapido MCI",
         userId:CU.uid,userName:CUName||CU.email,
         createdAt:FB.serverTimestamp(),esMCI:true
