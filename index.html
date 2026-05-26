@@ -389,6 +389,27 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 #qrVideo{width:100%;display:block;border-radius:12px;}
 .qr-line{position:absolute;left:8%;right:8%;height:2px;background:var(--cy);box-shadow:0 0 8px var(--cy);animation:scanLine 2s linear infinite;}
 
+/* PATIENT HC CHIP (persistent banner across triage steps) */
+.pt-hc-chip{display:flex;align-items:center;gap:10px;background:rgba(0,200,240,.07);border:1px solid rgba(0,200,240,.25);border-radius:14px;padding:10px 14px;margin-bottom:10px;animation:fadeUp .35s both;}
+.pt-hc-chip .pt-av{width:34px;height:34px;border-radius:50%;background:var(--cy-a);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--cy);flex-shrink:0;}
+.pt-hc-chip .pt-name{font-weight:700;font-size:.88rem;color:var(--tx);}
+.pt-hc-chip .pt-sub{font-size:.72rem;color:var(--mu);margin-top:1px;}
+.pt-hc-chip .pt-ale{font-size:.68rem;font-weight:700;color:var(--rd);background:var(--rd-a);padding:2px 8px;border-radius:10px;margin-top:4px;display:inline-block;}
+/* PATIENT LOOKUP STEP */
+.lookup-wrap{animation:fadeUp .4s both;}
+.lookup-icon-wrap{text-align:center;padding:20px 0 14px;}
+.lookup-icon-wrap .lookup-ic{font-size:3rem;display:block;animation:fadeUp .4s .05s both;}
+.lookup-icon-wrap .lookup-title{font-size:1.05rem;font-weight:700;color:var(--tx);margin-top:6px;animation:fadeUp .4s .1s both;}
+.lookup-icon-wrap .lookup-sub{font-size:.78rem;color:var(--mu);margin-top:4px;animation:fadeUp .4s .15s both;line-height:1.5;}
+.lookup-input-row{display:flex;gap:8px;animation:fadeUp .4s .2s both;margin-top:4px;}
+.lookup-divider{border:none;border-top:1px solid var(--bd);margin:14px 0;animation:fadeUp .4s .25s both;}
+.lookup-result-enter{animation:fadeUp .3s both;}
+.lookup-found-card{background:rgba(0,200,240,.07);border:1.5px solid rgba(0,200,240,.3);border-radius:14px;padding:14px;margin-bottom:10px;}
+.lookup-found-card .lf-name{font-weight:700;font-size:.97rem;color:var(--tx);}
+.lookup-found-card .lf-meta{font-size:.74rem;color:var(--mu);margin-top:2px;}
+.lookup-found-card .lf-ant{font-size:.74rem;color:var(--mu);margin-top:5px;}
+.lookup-found-card .lf-ale{font-size:.7rem;font-weight:700;color:var(--rd);background:var(--rd-a);padding:2px 8px;border-radius:10px;margin-top:6px;display:inline-block;}
+.lookup-found-card .lf-med{font-size:.72rem;color:var(--cy);margin-top:5px;}
 /* ALARM */
 .abanner{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:linear-gradient(135deg,#00c8f0,#00e07a);color:#000;padding:12px 14px;z-index:9999;display:none;animation:fadeUp .3s ease;}
 .atitle{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:.88rem;}
@@ -986,15 +1007,20 @@ select{padding-right:32px;}
 
     <!-- PATIENT ACCESS (primary) -->
     <div id="authPatientView">
-      <div style="text-align:center;margin-bottom:16px">
-        <div style="font-size:2rem;margin-bottom:6px">🏥</div>
-        <div style="font-weight:700;font-size:1rem;color:var(--tx)" id="ptnBtnTitle">Acceso como paciente</div>
-        <div style="font-size:.74rem;color:var(--mu);margin-top:3px" id="ptnBtnSub">Ingresa tu número de identificación</div>
+      <div style="text-align:center;margin-bottom:18px;animation:fadeUp .4s both">
+        <div style="font-size:2.4rem;margin-bottom:8px;filter:drop-shadow(0 4px 16px rgba(0,200,240,.3))">🏥</div>
+        <div style="font-weight:700;font-size:1.05rem;color:var(--tx)" id="ptnBtnTitle">Acceso como paciente</div>
+        <div style="font-size:.76rem;color:var(--mu);margin-top:4px;line-height:1.5" id="ptnBtnSub">Ingresa tu número de identificación<br>para acceder a tu historia clínica</div>
       </div>
-      <input class="fi" id="patientIdInput" type="text" inputmode="numeric" placeholder="Número de identificación (ej: 482951)" style="width:100%;box-sizing:border-box;margin-bottom:10px;text-align:center;font-size:1rem;letter-spacing:2px" onkeydown="if(event.key==='Enter')loginPatientById()">
-      <button class="bpri" id="patientLoginBtn" style="width:100%" onclick="loginPatientById()">Ingresar</button>
-      <hr class="auth-sep">
-      <div id="staffLinkWrap" style="text-align:center">
+      <div style="animation:fadeUp .4s .1s both">
+        <input class="fi" id="patientIdInput" type="text" inputmode="numeric"
+               placeholder="Ej: 482951"
+               style="width:100%;box-sizing:border-box;margin-bottom:10px;text-align:center;font-size:1.1rem;letter-spacing:3px;font-family:'JetBrains Mono',monospace"
+               onkeydown="if(event.key==='Enter')loginPatientById()">
+        <button class="bpri" id="patientLoginBtn" style="width:100%;font-size:.95rem" onclick="loginPatientById()">Ingresar</button>
+      </div>
+      <hr class="auth-sep" style="animation:fadeUp .4s .2s both">
+      <div id="staffLinkWrap" style="text-align:center;animation:fadeUp .4s .25s both">
         <span class="auth-staff-link" id="staffLink" onclick="showStaffLogin()">Personal médico / Administrador →</span>
       </div>
     </div>
@@ -1149,6 +1175,7 @@ select{padding-right:32px;}
           </div>
         </div>
         <div class="pgw" id="pgWrap"><div class="pgf" id="pg" style="width:0%"></div></div>
+        <div id="patientHCStrip"></div>
         <div id="trc"></div>
       </div>
       <!-- MEDS -->
@@ -1464,7 +1491,7 @@ const DEMO_PATIENTS=[
    medicacion:["Levotiroxina 100mcg","Sertralina 50mg","Metformina 500mg"],
    notes:"Hipotiroidismo en tratamiento sustitutivo. TSH último control 2.8. Terapia psicológica activa. Sin alergias conocidas."}
 ];
-let _patientHC=null;
+let _patientHC=null,_triageLookupDone=false,_triageLookupResult=null;
 
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
@@ -2785,6 +2812,8 @@ function showApp(){
   dismissSplash();
   document.getElementById("authScreen").style.display="none";
   document.getElementById("mainApp").classList.add("on");
+  // Reset triage lookup state for new session
+  if(CR!=="paciente"){_triageLookupDone=false;_triageLookupResult=null;}
   buildNav();updateUI();
   const def={admin:"dash",admin_hosp:"dash",medico:"triage",paciente:"meds"}[CR]||"triage";
   navigateTo(def);
@@ -2889,7 +2918,14 @@ function navigateTo(id,idx){
   const ind=document.getElementById("nind");
   if(ind&&nb){ind.style.width=nb.offsetWidth+"px";ind.style.left=nb.offsetLeft+"px";}
   if(id==="dash")loadDash();
-  if(id==="triage"){if(!_triageStartTime)_startTriageTimer();rTriage();}
+  if(id==="triage"){
+    if(CR!=="paciente"&&!_triageLookupDone){_showPatientLookup();}
+    else{
+      if(_patientHC&&!TD.notas)_applyPatientHCToNotes();
+      if(!_triageStartTime)_startTriageTimer();
+      rTriage();
+    }
+  }
   if(id==="hist")loadHist();
   if(id==="cola")loadCola();
   if(id==="hc")loadHC();
@@ -3395,6 +3431,146 @@ function stopQR(){
   document.getElementById("qrScanModal").classList.remove("on");
 }
 
+// ── PATIENT HC HELPERS ────────────────────────────────────────────────────────
+function _applyPatientHCToNotes(){
+  if(!_patientHC)return;
+  const parts=[];
+  if(_patientHC.antecedentes?.length)parts.push(`Antecedentes: ${_patientHC.antecedentes.join(", ")}`);
+  if(_patientHC.alergias?.length)parts.push(`ALERGIAS (IMPORTANTE): ${_patientHC.alergias.join(", ")}`);
+  if(_patientHC.medicacion?.length)parts.push(`Medicación actual: ${_patientHC.medicacion.join(", ")}`);
+  if(_patientHC.notes)parts.push(_patientHC.notes);
+  if(parts.length)TD.notas=parts.join("\n");
+}
+
+function _updatePatientHCStrip(){
+  const strip=document.getElementById("patientHCStrip");
+  if(!strip)return;
+  if(!_patientHC){strip.innerHTML="";return;}
+  const av=(_patientHC.name||"?")[0].toUpperCase();
+  const aleHtml=(_patientHC.alergias||[]).length?`<div class="pt-ale">⚠️ Alergias: ${_patientHC.alergias.join(", ")}</div>`:"";
+  strip.innerHTML=`<div class="pt-hc-chip">
+    <div class="pt-av">${av}</div>
+    <div style="flex:1;min-width:0">
+      <div class="pt-name">${_patientHC.name}</div>
+      <div class="pt-sub">${_patientHC.age} años · ${_patientHC.sex==="M"?"Masculino":"Femenino"} · ID: ${_patientHC.doc||"—"}</div>
+      ${aleHtml}
+    </div>
+    <button onclick="_clearTriagePatient()" style="background:none;border:none;color:var(--mu);font-size:.85rem;cursor:pointer;padding:4px;flex-shrink:0" title="Cambiar paciente">✕</button>
+  </div>`;
+}
+
+function _clearTriagePatient(){
+  _patientHC=null;_triageLookupDone=false;_triageLookupResult=null;TD.notas="";
+  _updatePatientHCStrip();
+  _stopTriageTimer();_triageStartTime=null;TS=0;TD={};TM=[];_lastResult=null;
+  document.getElementById("pg").style.width="0%";
+  _showPatientLookup();
+}
+
+function _showPatientLookup(){
+  const c=document.getElementById("trc");if(!c)return;
+  document.getElementById("pg").style.width="0%";
+  _updatePatientHCStrip();
+  c.innerHTML=`<div class="lookup-wrap">
+    <div class="card">
+      <div class="lookup-icon-wrap">
+        <span class="lookup-ic">🗂️</span>
+        <div class="lookup-title">Identificar paciente</div>
+        <div class="lookup-sub">Ingresa el número de identificación para cargar<br>la historia clínica automáticamente</div>
+      </div>
+      <div class="lookup-input-row">
+        <input class="fi" id="triagePatientId" type="text" inputmode="numeric"
+               placeholder="Número de identificación"
+               style="flex:1;text-align:center;letter-spacing:2px;font-size:1rem;font-family:'JetBrains Mono',monospace"
+               onkeydown="if(event.key==='Enter')_searchPatientForTriage()">
+        <button class="bpri" id="triageSearchBtn" style="flex:0 0 auto;padding:0 18px;white-space:nowrap"
+                onclick="_searchPatientForTriage()">Buscar</button>
+      </div>
+      <div id="triageLookupResult" style="margin-top:12px"></div>
+      <hr class="lookup-divider">
+      <button class="bsec" style="width:100%;font-size:.8rem;color:var(--mu)" onclick="_skipPatientLookup()">
+        Continuar con paciente no registrado →
+      </button>
+    </div>
+  </div>`;
+  setTimeout(()=>document.getElementById("triagePatientId")?.focus(),120);
+}
+
+async function _searchPatientForTriage(){
+  const inp=document.getElementById("triagePatientId");
+  const id=(inp?.value||"").trim();
+  if(!id){toast("Ingresa el número de identificación");return;}
+  const btn=document.getElementById("triageSearchBtn");
+  const res=document.getElementById("triageLookupResult");
+  if(btn){btn.disabled=true;btn.textContent="Buscando...";}
+  if(res)res.innerHTML=`<div style="display:flex;align-items:center;gap:8px;color:var(--mu);font-size:.8rem;padding:8px 0"><div class="sp"></div>Consultando base de datos...</div>`;
+  if(!FB){
+    if(res)res.innerHTML=`<div class="ib rd lookup-result-enter"><div class="ibl">Sin conexión</div><div class="ibt">No hay conexión a la base de datos clínicos.</div></div>`;
+    if(btn){btn.disabled=false;btn.textContent="Buscar";}
+    return;
+  }
+  try{
+    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",id),FB.limit(1)));
+    if(btn){btn.disabled=false;btn.textContent="Buscar";}
+    if(snap.empty){
+      res.innerHTML=`<div class="lookup-result-enter">
+        <div class="ib" style="background:rgba(255,184,48,.08);border:1px solid rgba(255,184,48,.3);color:var(--yw)">
+          <div class="ibl">⚠️ Paciente no encontrado</div>
+          <div class="ibt">No existe historia clínica con ID <strong>${id}</strong>. Puedes continuar sin historia o crear un nuevo registro.</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="bsec" style="flex:1;font-size:.8rem" onclick="_skipPatientLookup()">Continuar sin HC</button>
+          <button class="bpri" style="flex:1;font-size:.8rem" onclick="navigateTo('hc-new')">+ Nueva HC</button>
+        </div>
+      </div>`;
+    }else{
+      const docSnap=snap.docs[0];
+      _triageLookupResult={id:docSnap.id,...docSnap.data()};
+      const hc=_triageLookupResult;
+      const aleHtml=hc.alergias?.length?`<div class="lf-ale">⚠️ ALERGIAS: ${hc.alergias.join(", ")}</div>`:"";
+      const antHtml=hc.antecedentes?.length?`<div class="lf-ant">${hc.antecedentes.join(" · ")}</div>`:"";
+      const medHtml=hc.medicacion?.length?`<div class="lf-med">💊 ${hc.medicacion.join(", ")}</div>`:"";
+      res.innerHTML=`<div class="lookup-result-enter">
+        <div class="lookup-found-card">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="pt-av" style="width:40px;height:40px;background:var(--cy-a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:var(--cy);flex-shrink:0">${(hc.name||"?")[0].toUpperCase()}</div>
+            <div>
+              <div class="lf-name">${hc.name}</div>
+              <div class="lf-meta">${hc.age} años · ${hc.sex==="M"?"Masculino":"Femenino"} · ID: ${hc.doc}</div>
+            </div>
+          </div>
+          ${aleHtml}${antHtml}${medHtml}
+        </div>
+        <button class="bpri" style="width:100%;font-size:.88rem;animation:fadeUp .3s .05s both" onclick="_confirmPatientForTriage()">
+          ✓ Iniciar triage con este paciente
+        </button>
+      </div>`;
+    }
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent="Buscar";}
+    if(res)res.innerHTML=`<div class="ib rd lookup-result-enter"><div class="ibl">Error</div><div class="ibt">${e.message}</div></div>`;
+  }
+}
+
+function _confirmPatientForTriage(){
+  if(!_triageLookupResult){toast("Busca un paciente primero");return;}
+  _patientHC=_triageLookupResult;
+  _triageLookupResult=null;
+  _triageLookupDone=true;
+  _applyPatientHCToNotes();
+  _updatePatientHCStrip();
+  if(!_triageStartTime)_startTriageTimer();
+  rTriage();
+}
+
+function _skipPatientLookup(){
+  _patientHC=null;_triageLookupResult=null;_triageLookupDone=true;
+  _updatePatientHCStrip();
+  if(!_triageStartTime)_startTriageTimer();
+  rTriage();
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function loginPatientById(){
   const inp=document.getElementById("patientIdInput");
   const id=(inp?.value||"").trim();
@@ -3581,14 +3757,8 @@ function rTriage(){
   const steps=aSteps();const tot=steps.length;
   document.getElementById("pg").style.width=((TS/tot)*100)+"%";
   if(TS>=tot){if(_lastResult){rResult(_lastResult);return;}rAnalyzing();return;}
+  _updatePatientHCStrip();
   const s=steps[TS];const c=document.getElementById("trc");c.innerHTML="";
-  if(_patientHC&&TS===0){
-    const hcBanner=document.createElement("div");
-    hcBanner.className="cnote";hcBanner.style.cssText="background:rgba(0,200,240,.08);border:1px solid rgba(0,200,240,.28);color:var(--cy);margin-bottom:10px";
-    const ale=(_patientHC.alergias||[]).length?`<span style="color:var(--rd);font-weight:700">⚠️ Alergia: ${_patientHC.alergias.join(", ")}</span> · `:"";
-    hcBanner.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">🗂️</span><span><strong>${_patientHC.name}</strong> — ${_patientHC.age} años · ${ale}HC cargada</span>`;
-    c.appendChild(hcBanner);
-  }
   const st=document.createElement("div");st.className="stag";st.textContent=`${t("step")||"Paso"} ${TS+1} ${t("of")||"de"} ${tot}`;c.appendChild(st);
   if(TD.tipo==="nino"||TD.tipo==="adolescente"){const n=document.createElement("div");n.className="cnote";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">👨‍👩‍👦</span><span><strong>${t("pedNote")||"Paciente pediatrico / adolescente"}</strong> — ${t("pedNoteSub")||"Completar con padre, madre o tutor."}</span>`;c.appendChild(n);}
   if(TD.tipo==="movilidad"){const n=document.createElement("div");n.className="cnote";n.style.cssText="background:rgba(255,184,48,.08);border:1px solid rgba(255,184,48,.28);color:#ffb830;";n.innerHTML=`<span style="font-size:.95rem;flex-shrink:0">♿</span><span><strong>${t("mobilityNote")||"Se requiere enfermero o tutor presente"}</strong><br><span style="font-size:.72rem;opacity:.85">${t("mobilityNoteSub")||"Este paciente necesita asistencia durante la evaluacion."}</span></span>`;c.appendChild(n);}
@@ -3642,8 +3812,14 @@ function rTriage(){
     const vitAlertBox=document.createElement("div");vitAlertBox.id="vitAlertBox";vitAlertBox.style.cssText="margin-top:8px;";card.appendChild(vitAlertBox);
   }else if(s.t==="notes_step"){
     if(!TD.notas)TD.notas=s.defaultMsg||"";
+    if(_patientHC){
+      const hcBadge=document.createElement("div");
+      hcBadge.style.cssText="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--cy);background:rgba(0,200,240,.08);border:1px solid rgba(0,200,240,.25);border-radius:10px;padding:6px 10px;margin-top:4px;margin-bottom:6px;animation:fadeUp .3s both";
+      hcBadge.innerHTML=`<span>🗂️</span><span>Pre-cargado desde historia clínica de <strong>${_patientHC.name}</strong>. Edita si hay cambios.</span>`;
+      card.appendChild(hcBadge);
+    }
     const ta=document.createElement("textarea");
-    ta.className="fi";ta.style.cssText="resize:vertical;min-height:120px;font-size:.8rem;line-height:1.55;padding:12px;margin-top:4px;font-family:'Familjen Grotesk',sans-serif;";
+    ta.className="fi";ta.style.cssText="resize:vertical;min-height:120px;font-size:.8rem;line-height:1.55;padding:12px;margin-top:4px;font-family:'Familjen Grotesk',sans-serif;border-color:"+(_patientHC?"rgba(0,200,240,.4)":"");
     ta.value=TD.notas;
     const warnEl=document.createElement("div");warnEl.className="notes-warn";
     warnEl.textContent="⚠️ Incluya informacion clinica: antecedentes, alergias, medicacion, signos relevantes o \"Sin antecedentes conocidos.\"";
@@ -3656,7 +3832,7 @@ function rTriage(){
     card.appendChild(warnEl);
     const hint=document.createElement("div");
     hint.style.cssText="font-size:.68rem;color:var(--mu);margin-top:7px;font-family:'JetBrains Mono',monospace;line-height:1.4;border-left:2px solid var(--cy);padding-left:8px;";
-    hint.textContent=s.hint||"";
+    hint.textContent=_patientHC?"Datos clínicos cargados automáticamente desde el registro del paciente.":(s.hint||"");
     card.appendChild(hint);
     setTimeout(()=>ta.focus(),80);
   }else if(s.t==="scale"){
@@ -3857,7 +4033,19 @@ function rResult(r){
     <button class="bsec" onclick="resetT()" style="animation:fadeUp .4s .3s both">← ${t("newPatient")||"Nuevo paciente"}</button>`;
 }
 
-function resetT(){TS=0;TD={};TM=[];_lastResult=null;_stopTriageTimer();_startTriageTimer();rTriage();}
+function resetT(){
+  TS=0;TD={};TM=[];_lastResult=null;
+  _stopTriageTimer();_triageStartTime=null;
+  document.getElementById("pg").style.width="0%";
+  _updatePatientHCStrip();
+  if(CR==="paciente"){
+    if(_patientHC)_applyPatientHCToNotes();
+    _startTriageTimer();rTriage();
+  }else{
+    _patientHC=null;_triageLookupDone=false;_triageLookupResult=null;
+    _showPatientLookup();
+  }
+}
 
 function shareResult(){
   if(!_lastResult)return;
