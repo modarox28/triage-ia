@@ -3238,7 +3238,6 @@ function _showDefaultDrugs(){
 
 // TRIAGE STEPS
 function getSteps(){return _getStepsModule(L,CL);}
-const STEPS=getSteps();
 function aSteps(){return getSteps().filter(s=>!s.skip||!s.skip(TD));}
 
 function rTriage(){
