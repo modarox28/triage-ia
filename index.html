@@ -3088,7 +3088,7 @@ function renderHist(){
         <div style="font-size:.69rem;color:var(--mu)">${performer}${dt.tipo||""} · D:${dt.dolor??"-"}/10 · ${date}</div>
         ${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dt.justificacion.slice(0,80)}...</div>`:""}
       </div>
-      <button onclick="event.stopPropagation();exportDataPDF(_histFiltered[${idx}])" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.72rem;padding:4px 7px;cursor:pointer;margin-left:6px" title="Exportar PDF">📄</button>
+      <button onclick="event.stopPropagation();_exportHistPDF(${idx})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.72rem;padding:4px 7px;cursor:pointer;margin-left:6px;touch-action:manipulation" title="Exportar PDF">📄</button>
     </div>`;
   }).join("");
 }
@@ -3122,7 +3122,7 @@ function _renderDashRecent(){
     const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
     const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
     const quien=dt.userName?`<span style="font-size:.62rem;color:var(--cy);margin-left:4px">· ${dt.userName}</span>`:"";
-    return`<div class="hist-row" style="cursor:pointer" onclick="_openTriageDetail(${i})"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600">${mMD[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}${quien}</div></div><button onclick="event.stopPropagation();exportDataPDF(window._dashFiltered?.[${i}])" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.7rem;padding:3px 6px;cursor:pointer;margin-left:4px" title="PDF">📄</button><span style="color:var(--mu);font-size:.95rem;flex-shrink:0;margin-left:4px">›</span></div>`;
+    return`<div class="hist-row" style="cursor:pointer" onclick="_openTriageDetail(${i})"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600">${mMD[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}${quien}</div></div><button onclick="event.stopPropagation();_exportDashPDF(${i})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.7rem;padding:3px 6px;cursor:pointer;margin-left:4px;touch-action:manipulation" title="PDF">📄</button><span style="color:var(--mu);font-size:.95rem;flex-shrink:0;margin-left:4px">›</span></div>`;
   }).join("");
   const hasMore=filtered.length>_dashShown;
   if(moreEl){
@@ -4237,11 +4237,12 @@ function _buildTriagePDF(r){
   if(r.pacienteNombre)ln(`Paciente: ${r.pacienteNombre}`);
   rule();
 
-  if(r.vitals&&Object.keys(r.vitals).some(k=>r.vitals[k])){
+  const _rvit=r.vit||r.vitals||{};
+  if(Object.keys(_rvit).some(k=>_rvit[k])){
     ln("SIGNOS VITALES",8,true,[100,120,150]);y-=1;
     const vlbl={fc:"FC",ps:"P.Sistolica",pd:"P.Diastolica",sat:"SpO2",tem:"Temperatura",fr:"FR",gcs:"Glasgow"};
     const vun={fc:"lpm",ps:"mmHg",pd:"mmHg",sat:"%",tem:"C",fr:"rpm",gcs:""};
-    Object.entries(r.vitals).forEach(([k,v])=>{if(v)ln(`${vlbl[k]||k}: ${v} ${vun[k]||""}`,10,false);});
+    Object.entries(_rvit).forEach(([k,v])=>{if(v)ln(`${vlbl[k]||k}: ${v} ${vun[k]||""}`,10,false);});
     rule();
   }
 
@@ -4299,10 +4300,15 @@ function exportTriagePDF(){
 
 function exportDataPDF(data){
   if(!data){toast("Sin datos para exportar");return;}
-  if(typeof window.jspdf==="undefined"){toast("PDF no disponible");return;}
-  const pdf=_buildTriagePDF(data);
-  if(pdf)pdf.save(`triage-${data.clasificacion||"resultado"}-${Date.now()}.pdf`);
+  if(typeof window.jspdf==="undefined"){toast("PDF no disponible — recarga la app");return;}
+  try{
+    const pdf=_buildTriagePDF(data);
+    if(pdf){pdf.save(`triage-${data.clasificacion||"resultado"}-${Date.now()}.pdf`);toast("PDF generado ✓");}
+    else toast("No se pudo generar el PDF");
+  }catch(e){toast("Error al generar PDF: "+e.message);console.error("[PDF]",e);}
 }
+function _exportHistPDF(idx){exportDataPDF(_histFiltered[idx]);}
+function _exportDashPDF(idx){exportDataPDF(window._dashFiltered?.[idx]);}
 
 // DRUG SEARCH — patient lookup for meds context
 let _medPatientHC=null;
@@ -5696,6 +5702,8 @@ function activateMCI(){
   const name=document.getElementById("mciNameInput").value.trim()||"Incidente MCI";
   _mciName=name;_mciCounts={ROJO:0,AMARILLO:0,VERDE:0,NEGRO:0};_mciPatientN=1;_mciActive=true;
   _mciSTARTStep='walk';_mciSTARTResult=null;
+  // Skip patient lookup so triage goes directly to MCI wizard
+  _patientHC=null;_triageLookupResult=null;_triageLookupDone=true;
   closeMCISetup();
   _updateMCIBanner();
   navigateTo("triage");
@@ -5708,9 +5716,12 @@ function confirmDeactivateMCI(){
 }
 function deactivateMCI(){
   _mciActive=false;_mciName="";_mciCounts={ROJO:0,AMARILLO:0,VERDE:0,NEGRO:0};_mciPatientN=1;
+  _mciSTARTStep='walk';_mciSTARTResult=null;
   document.getElementById("mciBanner").classList.remove("on");
   document.getElementById("mciToggleBtn").style.cssText="font-size:.72rem;padding:5px 12px;border-color:rgba(255,60,60,.4);color:#ff8060";
   document.getElementById("mciToggleBtn").textContent="⚠️ MCI";
+  // Return to triage home screen (patient lookup)
+  _triageLookupDone=false;_patientHC=null;_triageLookupResult=null;
   navigateTo("triage");
   toast("MCI desactivado");
 }
@@ -5731,16 +5742,19 @@ function _updateMCIBanner(){
 }
 
 let _mciPendingClasif=null;
-let _mciSTARTStep='walk',_mciSTARTResult=null;
+let _mciSTARTStep='walk',_mciSTARTResult=null,_mciLastCl=null;
 
-// START triage step definitions
+// START triage step definitions (extended)
 const _MCI_STEPS={
-  walk:{label:"PASO 1 · MOVILIDAD",emoji:"🚶",q:"¿El paciente camina por sí mismo?",hint:"Indica que camine unos pasos",y:"✓ SÍ, CAMINA",n:"✕ NO CAMINA"},
-  breathe:{label:"PASO 2 · RESPIRACIÓN",emoji:"🫁",q:"¿El paciente respira?",hint:"Observa movimiento torácico 5-10 seg",y:"✓ RESPIRA",n:"✕ NO RESPIRA"},
-  breathe2:{label:"PASO 2b · VÍA AÉREA",emoji:"⚠️",q:"Tras la maniobra, ¿respira ahora?",hint:"",instr:"Extiende el cuello / tracción mandibular. Espera 5 seg.",y:"✓ RESPIRA AHORA",n:"✕ SIGUE SIN RESPIRAR"},
-  rr:{label:"PASO 3 · FRECUENCIA RESP.",emoji:"🌬️",q:"¿Frecuencia respiratoria mayor de 30 rpm?",hint:"Cuenta resp. en 15 seg × 4",y:"> 30 rpm",n:"≤ 30 rpm"},
-  pulse:{label:"PASO 4 · PERFUSIÓN",emoji:"🫀",q:"¿Pulso radial presente?",hint:"Palpar muñeca 5-10 seg",y:"✓ PULSO PRESENTE",n:"✕ PULSO AUSENTE"},
-  mental:{label:"PASO 5 · CONSCIENCIA",emoji:"🧠",q:"¿Obedece órdenes simples?",hint:"\"Cierra los ojos\" / \"Aprieta mi mano\"",y:"✓ OBEDECE",n:"✕ NO OBEDECE"},
+  walk:    {label:"PASO 1 · MOVILIDAD",     emoji:"🚶", q:"¿El paciente camina por sí mismo?",             hint:"Indica que camine unos pasos",                        y:"✓ SÍ, CAMINA",       n:"✕ NO CAMINA"},
+  w_inj:   {label:"PASO 1b · LESIÓN",       emoji:"🩹", q:"¿Presenta lesión visible o dolor agudo intenso?",hint:"Fractura, herida, quemadura, dolor 7+ / 10",           y:"✓ SÍ, LESIÓN",       n:"✕ NO / LEVE"},
+  breathe: {label:"PASO 2 · RESPIRACIÓN",   emoji:"🫁", q:"¿El paciente respira?",                         hint:"Observa movimiento torácico 5-10 seg",                y:"✓ RESPIRA",          n:"✕ NO RESPIRA"},
+  breathe2:{label:"PASO 2b · VÍA AÉREA",   emoji:"⚠️", q:"Tras la maniobra, ¿respira ahora?",             hint:"",instr:"Extiende el cuello / tracción mandibular. Espera 5 seg.", y:"✓ RESPIRA AHORA",    n:"✕ SIGUE SIN RESPIRAR"},
+  rr:      {label:"PASO 3 · FRECUENCIA RESP.",emoji:"🌬️",q:"¿Frecuencia respiratoria mayor de 30 rpm?",   hint:"Cuenta resp. en 15 seg × 4",                          y:"> 30 rpm",           n:"≤ 30 rpm"},
+  pulse:   {label:"PASO 4 · PERFUSIÓN",     emoji:"🫀", q:"¿Pulso radial presente?",                       hint:"Palpar muñeca 5-10 seg",                              y:"✓ PULSO PRESENTE",   n:"✕ PULSO AUSENTE"},
+  shock:   {label:"PASO 4b · CHOQUE",       emoji:"🥶", q:"¿Signos de choque? (piel fría/pálida/sudorosa)",hint:"Evaluar llenado capilar >2 seg y color de la piel",  y:"✓ HAY CHOQUE",       n:"✕ SIN CHOQUE"},
+  mental:  {label:"PASO 5 · CONSCIENCIA",   emoji:"🧠", q:"¿Obedece órdenes simples?",                    hint:"\"Cierra los ojos\" / \"Aprieta mi mano\"",            y:"✓ OBEDECE",          n:"✕ NO OBEDECE"},
+  hemorr:  {label:"PASO 6 · HEMORRAGIA",    emoji:"🩸", q:"¿Hemorragia activa sin controlar?",             hint:"Sangrado externo que no cede con presión directa",    y:"✓ SANGRADO ACTIVO",  n:"✕ SIN HEMORRAGIA"},
 };
 const _MCI_RESULT_LBL={ROJO:"ROJO — INMEDIATO",AMARILLO:"AMARILLO — DIFERIDO",VERDE:"VERDE — MENOR",NEGRO:"NEGRO — EXPECTANTE"};
 const _MCI_RESULT_DESC={ROJO:"Amenaza vital — atención inmediata.",AMARILLO:"Lesión seria pero estable — puede esperar.",VERDE:"Lesión leve — puede caminar.",NEGRO:"Sin signos de vida — expectante."};
@@ -5808,7 +5822,26 @@ function _renderMCITriage(){
         <span class="mci-mode-link" onclick="_mciSetMode('walk')">← Usar algoritmo START</span>
       </div>
     </div>
-    <button class="bsec" style="width:100%;font-size:.75rem" onclick="_mciActive=false;document.getElementById('pgWrap').style.display='';resetT();rTriage()">📋 ${tx.mciFullTriage||"Triage completo"}</button>`;
+    <button class="bsec" style="width:100%;font-size:.75rem" onclick="deactivateMCI()">📋 ${tx.mciFullTriage||"Triage completo"}</button>`;
+    return;
+  }
+
+  // ── NEXT PATIENT STEP ────────────────────────────────────────────────────
+  if(_mciSTARTStep==='next'){
+    const ic={ROJO:'🔴',AMARILLO:'🟡',VERDE:'🟢',NEGRO:'⚫'}[_mciLastCl]||'✓';
+    const cc={ROJO:'ro',AMARILLO:'am',VERDE:'ve',NEGRO:'ng'}[_mciLastCl]||'ve';
+    c.innerHTML=hdr+`
+    <div class="mci-result-card" style="border-color:var(--gn-a);text-align:center;padding:22px 16px">
+      <div style="font-size:2.4rem;margin-bottom:6px">${ic}</div>
+      <div class="mci-result-label ${cc}" style="margin-bottom:4px">${_MCI_RESULT_LBL[_mciLastCl]||_mciLastCl}</div>
+      <div class="mci-result-desc">Paciente #${_mciPatientN-1} clasificado y guardado en cola</div>
+      <div style="height:1px;background:var(--bd);margin:14px 0"></div>
+      <button class="mci-confirm-btn" onclick="_mciSetMode('walk')" style="background:var(--cy)">→ SIGUIENTE PACIENTE</button>
+      <div style="margin-top:10px;display:flex;justify-content:center;gap:16px">
+        <span class="mci-mode-link" onclick="_mciSetMode('manual')">Modo manual</span>
+        <span class="mci-mode-link" onclick="confirmDeactivateMCI()">Finalizar MCI</span>
+      </div>
+    </div>`;
     return;
   }
 
@@ -5842,12 +5875,15 @@ function _mciSelectClasif(clasificacion){_mciSTARTSetResult(clasificacion);}
 
 function _mciSTARTAnswer(yes){
   switch(_mciSTARTStep){
-    case 'walk':    yes?(_mciSTARTResult='VERDE',_mciSTARTStep='result'):(_mciSTARTStep='breathe'); break;
+    case 'walk':    yes?(_mciSTARTStep='w_inj'):(_mciSTARTStep='breathe'); break;
+    case 'w_inj':   yes?(_mciSTARTResult='AMARILLO',_mciSTARTStep='result'):(_mciSTARTResult='VERDE',_mciSTARTStep='result'); break;
     case 'breathe': yes?(_mciSTARTStep='rr'):(_mciSTARTStep='breathe2'); break;
     case 'breathe2':_mciSTARTResult=yes?'ROJO':'NEGRO';_mciSTARTStep='result'; break;
     case 'rr':      yes?(_mciSTARTResult='ROJO',_mciSTARTStep='result'):(_mciSTARTStep='pulse'); break;
-    case 'pulse':   !yes?(_mciSTARTResult='ROJO',_mciSTARTStep='result'):(_mciSTARTStep='mental'); break;
-    case 'mental':  _mciSTARTResult=yes?'AMARILLO':'ROJO';_mciSTARTStep='result'; break;
+    case 'pulse':   !yes?(_mciSTARTResult='ROJO',_mciSTARTStep='result'):(_mciSTARTStep='shock'); break;
+    case 'shock':   yes?(_mciSTARTResult='ROJO',_mciSTARTStep='result'):(_mciSTARTStep='mental'); break;
+    case 'mental':  yes?(_mciSTARTStep='hemorr'):(_mciSTARTResult='ROJO',_mciSTARTStep='result'); break;
+    case 'hemorr':  _mciSTARTResult=yes?'ROJO':'AMARILLO';_mciSTARTStep='result'; break;
   }
   _renderMCITriage();
 }
@@ -5863,9 +5899,9 @@ async function _mciSTARTConfirm(){
   if(nombre)extra.pacienteNombre=nombre;
   if(docId)extra.pacienteDoc=docId;
   if(sex)extra.pacienteSex=sex;
-  // Optimistic: update counts & reset wizard immediately so the UI is instant
+  // Optimistic: update counts immediately and show summary step
   _mciCounts[cl]=(_mciCounts[cl]||0)+1;_mciPatientN++;
-  _mciSTARTStep='walk';_mciSTARTResult=null;
+  _mciSTARTStep='next';_mciSTARTResult=null;_mciLastCl=cl;
   _updateMCIBanner();_renderMCITriage();
   toast(`✓ ${cl} — Paciente #${_mciPatientN-1}${nombre?" ("+nombre+")":""}`);
   if(FB&&CU){
