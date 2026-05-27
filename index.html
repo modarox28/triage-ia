@@ -30,6 +30,14 @@ const fbapp=initializeApp(firebaseConfig);
 const auth=getAuth(fbapp);const db=getFirestore(fbapp);const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
 window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where};
+window.L=L;
+window.checkCriticalVitals=checkCriticalVitals;window.calcQSOFA=calcQSOFA;window.calcNEWS2=calcNEWS2;window.calcShockIndex=calcShockIndex;window.calcCURB65=calcCURB65;window.calcWellsDVT=calcWellsDVT;
+window.getCopilotHints=getCopilotHints;window.renderCopilotCard=renderCopilotCard;window.buildTriageTimeline=buildTriageTimeline;
+window.chkPA=chkPA;window.chkFC=chkFC;window.chkSat=chkSat;window.chkT=chkT;window.chkFR=chkFR;
+window.COLA_DEADLINE=COLA_DEADLINE;window.INACT_MS=INACT_MS;window.WARN_MS=WARN_MS;
+window._getStepsModule=_getStepsModule;
+window.buildTriagePrompt=buildTriagePrompt;
+window.saveTriage=saveTriage;window.updateTriageAttended=updateTriageAttended;window.getTriagesHistory=getTriagesHistory;window._syncOfflineQueueFn=_syncOfflineQueueFn;window.subscribeTriageQueue=subscribeTriageQueue;
 window.dispatchEvent(new Event("fbready"));
 </script>
 <style>
@@ -1792,7 +1800,7 @@ function authTab(m){
 }
 
 // FIREBASE
-window.addEventListener("fbready",()=>{FB=window._fb;initAuth();_initOfflineDetection();});
+window.addEventListener("fbready",()=>{FB=window._fb;L=window.L;initAuth();_initOfflineDetection();setLang(CL);});
 setTimeout(()=>{if(!FB&&window._fb){FB=window._fb;initAuth();_initOfflineDetection();}},2000);
 
 function initAuth(){
@@ -3803,7 +3811,7 @@ document.addEventListener("keypress",e=>{
 
 // INIT
 MEDS.forEach(m=>{if(m.active)sAlarm(m);});
-setLang(CL);
+if(typeof L!=="undefined"&&L)setLang(CL);
 if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
 
 // ══════════════════════════════════════
