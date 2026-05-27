@@ -1620,7 +1620,7 @@ select{padding-right:32px;}
             </div>
             <span id="heart-arrow" style="color:var(--mu);font-size:.9rem;transition:transform .2s">▼</span>
           </div>
-          <div id="heart-form" style="margin-top:14px">
+          <div id="heart-form" style="margin-top:14px;display:none">
             <div class="clabel" style="font-size:.6rem;margin-bottom:8px">H — HISTORIA CLÍNICA</div>
             <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
               <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_h" value="2" onchange="_calcHeartScore()"> <span><b>2</b> — Altamente sospechosa (dolor típico: opresivo, irradiado, con diaforesis)</span></label>
@@ -1637,11 +1637,16 @@ select{padding-right:32px;}
             <div style="display:flex;gap:8px;margin-bottom:12px">
               <input class="fi" id="heart_age" type="number" placeholder="Edad (años)" min="1" max="120" style="height:38px;font-size:.82rem;max-width:160px" oninput="_calcHeartScore()">
             </div>
-            <div class="clabel" style="font-size:.6rem;margin-bottom:8px">R — FACTORES DE RIESGO (HTA, DM, Obesidad, Dislipemia, Tabaquismo, Antecedentes familiares)</div>
+            <div class="clabel" style="font-size:.6rem;margin-bottom:8px">R — FACTORES DE RIESGO (selecciona los que aplican)</div>
             <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
-              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_r" value="2" onchange="_calcHeartScore()"> <span><b>2</b> — ≥ 3 factores de riesgo o ateroesclerosis conocida</span></label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_r" value="1" onchange="_calcHeartScore()"> <span><b>1</b> — 1-2 factores de riesgo</span></label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_r" value="0" onchange="_calcHeartScore()" checked> <span><b>0</b> — Sin factores de riesgo conocidos</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="checkbox" id="heart_r_hta" onchange="_calcHeartScore()" style="width:14px;height:14px;accent-color:var(--cy)"> Hipertensión arterial</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="checkbox" id="heart_r_dm" onchange="_calcHeartScore()" style="width:14px;height:14px;accent-color:var(--cy)"> Diabetes mellitus</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="checkbox" id="heart_r_tab" onchange="_calcHeartScore()" style="width:14px;height:14px;accent-color:var(--cy)"> Tabaquismo activo</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="checkbox" id="heart_r_lip" onchange="_calcHeartScore()" style="width:14px;height:14px;accent-color:var(--cy)"> Hiperlipidemia / Dislipemia</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="checkbox" id="heart_r_fam" onchange="_calcHeartScore()" style="width:14px;height:14px;accent-color:var(--cy)"> Antecedentes familiares de cardiopatía isquémica</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="checkbox" id="heart_r_obes" onchange="_calcHeartScore()" style="width:14px;height:14px;accent-color:var(--cy)"> Obesidad (IMC &gt; 30)</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;background:rgba(255,180,0,.08);padding:6px 8px;border-radius:7px"><input type="checkbox" id="heart_r_ateroscl" onchange="_calcHeartScore()" style="width:14px;height:14px;accent-color:var(--yw)"> <span>Ateroesclerosis conocida (EAC, ACV previo, EAP)</span></label>
+              <div id="heart-r-badge" style="font-size:.72rem;color:var(--mu);margin-top:2px">Sin factores de riesgo — puntuación R: 0</div>
             </div>
             <div class="clabel" style="font-size:.6rem;margin-bottom:8px">T — TROPONINA</div>
             <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
@@ -1662,7 +1667,7 @@ select{padding-right:32px;}
             </div>
             <span id="rosier-arrow" style="color:var(--mu);font-size:.9rem;transition:transform .2s">▼</span>
           </div>
-          <div id="rosier-form" style="margin-top:14px">
+          <div id="rosier-form" style="margin-top:14px;display:none">
             <div style="font-size:.74rem;color:var(--mu);margin-bottom:10px">Marque los hallazgos presentes en el examen clínico:</div>
             <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
               <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(255,80,80,.07);padding:8px 10px;border-radius:8px">
@@ -6595,11 +6600,10 @@ document.addEventListener('touchend',e=>{
 // SCORES CLÍNICOS
 // ══════════════════════════════════════
 function _initScoresTab(){
-  // open all cards by default on first visit
   ['heart','rosier','wells','esi'].forEach(id=>{
     const form=document.getElementById(id+'-form');
     const arrow=document.getElementById(id+'-arrow');
-    if(form&&form.style.display==='none'){form.style.display='block';if(arrow)arrow.style.transform='rotate(180deg)';}
+    if(form){form.style.display='block';if(arrow)arrow.style.transform='rotate(180deg)';}
   });
 }
 
@@ -6625,8 +6629,18 @@ function _scoreResultHTML(score,label,color,action,details){
 
 function _calcHeartScore(){
   const getRadio=name=>{const el=document.querySelector(`input[name="${name}"]:checked`);return el?parseInt(el.value):0;};
+  const cb=id=>!!document.getElementById(id)?.checked;
   const age=parseInt(document.getElementById('heart_age')?.value||'0');
-  const result=calcHEART({history:getRadio('heart_h'),ecg:getRadio('heart_e'),age,risk:getRadio('heart_r'),troponin:getRadio('heart_t')});
+  const aterosc=cb('heart_r_ateroscl');
+  const rCount=['heart_r_hta','heart_r_dm','heart_r_tab','heart_r_lip','heart_r_fam','heart_r_obes'].filter(id=>cb(id)).length;
+  const rScore=aterosc||rCount>=3?2:rCount>=1?1:0;
+  const badge=document.getElementById('heart-r-badge');
+  if(badge){
+    const txt=rScore===2?(aterosc?'Ateroesclerosis conocida':'≥ 3 factores de riesgo')+' — puntuación R: 2':rScore===1?`${rCount} factor${rCount>1?'es':''} de riesgo — puntuación R: 1`:'Sin factores de riesgo — puntuación R: 0';
+    badge.textContent=txt;
+    badge.style.color=rScore===2?'var(--rd)':rScore===1?'var(--yw)':'var(--mu)';
+  }
+  const result=calcHEART({history:getRadio('heart_h'),ecg:getRadio('heart_e'),age,risk:rScore,troponin:getRadio('heart_t')});
   const div=document.getElementById('heart-result');
   if(!div)return;
   div.style.display='block';
@@ -6707,6 +6721,8 @@ function _renderColaBoard(){
     {key:'VERDE',label:'🟢 Estables',bg:'rgba(0,200,80,.08)',bd:'rgba(0,200,80,.3)',tc:'var(--gn)'},
     {key:'ATENDIDO',label:'✅ Atendidos',bg:'rgba(100,120,150,.08)',bd:'rgba(100,120,150,.3)',tc:'var(--mu)'},
   ];
+  // Assign display numbers before rendering
+  let n=1;data.filter(d=>!d.atendido).forEach(d=>d._boardN=n++);
   board.innerHTML=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
     ${colCfg.map(col=>`
       <div style="background:${col.bg};border:1px solid ${col.bd};border-radius:14px;padding:10px">
@@ -6725,8 +6741,6 @@ function _renderColaBoard(){
         </div>
       </div>`).join('')}
   </div>`;
-  // Number patients for display
-  let n=1;data.filter(d=>!d.atendido).forEach(d=>d._boardN=n++);
 }
 
 // ══════════════════════════════════════
