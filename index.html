@@ -1549,7 +1549,10 @@ select{padding-right:32px;}
 
 <!-- DETALLE HISTORIA CLINICA -->
 <div class="sc" id="sc-hc-detail">
-  <button class="bsec" onclick="navigateTo('hc')" style="margin-bottom:12px">← Volver</button>
+  <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+    <button class="bsec" onclick="navigateTo('hc')" style="flex:1">← Volver</button>
+    <button class="bsec" id="hcDetailPdfBtn" onclick="_exportHCDetailPDF()" style="flex-shrink:0;width:auto;margin-top:0;padding:9px 14px;font-size:.78rem;display:flex;align-items:center;gap:6px"><span>📄</span> PDF</button>
+  </div>
   <div id="hcDetailContent"><div class="ldg"><div class="sp"></div>Cargando...</div></div>
 </div>
 
@@ -4940,7 +4943,10 @@ function _renderHCItem(id, dt){
         <div class="hc-detail" style="margin-top:3px">${ants}</div>
         ${alers?`<div class="hc-badge" style="background:var(--rd-a);color:var(--rd)">${alers}</div>`:''}
       </div>
-      <button onclick="event.stopPropagation();confirmDeleteHC('${id}','${safeName}')" style="flex-shrink:0;background:none;border:1px solid rgba(255,58,92,.3);border-radius:8px;color:var(--rd);font-size:.72rem;padding:5px 8px;cursor:pointer;transition:all .18s;align-self:flex-start;margin-left:4px" title="Eliminar historia clínica">🗑️</button>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:4px">
+        <button onclick="event.stopPropagation();_exportHCPDF('${id}')" style="background:none;border:1px solid rgba(0,200,240,.3);border-radius:8px;color:var(--cy);font-size:.72rem;padding:5px 8px;cursor:pointer;transition:all .18s" title="Exportar PDF">📄</button>
+        <button onclick="event.stopPropagation();confirmDeleteHC('${id}','${safeName}')" style="background:none;border:1px solid rgba(255,58,92,.3);border-radius:8px;color:var(--rd);font-size:.72rem;padding:5px 8px;cursor:pointer;transition:all .18s" title="Eliminar historia clínica">🗑️</button>
+      </div>
     </div>
   </div>`;
 }
@@ -5045,7 +5051,9 @@ function _renderHCDetail(el, id, d){
   `;
 }
 
+let _currentHCId=null;
 async function viewHC(id){
+  _currentHCId=id;
   navigateTo('hc-detail');
   const el=document.getElementById('hcDetailContent');
   if(!el)return;
@@ -5063,6 +5071,95 @@ async function viewHC(id){
 
 
 function toggleExplain(i){const el=document.getElementById("explain-"+i);if(el)el.classList.toggle("open");}
+
+// ══════════════════════════════════════
+// HC — EXPORT PDF
+// ══════════════════════════════════════
+function _buildHCPDF(d){
+  if(typeof window.jspdf==="undefined")return null;
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({unit:"mm",format:"a4"});
+  const W=210,M=16,CW=W-M*2;
+  let y=M;
+
+  // Background
+  pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");
+
+  // Header bar
+  pdf.setFillColor(0,50,80);pdf.rect(0,0,W,28,"F");
+  pdf.setFontSize(14);pdf.setTextColor(0,200,240);pdf.setFont(undefined,"bold");
+  pdf.text("MedIA Suite",M,12);
+  pdf.setFontSize(8);pdf.setTextColor(140,160,190);pdf.setFont(undefined,"normal");
+  pdf.text("Historia Clínica — Documento confidencial",M,19);
+  pdf.setFontSize(7);pdf.text(`Generado: ${new Date().toLocaleString("es-ES")}`,M,25);
+  y=36;
+
+  // Patient name + avatar block
+  const av=(d.name||"?")[0].toUpperCase();
+  pdf.setFillColor(17,25,44);pdf.setDrawColor(0,200,240);pdf.roundedRect(M,y,CW,22,4,4,"FD");
+  pdf.setFillColor(0,200,240);pdf.circle(M+11,y+11,8,"F");
+  pdf.setFontSize(11);pdf.setTextColor(11,17,32);pdf.setFont(undefined,"bold");pdf.text(av,M+8.5,y+14);
+  pdf.setFontSize(13);pdf.setTextColor(230,240,255);pdf.setFont(undefined,"bold");
+  pdf.text(d.name||"Sin nombre",M+22,y+9);
+  pdf.setFontSize(8.5);pdf.setTextColor(140,160,190);pdf.setFont(undefined,"normal");
+  const sexLabel=d.sex==="M"?"Masculino":d.sex==="F"?"Femenino":"Otro";
+  pdf.text(`${d.age?d.age+" años  ·  ":""}${sexLabel}${d.doc?"  ·  ID: "+d.doc:""}`,M+22,y+16);
+  y+=30;
+
+  function sectionBox(title,color,items,notes){
+    if(!items?.length&&!notes)return;
+    const rows=notes?[notes]:items;
+    const lineH=5.5;
+    const textW=CW-14;
+    let lines=[];
+    rows.forEach(r=>{
+      const wrapped=pdf.splitTextToSize(r,textW);
+      lines=[...lines,...wrapped];
+    });
+    const boxH=12+lines.length*lineH+4;
+    if(y+boxH>280){pdf.addPage();pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");y=M;}
+    const [r,g,b]=color;
+    pdf.setFillColor(17,25,44);pdf.setDrawColor(r,g,b);
+    pdf.roundedRect(M,y,CW,boxH,3,3,"FD");
+    pdf.setFillColor(r,g,b);pdf.roundedRect(M,y,4,boxH,2,2,"F");
+    pdf.setFontSize(7);pdf.setTextColor(r,g,b);pdf.setFont(undefined,"bold");
+    pdf.text(title.toUpperCase(),M+7,y+6);
+    pdf.setFontSize(8.5);pdf.setTextColor(200,215,235);pdf.setFont(undefined,"normal");
+    lines.forEach((l,i)=>pdf.text(l,M+7,y+11+i*lineH));
+    y+=boxH+4;
+  }
+
+  sectionBox("Antecedentes patológicos",[0,200,240],d.antecedentes||[]);
+  sectionBox("Alergias conocidas",[255,80,80],d.alergias||[]);
+  sectionBox("Medicación actual",[80,220,160],d.medicacion||[]);
+  if(d.notes){sectionBox("Notas clínicas",[180,160,255],null,d.notes);}
+
+  // Footer
+  pdf.setFontSize(6.5);pdf.setTextColor(60,75,100);pdf.setFont(undefined,"normal");
+  pdf.text("MedIA Suite — Documento de uso interno exclusivo del personal autorizado",M,291);
+  pdf.text(`${d.name||"Paciente"}  ·  ${d.doc||""}  ·  ${new Date().toLocaleDateString("es-ES")}`,W-M,291,{align:"right"});
+  return pdf;
+}
+
+function _exportHCPDF(id){
+  const d=_hcCache[id];
+  if(!d){toast("Historia no cargada aún");return;}
+  _doExportHCPDF(d);
+}
+
+function _exportHCDetailPDF(){
+  if(!_currentHCId){toast("Sin historia cargada");return;}
+  _exportHCPDF(_currentHCId);
+}
+
+function _doExportHCPDF(d){
+  if(typeof window.jspdf==="undefined"){toast("PDF no disponible — recarga la app");return;}
+  try{
+    const pdf=_buildHCPDF(d);
+    if(pdf){pdf.save(`historia-${(d.doc||"hc")}-${(d.name||"paciente").replace(/\s+/g,"-").toLowerCase()}.pdf`);toast("PDF generado ✓");}
+    else toast("No se pudo generar el PDF");
+  }catch(e){toast("Error PDF: "+e.message);console.error("[HC-PDF]",e);}
+}
 
 // ══════════════════════════════════════
 // COLA DE PACIENTES
@@ -5830,9 +5927,11 @@ function _renderMCITriage(){
         <input class="fi" id="mciQDoc" type="text" placeholder="ID / Documento" style="height:38px;font-size:.82rem" autocomplete="off">
       </div>
       <button class="mci-confirm-btn" onclick="_mciSTARTConfirm()">✓ CONFIRMAR · SIGUIENTE PACIENTE</button>
-      <div style="text-align:center;margin-top:10px">
+      <div style="text-align:center;margin-top:8px;display:flex;justify-content:center;gap:14px">
         <span class="mci-mode-link" onclick="_mciSetMode('walk')">← Volver a corregir</span>
+        <span class="mci-mode-link" style="color:var(--cy)" onclick="_mciAIAssist()">🧠 Asistente clínico</span>
       </div>
+      <div id="mciAIPanel" style="display:none;margin-top:12px;background:rgba(0,200,240,.07);border:1px solid rgba(0,200,240,.2);border-radius:12px;padding:12px;text-align:left;font-size:.8rem;line-height:1.55"></div>
     </div>`;
     return;
   }
@@ -5867,10 +5966,12 @@ function _renderMCITriage(){
       <div class="mci-result-desc">Paciente #${_mciPatientN-1} clasificado y guardado en cola</div>
       <div style="height:1px;background:var(--bd);margin:14px 0"></div>
       <button class="mci-confirm-btn" onclick="_mciSetMode('walk')" style="background:var(--cy)">→ SIGUIENTE PACIENTE</button>
-      <div style="margin-top:10px;display:flex;justify-content:center;gap:16px">
+      <div style="margin-top:10px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap">
+        <span class="mci-mode-link" style="color:var(--cy)" onclick="_mciAIAssistColor('${_mciLastCl||""}')">🧠 Protocolo ${_mciLastCl||""}</span>
         <span class="mci-mode-link" onclick="_mciSetMode('manual')">Modo manual</span>
         <span class="mci-mode-link" onclick="confirmDeactivateMCI()">Finalizar MCI</span>
       </div>
+      <div id="mciAIPanel" style="display:none;margin-top:12px;background:rgba(0,200,240,.07);border:1px solid rgba(0,200,240,.2);border-radius:12px;padding:12px;text-align:left;font-size:.8rem;line-height:1.55"></div>
     </div>`;
     return;
   }
@@ -5991,6 +6092,108 @@ async function quickMCI(clasificacion,extra={}){
   _renderMCITriage();
   const nombre=extra.pacienteNombre?` (${extra.pacienteNombre})`:"";
   toast(`✓ ${clasificacion} — Paciente #${_mciPatientN-1}${nombre}`);
+}
+
+// ══════════════════════════════════════
+// MCI — ASISTENTE CLÍNICO IA
+// ══════════════════════════════════════
+const _MCI_PROTOCOL={
+  ROJO:{
+    icon:"🔴",label:"INMEDIATO",
+    acciones:["Vía aérea permeable — maniobra frente-mentón o cánula orofaríngea","Oxigenoterapia de alto flujo 10-15 L/min (mascarilla con reservorio)","Control de hemorragias externas: compresión directa / torniquete proximal","2 vías venosas gruesas (calibre 14-16G), SF 0.9% 500 mL rápido si shock","Monitorización continua (SpO₂, FC, PA) si disponible","Inmovilización cervical si trauma de alta energía","Traslado inmediato a hospital nivel III o área de reanimación"],
+    alerta:"Evaluar cada 3-5 min — puede deteriorarse a NEGRO o mejorar a AMARILLO"
+  },
+  AMARILLO:{
+    icon:"🟡",label:"DIFERIDO",
+    acciones:["Vía aérea evaluada — posición de seguridad si inconsciente","Hemostasia de heridas no exanguinantes","Analgesia si disponible (paracetamol IV / ketorolaco IM) — evitar opiáceos en campo","Inmovilización de fracturas con férulas provisionales","Reevaluación cada 10-15 min para detectar deterioro","Preparar traslado en segunda oleada — hospital nivel II-III"],
+    alerta:"Alta probabilidad de deterioro a ROJO si hay demora de más de 30-60 min"
+  },
+  VERDE:{
+    icon:"🟢",label:"MENOR",
+    acciones:["Área de tratamiento diferido (zona verde)","Autocuidado o atención por personal auxiliar","Heridas menores: limpieza y apósito","Analgesia oral si tolerada","Reevaluación periódica — pueden deambular en zona de espera","Traslado a urgencias convencionales cuando haya recursos disponibles"],
+    alerta:"Monitorizar para detectar síntomas diferidos (cefalea progresiva, dolor torácico)"
+  },
+  NEGRO:{
+    icon:"⚫",label:"EXPECTANTE",
+    acciones:["No reanimar en campo — recursos insuficientes para supervivencia probable","Cuidados paliativos básicos: abrigo, comodidad, presencia humana","Morfina o analgesia si disponible para control del dolor","Documentar hora y circunstancias","Informar a coordinación de incidente","Revisión si los recursos aumentan o la situación del incidente cambia"],
+    alerta:"Decisión reversible — reevaluar si cambia la disponibilidad de recursos"
+  }
+};
+
+let _mciAILoading=false;
+
+async function _mciAIAssist(){
+  const panel=document.getElementById("mciAIPanel");
+  if(!panel)return;
+  if(panel.style.display==="block"&&panel.dataset.mode==="result"){panel.style.display="none";return;}
+  const cl=_mciSTARTResult||_mciLastCl;
+  if(!cl)return;
+  _mciAIAssistColor(cl);
+}
+
+function _mciAIAssistColor(cl){
+  const panel=document.getElementById("mciAIPanel");
+  if(!panel)return;
+  if(panel.style.display==="block"&&panel.dataset.cl===cl){panel.style.display="none";return;}
+  const proto=_MCI_PROTOCOL[cl];
+  if(!proto){panel.style.display="none";return;}
+  const accionesList=proto.acciones.map((a,i)=>`<li style="margin-bottom:5px"><span style="color:var(--cy);font-weight:700;margin-right:4px">${i+1}.</span>${a}</li>`).join("");
+  panel.dataset.cl=cl;panel.dataset.mode="result";
+  panel.style.display="block";
+  panel.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:1.1rem">${proto.icon}</span>
+      <span style="font-weight:700;color:var(--cy);font-size:.82rem">PROTOCOLO ${proto.label} — MCI</span>
+      <span style="margin-left:auto;font-size:.7rem;color:var(--mu);cursor:pointer" onclick="document.getElementById('mciAIPanel').style.display='none'">✕</span>
+    </div>
+    <ol style="margin:0 0 10px 14px;padding:0;font-size:.78rem">${accionesList}</ol>
+    <div style="background:rgba(255,200,50,.1);border-left:3px solid var(--yw);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.74rem;color:var(--yw);line-height:1.4">
+      ⚠️ ${proto.alerta}
+    </div>
+    <div style="margin-top:10px;border-top:1px solid rgba(0,200,240,.15);padding-top:8px">
+      <div id="mciAIdeep" style="font-size:.77rem;color:var(--mu)">
+        <button style="background:none;border:1px solid rgba(0,200,240,.3);border-radius:8px;color:var(--cy);font-size:.74rem;padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:5px" onclick="_mciCallDeepAI('${cl}')">
+          <span class="sp" style="display:none;width:10px;height:10px;border-width:1.5px" id="mciAISpinner"></span>
+          <span id="mciAIBtnTxt">✨ Recomendación IA para situación actual</span>
+        </button>
+        <div id="mciAIResult" style="margin-top:8px;line-height:1.55;color:var(--tx)"></div>
+      </div>
+    </div>`;
+}
+
+async function _mciCallDeepAI(cl){
+  if(_mciAILoading)return;
+  _mciAILoading=true;
+  const spinner=document.getElementById("mciAISpinner");
+  const btnTxt=document.getElementById("mciAIBtnTxt");
+  const result=document.getElementById("mciAIResult");
+  if(spinner)spinner.style.display="inline-block";
+  if(btnTxt)btnTxt.textContent="Consultando IA...";
+  if(result)result.innerHTML=`<span style="color:var(--mu);font-size:.74rem">Generando recomendaciones clínicas...</span>`;
+
+  const tot=Object.values(_mciCounts).reduce((a,b)=>a+b,0);
+  const dist=Object.entries(_mciCounts).filter(([,v])=>v>0).map(([k,v])=>`${k}:${v}`).join(", ");
+  const prompt=`Eres un médico de urgencias con experiencia en incidentes de víctimas en masa (IVM/MCI).
+Situación actual: Incidente "${_mciName}", ${tot} pacientes clasificados (${dist}). Paciente #${_mciPatientN} acaba de ser clasificado como ${cl}.
+Proporciona en 3-4 puntos concisos (máx 80 palabras en total):
+1. Consideración clínica clave para este paciente ${cl}
+2. Recurso o acción prioritaria según la distribución actual del incidente
+3. Señal de alerta a monitorizar en los próximos minutos
+Responde en español, sin encabezados, solo puntos numerados, lenguaje clínico directo.`;
+
+  try{
+    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+DS_KEY},body:JSON.stringify({model:"deepseek-chat",max_tokens:200,messages:[{role:"user",content:prompt}]})});
+    const d=await r.json();
+    const txt=d.choices?.[0]?.message?.content?.trim()||"Sin respuesta";
+    if(result)result.innerHTML=txt.split("\n").filter(l=>l.trim()).map(l=>`<p style="margin:0 0 5px">${l.replace(/^(\d+\.\s*)/,'<span style="color:var(--cy);font-weight:700">$1</span>')}</p>`).join("");
+    if(btnTxt)btnTxt.textContent="✨ Actualizar recomendación";
+  }catch(e){
+    if(result)result.innerHTML=`<span style="color:var(--rd);font-size:.74rem">Error: ${e.message}</span>`;
+    if(btnTxt)btnTxt.textContent="✨ Reintentar";
+  }finally{
+    _mciAILoading=false;
+    if(spinner)spinner.style.display="none";
+  }
 }
 
 // ── GLASGOW COMA SCALE ─────────────────────────────────────────────────────
