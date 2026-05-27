@@ -18,7 +18,7 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,enableIndexedDbPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT}from"./src/clinical/engine.js?v=1";
+import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT,calcHEART,calcROSIER}from"./src/clinical/engine.js?v=2";
 import{getCopilotHints,renderCopilotCard}from"./src/clinical/copilot.js?v=1";
 import{buildTriageTimeline}from"./src/clinical/timeline.js?v=1";
 import{L}from"./src/i18n/index.js?v=1";
@@ -35,7 +35,7 @@ const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
 window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc};
 window.L=L;
-window.checkCriticalVitals=checkCriticalVitals;window.calcQSOFA=calcQSOFA;window.calcNEWS2=calcNEWS2;window.calcShockIndex=calcShockIndex;window.calcCURB65=calcCURB65;window.calcWellsDVT=calcWellsDVT;
+window.checkCriticalVitals=checkCriticalVitals;window.calcQSOFA=calcQSOFA;window.calcNEWS2=calcNEWS2;window.calcShockIndex=calcShockIndex;window.calcCURB65=calcCURB65;window.calcWellsDVT=calcWellsDVT;window.calcHEART=calcHEART;window.calcROSIER=calcROSIER;
 window.getCopilotHints=getCopilotHints;window.renderCopilotCard=renderCopilotCard;window.buildTriageTimeline=buildTriageTimeline;
 window.chkPA=chkPA;window.chkFC=chkFC;window.chkSat=chkSat;window.chkT=chkT;window.chkFR=chkFR;
 window.COLA_DEADLINE=COLA_DEADLINE;window.INACT_MS=INACT_MS;window.WARN_MS=WARN_MS;
@@ -1589,7 +1589,11 @@ select{padding-right:32px;}
       <div class="sc" id="sc-cola">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div class="clabel" style="margin:0" id="lbColaTitle">Cola de espera<span class="live-dot"></span></div>
-          <button class="cola-refresh" onclick="loadCola()" id="colaRefreshBtn">↻ Actualizar</button>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="cola-refresh" id="colaViewList" onclick="_setColaView('list')" title="Vista lista" style="font-size:.8rem;padding:5px 9px">☰</button>
+            <button class="cola-refresh" id="colaViewBoard" onclick="_setColaView('board')" title="Tablero" style="font-size:.8rem;padding:5px 9px">⊞</button>
+            <button class="cola-refresh" onclick="loadCola()" id="colaRefreshBtn">↻</button>
+          </div>
         </div>
         <div class="cola-stats" id="colaStats"></div>
         <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap" id="colaFilters">
@@ -1599,6 +1603,158 @@ select{padding-right:32px;}
         </div>
         <div id="presenceBar" style="display:none"></div>
         <div id="colaList"></div>
+        <div id="colaBoard" style="display:none"></div>
+      </div>
+
+      <!-- SCORES CLÍNICOS -->
+      <div class="sc" id="sc-scores">
+        <div class="clabel">Scores Clínicos</div>
+        <div style="font-size:.75rem;color:var(--mu);margin-bottom:14px">Calculadoras validadas para evaluación clínica rápida en urgencias.</div>
+
+        <!-- HEART -->
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="_toggleScoreCard('heart')">
+            <div>
+              <div style="font-weight:700;font-size:.9rem">💔 HEART Score</div>
+              <div style="font-size:.72rem;color:var(--mu)">Riesgo cardiovascular en dolor de pecho · rango 0-10</div>
+            </div>
+            <span id="heart-arrow" style="color:var(--mu);font-size:.9rem;transition:transform .2s">▼</span>
+          </div>
+          <div id="heart-form" style="margin-top:14px">
+            <div class="clabel" style="font-size:.6rem;margin-bottom:8px">H — HISTORIA CLÍNICA</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_h" value="2" onchange="_calcHeartScore()"> <span><b>2</b> — Altamente sospechosa (dolor típico: opresivo, irradiado, con diaforesis)</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_h" value="1" onchange="_calcHeartScore()"> <span><b>1</b> — Moderadamente sospechosa</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_h" value="0" onchange="_calcHeartScore()" checked> <span><b>0</b> — Poco sospechosa (atípica, reproducible, pleurítica)</span></label>
+            </div>
+            <div class="clabel" style="font-size:.6rem;margin-bottom:8px">E — ECG</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_e" value="2" onchange="_calcHeartScore()"> <span><b>2</b> — Desviación ST significativa / BRI nuevo</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_e" value="1" onchange="_calcHeartScore()"> <span><b>1</b> — Repolarización inespecífica / Hipertrofia VI</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_e" value="0" onchange="_calcHeartScore()" checked> <span><b>0</b> — Normal</span></label>
+            </div>
+            <div class="clabel" style="font-size:.6rem;margin-bottom:8px">A — EDAD</div>
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <input class="fi" id="heart_age" type="number" placeholder="Edad (años)" min="1" max="120" style="height:38px;font-size:.82rem;max-width:160px" oninput="_calcHeartScore()">
+            </div>
+            <div class="clabel" style="font-size:.6rem;margin-bottom:8px">R — FACTORES DE RIESGO (HTA, DM, Obesidad, Dislipemia, Tabaquismo, Antecedentes familiares)</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_r" value="2" onchange="_calcHeartScore()"> <span><b>2</b> — ≥ 3 factores de riesgo o ateroesclerosis conocida</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_r" value="1" onchange="_calcHeartScore()"> <span><b>1</b> — 1-2 factores de riesgo</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_r" value="0" onchange="_calcHeartScore()" checked> <span><b>0</b> — Sin factores de riesgo conocidos</span></label>
+            </div>
+            <div class="clabel" style="font-size:.6rem;margin-bottom:8px">T — TROPONINA</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_t" value="2" onchange="_calcHeartScore()"> <span><b>2</b> — > 3× límite superior normal</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_t" value="1" onchange="_calcHeartScore()"> <span><b>1</b> — 1-3× límite superior normal</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem"><input type="radio" name="heart_t" value="0" onchange="_calcHeartScore()" checked> <span><b>0</b> — ≤ límite superior normal</span></label>
+            </div>
+            <div id="heart-result" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- ROSIER -->
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="_toggleScoreCard('rosier')">
+            <div>
+              <div style="font-weight:700;font-size:.9rem">🧠 ROSIER Scale</div>
+              <div style="font-size:.72rem;color:var(--mu)">Reconocimiento de ACV en urgencias · rango −2 a +5</div>
+            </div>
+            <span id="rosier-arrow" style="color:var(--mu);font-size:.9rem;transition:transform .2s">▼</span>
+          </div>
+          <div id="rosier-form" style="margin-top:14px">
+            <div style="font-size:.74rem;color:var(--mu);margin-bottom:10px">Marque los hallazgos presentes en el examen clínico:</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(255,80,80,.07);padding:8px 10px;border-radius:8px">
+                <input type="checkbox" id="rosier_syncope" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--rd)">
+                <span><b style="color:var(--rd)">−1</b> &nbsp;Pérdida de consciencia o convulsión al inicio</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(0,200,80,.07);padding:8px 10px;border-radius:8px">
+                <input type="checkbox" id="rosier_face" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--gn)">
+                <span><b style="color:var(--gn)">+1</b> &nbsp;Debilidad facial asimétrica de inicio agudo</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(0,200,80,.07);padding:8px 10px;border-radius:8px">
+                <input type="checkbox" id="rosier_arm" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--gn)">
+                <span><b style="color:var(--gn)">+1</b> &nbsp;Debilidad en brazo de inicio agudo (asimétrica)</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(0,200,80,.07);padding:8px 10px;border-radius:8px">
+                <input type="checkbox" id="rosier_leg" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--gn)">
+                <span><b style="color:var(--gn)">+1</b> &nbsp;Debilidad en pierna de inicio agudo (asimétrica)</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(0,200,80,.07);padding:8px 10px;border-radius:8px">
+                <input type="checkbox" id="rosier_speech" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--gn)">
+                <span><b style="color:var(--gn)">+1</b> &nbsp;Trastorno del habla de inicio agudo (disartria/afasia)</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(0,200,80,.07);padding:8px 10px;border-radius:8px">
+                <input type="checkbox" id="rosier_visual" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--gn)">
+                <span><b style="color:var(--gn)">+1</b> &nbsp;Defecto de campo visual de inicio agudo</span>
+              </label>
+            </div>
+            <div id="rosier-result" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- WELLS DVT -->
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="_toggleScoreCard('wells')">
+            <div>
+              <div style="font-weight:700;font-size:.9rem">🦵 Wells DVT Score</div>
+              <div style="font-size:.72rem;color:var(--mu)">Probabilidad de trombosis venosa profunda</div>
+            </div>
+            <span id="wells-arrow" style="color:var(--mu);font-size:.9rem;transition:transform .2s">▼</span>
+          </div>
+          <div id="wells-form" style="margin-top:14px;display:none">
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_cancer" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Cáncer activo (en tratamiento o paliativo)</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_paralysis" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Parálisis o inmovilización reciente de extremidad</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_bedridden" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Encamado &gt; 3 días o cirugía reciente (&lt; 4 sem)</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_tenderness" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Sensibilidad localizada en trayecto venoso profundo</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_swollen" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Edema en toda la pierna</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_calf" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Edema asimétrico de pantorrilla &gt; 3 cm</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_pitting" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Edema con fóvea (solo en pierna sintomática)</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_collateral" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Venas colaterales superficiales (no varicosas)</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(255,80,80,.07);padding:8px 10px;border-radius:8px"><input type="checkbox" id="wells_alt" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--rd)"> <span><b style="color:var(--rd)">−2</b> &nbsp;Diagnóstico alternativo más probable que TVP</span></label>
+            </div>
+            <div id="wells-result" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- ESI -->
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="_toggleScoreCard('esi')">
+            <div>
+              <div style="font-weight:700;font-size:.9rem">🏷️ ESI — Índice de Severidad de Emergencia</div>
+              <div style="font-size:.72rem;color:var(--mu)">Sistema de triaje de 5 niveles · Emergency Severity Index</div>
+            </div>
+            <span id="esi-arrow" style="color:var(--mu);font-size:.9rem;transition:transform .2s">▼</span>
+          </div>
+          <div id="esi-form" style="margin-top:14px;display:none">
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+              <div onclick="_setESI(1)" class="esi-opt" data-esi="1" style="display:flex;gap:12px;align-items:flex-start;background:rgba(255,60,60,.12);border:2px solid rgba(255,60,60,.25);border-radius:10px;padding:12px;cursor:pointer;transition:all .18s">
+                <span style="font-size:1.3rem;font-weight:900;color:#ff3a3a;min-width:28px">1</span>
+                <div><div style="font-weight:700;font-size:.84rem;color:#ff8080">INMEDIATO — Riesgo vital</div><div style="font-size:.74rem;color:var(--mu);margin-top:2px">PCR, apnea, inconsciencia, convulsión activa, obstrucción vía aérea</div></div>
+              </div>
+              <div onclick="_setESI(2)" class="esi-opt" data-esi="2" style="display:flex;gap:12px;align-items:flex-start;background:rgba(255,120,0,.1);border:2px solid rgba(255,120,0,.25);border-radius:10px;padding:12px;cursor:pointer;transition:all .18s">
+                <span style="font-size:1.3rem;font-weight:900;color:#ff7800;min-width:28px">2</span>
+                <div><div style="font-weight:700;font-size:.84rem;color:#ffb060">EMERGENTE — Situación de alto riesgo</div><div style="font-size:.74rem;color:var(--mu);margin-top:2px">Confusión aguda, dolor severo (≥7/10), signos vitales alterados significativamente</div></div>
+              </div>
+              <div onclick="_setESI(3)" class="esi-opt" data-esi="3" style="display:flex;gap:12px;align-items:flex-start;background:rgba(255,200,0,.1);border:2px solid rgba(255,200,0,.25);border-radius:10px;padding:12px;cursor:pointer;transition:all .18s">
+                <span style="font-size:1.3rem;font-weight:900;color:#ffc800;min-width:28px">3</span>
+                <div><div style="font-weight:700;font-size:.84rem;color:#ffe060">URGENTE — Estable, múltiples recursos</div><div style="font-size:.74rem;color:var(--mu);margin-top:2px">Necesita ≥2 recursos (Lab, Rx, IV, consultas). Puede esperar en sala.</div></div>
+              </div>
+              <div onclick="_setESI(4)" class="esi-opt" data-esi="4" style="display:flex;gap:12px;align-items:flex-start;background:rgba(0,200,80,.08);border:2px solid rgba(0,200,80,.2);border-radius:10px;padding:12px;cursor:pointer;transition:all .18s">
+                <span style="font-size:1.3rem;font-weight:900;color:#00c850;min-width:28px">4</span>
+                <div><div style="font-weight:700;font-size:.84rem;color:#80e0a0">MENOS URGENTE — 1 recurso</div><div style="font-size:.74rem;color:var(--mu);margin-top:2px">Necesita 1 solo recurso. Estable, sin riesgo vital.</div></div>
+              </div>
+              <div onclick="_setESI(5)" class="esi-opt" data-esi="5" style="display:flex;gap:12px;align-items:flex-start;background:rgba(0,180,220,.08);border:2px solid rgba(0,180,220,.2);border-radius:10px;padding:12px;cursor:pointer;transition:all .18s">
+                <span style="font-size:1.3rem;font-weight:900;color:#00b4dc;min-width:28px">5</span>
+                <div><div style="font-weight:700;font-size:.84rem;color:#80d4f0">NO URGENTE — Sin recursos</div><div style="font-size:.74rem;color:var(--mu);margin-top:2px">No necesita recursos de diagnóstico. Condición menor o crónica estable.</div></div>
+              </div>
+            </div>
+            <div id="esi-result" style="display:none"></div>
+          </div>
+        </div>
+
       </div>
       <!-- CONFIGURACION -->
       <div class="sc" id="sc-config">
@@ -2655,9 +2811,9 @@ function showWelcome(){
 
 // NAV
 const NAV={
-  admin:[{id:"dash",ic:"📊",k:"dash"},{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
-  admin_hosp:[{id:"dash",ic:"📊",k:"dash"},{id:"cola",ic:"🩺",k:"cola"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
-  medico:[{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"config",ic:"⚙️",k:"config"}],
+  admin:[{id:"dash",ic:"📊",k:"dash"},{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"scores",ic:"🔬",k:"scores"},{id:"config",ic:"⚙️",k:"config"}],
+  admin_hosp:[{id:"dash",ic:"📊",k:"dash"},{id:"cola",ic:"🩺",k:"cola"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"scores",ic:"🔬",k:"scores"},{id:"config",ic:"⚙️",k:"config"}],
+  medico:[{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"scores",ic:"🔬",k:"scores"},{id:"config",ic:"⚙️",k:"config"}],
   paciente:[{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"config",ic:"⚙️",k:"config"}],
 };
 
@@ -2715,6 +2871,7 @@ function navigateTo(id,_fh){
   if(id==="hc"){if(CR==="paciente"&&_patientHC?.id){viewHC(_patientHC.id);}else{loadHC();}}
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
+  if(id==="scores")_initScoresTab();
   if(id==="meds"){ss("bs");setTimeout(_showDefaultDrugs,80);const _mp=CR==="paciente";const mlc=document.getElementById("medPatientLookupCard");if(mlc)mlc.style.display=_mp?"none":"";const mld=document.getElementById("medPatientDivider");if(mld)mld.style.display=_mp?"none":"";}
   if(id!=="cola")_stopColaTimer();
   document.getElementById("mainBody").scrollTop=0;
@@ -5235,11 +5392,13 @@ function loadCola(){
       }
     }
     _prevColaIds=new Set(newData.map(d=>d.id));
-    _colaData=newData;
+    _colaData=newData;window._colaData=newData;
     // Full render only when cola tab is visible; else just update badge
     const colaTab=document.getElementById("sc-cola");
-    if(colaTab&&colaTab.classList.contains("on")){_renderCola();}
-    else{_updateColaBadge(_colaData.filter(d=>!d.atendido).length);}
+    if(colaTab&&colaTab.classList.contains("on")){
+      _renderCola();
+      if(_colaView==='board')_renderColaBoard();
+    }else{_updateColaBadge(_colaData.filter(d=>!d.atendido).length);}
   },(e)=>{
     if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error: ${e.message}</div>`;
   });
@@ -5414,6 +5573,7 @@ function _renderCola(){
           ? doneLabel+`<button class="cola-btn done-btn" onclick="markCola('${d.id}',false)">${tx.colaUndone||"Pendiente"}</button>`
           : `<button class="cola-btn" onclick="markCola('${d.id}',true)">${tx.colaMarkDone||"Atendido"}</button>`
         }
+        ${(CR==='medico'||CR==='admin'||CR==='admin_hosp')&&!isDone?`<button class="cola-btn" style="background:rgba(0,200,240,.12);color:var(--cy);border-color:rgba(0,200,240,.3);font-size:.7rem;padding:5px 9px" onclick="event.stopPropagation();_openOverrideModal('${d.id}','${d.clasificacion}')">✏️ Revisar</button>`:''}
       </div>
     </div>`;
   }).join("");
@@ -6430,6 +6590,205 @@ document.addEventListener('touchend',e=>{
   if(dx>0&&ci>0)navigateTo(tabs[ci-1]);
   else if(dx<0&&ci<tabs.length-1)navigateTo(tabs[ci+1]);
 },{passive:true});
+
+// ══════════════════════════════════════
+// SCORES CLÍNICOS
+// ══════════════════════════════════════
+function _initScoresTab(){
+  // open all cards by default on first visit
+  ['heart','rosier','wells','esi'].forEach(id=>{
+    const form=document.getElementById(id+'-form');
+    const arrow=document.getElementById(id+'-arrow');
+    if(form&&form.style.display==='none'){form.style.display='block';if(arrow)arrow.style.transform='rotate(180deg)';}
+  });
+}
+
+function _toggleScoreCard(id){
+  const form=document.getElementById(id+'-form');
+  const arrow=document.getElementById(id+'-arrow');
+  if(!form)return;
+  const open=form.style.display!=='none';
+  form.style.display=open?'none':'block';
+  if(arrow)arrow.style.transform=open?'rotate(0deg)':'rotate(180deg)';
+}
+
+function _scoreResultHTML(score,label,color,action,details){
+  const detailList=details?.length?`<ul style="margin:6px 0 0 14px;padding:0;font-size:.74rem;color:var(--mu);line-height:1.6">${details.map(d=>`<li>${d}</li>`).join('')}</ul>`:'';
+  return`<div style="background:var(--bg2);border:2px solid ${color};border-radius:12px;padding:14px 16px;animation:fadeUp .25s ease">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="font-size:1.6rem;font-weight:900;color:${color}">${score}</div>
+      <div><div style="font-weight:700;font-size:.85rem;color:${color}">${label}</div>${action?`<div style="font-size:.73rem;color:var(--mu);margin-top:2px">→ ${action}</div>`:''}</div>
+    </div>
+    ${detailList}
+  </div>`;
+}
+
+function _calcHeartScore(){
+  const getRadio=name=>{const el=document.querySelector(`input[name="${name}"]:checked`);return el?parseInt(el.value):0;};
+  const age=parseInt(document.getElementById('heart_age')?.value||'0');
+  const result=calcHEART({history:getRadio('heart_h'),ecg:getRadio('heart_e'),age,risk:getRadio('heart_r'),troponin:getRadio('heart_t')});
+  const div=document.getElementById('heart-result');
+  if(!div)return;
+  div.style.display='block';
+  div.innerHTML=_scoreResultHTML(result.score+'/10',result.label,result.color,result.action,result.details);
+}
+
+function _calcROSIERScore(){
+  const cb=id=>!!document.getElementById(id)?.checked;
+  const result=calcROSIER({syncope_seizure:cb('rosier_syncope'),face_weakness:cb('rosier_face'),arm_weakness:cb('rosier_arm'),leg_weakness:cb('rosier_leg'),speech_disturbance:cb('rosier_speech'),visual_field:cb('rosier_visual')});
+  const div=document.getElementById('rosier-result');
+  if(!div)return;
+  div.style.display='block';
+  const strokeBanner=result.strokeLikely?`<div style="background:rgba(255,60,60,.12);border-left:3px solid var(--rd);padding:8px 12px;border-radius:0 8px 8px 0;font-size:.8rem;font-weight:700;color:var(--rd);margin-top:8px">⚠️ ACV PROBABLE — Activar protocolo CÓDIGO ICTUS</div>`:`<div style="background:rgba(0,200,80,.08);border-left:3px solid var(--gn);padding:8px 12px;border-radius:0 8px 8px 0;font-size:.8rem;color:var(--gn);margin-top:8px">ACV poco probable en este momento</div>`;
+  div.innerHTML=_scoreResultHTML(result.score+'/5',result.label,result.color,result.action,result.details)+strokeBanner;
+}
+
+function _calcWellsScore(){
+  const cb=id=>!!document.getElementById(id)?.checked;
+  const result=calcWellsDVT({cancer:cb('wells_cancer'),paralysis:cb('wells_paralysis'),bedridden:cb('wells_bedridden'),tenderness:cb('wells_tenderness'),leg_swollen:cb('wells_swollen'),calf_diff:cb('wells_calf'),pitting:cb('wells_pitting'),collateral:cb('wells_collateral'),alt_diagnosis:cb('wells_alt')});
+  const div=document.getElementById('wells-result');
+  if(!div)return;
+  div.style.display='block';
+  div.innerHTML=_scoreResultHTML(result.score+' pts',result.label,result.color,'Eco-Doppler venoso según clínica',[]);
+}
+
+let _esiSelected=null;
+function _setESI(level){
+  _esiSelected=level;
+  document.querySelectorAll('.esi-opt').forEach(el=>{
+    const isSelected=parseInt(el.dataset.esi)===level;
+    el.style.opacity=isSelected?'1':'0.45';
+    el.style.transform=isSelected?'scale(1.02)':'scale(1)';
+  });
+  const labels={1:{label:"NIVEL 1 — Atención INMEDIATA",color:"var(--rd)",action:"Sala de reanimación — Personal a bedside ahora"},2:{label:"NIVEL 2 — Atención EMERGENTE",color:"#ff7800",action:"Evaluación médica en < 15 min"},3:{label:"NIVEL 3 — URGENTE (múltiples recursos)",color:"var(--yw)",action:"Sala de espera — evaluación en < 30 min"},4:{label:"NIVEL 4 — MENOS URGENTE",color:"var(--gn)",action:"Sala de espera — evaluación en < 60 min"},5:{label:"NIVEL 5 — NO URGENTE",color:"var(--cy)",action:"Sala de espera — evaluación en < 120 min"}};
+  const info=labels[level];
+  const div=document.getElementById('esi-result');
+  if(!div||!info)return;
+  div.style.display='block';
+  div.innerHTML=_scoreResultHTML(`ESI ${level}`,info.label,info.color,info.action,[]);
+}
+
+// ══════════════════════════════════════
+// TABLERO VISUAL (KANBAN BOARD) — Cola
+// ══════════════════════════════════════
+let _colaView='list';
+function _setColaView(mode){
+  _colaView=mode;
+  const list=document.getElementById('colaList');
+  const board=document.getElementById('colaBoard');
+  const btnList=document.getElementById('colaViewList');
+  const btnBoard=document.getElementById('colaViewBoard');
+  if(mode==='board'){
+    if(list)list.style.display='none';
+    if(board)board.style.display='block';
+    if(btnList)btnList.style.opacity='0.5';
+    if(btnBoard)btnBoard.style.opacity='1';
+    _renderColaBoard();
+  }else{
+    if(list)list.style.display='block';
+    if(board)board.style.display='none';
+    if(btnList)btnList.style.opacity='1';
+    if(btnBoard)btnBoard.style.opacity='0.5';
+  }
+}
+
+function _renderColaBoard(){
+  const board=document.getElementById('colaBoard');
+  if(!board)return;
+  const data=window._colaData||[];
+  const cols={ROJO:[],AMARILLO:[],VERDE:[],ATENDIDO:[]};
+  data.forEach(d=>{
+    if(d.atendido)cols.ATENDIDO.push(d);
+    else cols[d.clasificacion]?.push(d)||cols.VERDE.push(d);
+  });
+  const colCfg=[
+    {key:'ROJO',label:'🔴 Críticos',bg:'rgba(255,60,60,.08)',bd:'rgba(255,60,60,.3)',tc:'var(--rd)'},
+    {key:'AMARILLO',label:'🟡 Urgentes',bg:'rgba(255,200,50,.08)',bd:'rgba(255,200,50,.3)',tc:'var(--yw)'},
+    {key:'VERDE',label:'🟢 Estables',bg:'rgba(0,200,80,.08)',bd:'rgba(0,200,80,.3)',tc:'var(--gn)'},
+    {key:'ATENDIDO',label:'✅ Atendidos',bg:'rgba(100,120,150,.08)',bd:'rgba(100,120,150,.3)',tc:'var(--mu)'},
+  ];
+  board.innerHTML=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+    ${colCfg.map(col=>`
+      <div style="background:${col.bg};border:1px solid ${col.bd};border-radius:14px;padding:10px">
+        <div style="font-size:.72rem;font-weight:700;color:${col.tc};margin-bottom:8px;letter-spacing:.5px">${col.label} <span style="opacity:.7">(${cols[col.key].length})</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${cols[col.key].length===0?`<div style="font-size:.72rem;color:var(--mu);text-align:center;padding:10px 0">—</div>`:''}
+          ${cols[col.key].map(d=>{
+            const motIc={dolor_pecho:'💔',disnea:'🫁',trauma:'🤕',abdominal:'🤢',neuro:'🧠',fiebre:'🌡️',otro:'📋'}[d.motivo]||'📋';
+            const now=Date.now();const created=d.createdAt?.toDate?.()?.getTime()||d.createdAt?.seconds*1000||now;const mins=Math.floor((now-created)/60000);
+            const name=d.pacienteNombre||`#${d._boardN||'?'}`;
+            return`<div style="background:var(--bg2);border-radius:9px;padding:8px 10px;font-size:.75rem;cursor:pointer;border:1px solid var(--bd)" onclick="navigateTo('cola')">
+              <div style="font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${motIc} ${name}</div>
+              <div style="color:var(--mu);font-size:.68rem">${mins}m · ${d.tipo||''}${d.esMCI?' · MCI':''}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`).join('')}
+  </div>`;
+  // Number patients for display
+  let n=1;data.filter(d=>!d.atendido).forEach(d=>d._boardN=n++);
+}
+
+// ══════════════════════════════════════
+// OVERRIDE MÉDICO — Cola
+// ══════════════════════════════════════
+let _overrideTargetId=null;
+function _openOverrideModal(id,currentClasif){
+  _overrideTargetId=id;
+  let modal=document.getElementById('overrideModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='overrideModal';
+    modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)';
+    modal.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:18px;padding:22px 20px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:bounceIn .3s ease">
+      <div style="font-weight:700;font-size:.95rem;margin-bottom:14px">✏️ Revisar clasificación</div>
+      <div style="font-size:.75rem;color:var(--mu);margin-bottom:10px">Nueva clasificación:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+        <button onclick="_selectOverrideClasif('ROJO',this)" class="hist-flt" style="color:var(--rd);padding:8px 4px;font-size:.78rem">🔴 Crítico</button>
+        <button onclick="_selectOverrideClasif('AMARILLO',this)" class="hist-flt" style="color:var(--yw);padding:8px 4px;font-size:.78rem">🟡 Urgente</button>
+        <button onclick="_selectOverrideClasif('VERDE',this)" class="hist-flt" style="color:var(--gn);padding:8px 4px;font-size:.78rem">🟢 Estable</button>
+      </div>
+      <div style="font-size:.75rem;color:var(--mu);margin-bottom:6px">Razón clínica (requerida):</div>
+      <textarea id="overrideReason" class="fi" style="height:72px;resize:none;font-size:.8rem" placeholder="Ej: Signos vitales estabilizados tras intervención..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="bsec" style="flex:1" onclick="document.getElementById('overrideModal').style.display='none'">Cancelar</button>
+        <button class="bpri" style="flex:1" id="overrideConfirmBtn" onclick="_confirmOverride()">Confirmar</button>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+  }
+  document.getElementById('overrideReason').value='';
+  document.querySelectorAll('#overrideModal .hist-flt').forEach(b=>b.classList.remove('on'));
+  modal._selectedClasif=currentClasif||null;
+  modal.style.display='flex';
+}
+
+function _selectOverrideClasif(cl,btn){
+  document.querySelectorAll('#overrideModal .hist-flt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('overrideModal')._selectedClasif=cl;
+}
+
+async function _confirmOverride(){
+  const modal=document.getElementById('overrideModal');
+  const cl=modal._selectedClasif;
+  const reason=document.getElementById('overrideReason')?.value.trim();
+  if(!cl){toast('Selecciona una clasificación');return;}
+  if(!reason){toast('La razón clínica es requerida');return;}
+  if(!FB||!CU||!_overrideTargetId){toast('Sin sesión activa');return;}
+  try{
+    await FB.updateDoc(FB.doc(FB.db,'triages',_overrideTargetId),{
+      clasificacion:cl,
+      overridePor:uName(),
+      overrideRazon:reason,
+      overrideAt:FB.serverTimestamp(),
+      overrideOriginal:null
+    });
+    logAudit('triage_override',{id:_overrideTargetId,nuevaClasif:cl,razon:reason});
+    modal.style.display='none';
+    toast('Clasificación actualizada ✓');
+  }catch(e){toast('Error: '+e.message);}
+}
 </script>
 </body>
 </html>

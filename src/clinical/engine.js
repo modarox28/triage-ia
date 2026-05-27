@@ -88,6 +88,64 @@ export function calcCURB65(p){
 }
 
 /**
+ * HEART Score — Chest pain risk stratification (0-10).
+ * H=History, E=ECG, A=Age, R=Risk factors, T=Troponin
+ * Risk: 0-3=low, 4-6=moderate, 7-10=high
+ */
+export function calcHEART(p){
+  let score=0,details=[];
+  // History (0-2)
+  const hScore=p.history??0;score+=hScore;
+  if(hScore===2)details.push("Historia muy sospechosa (2)");
+  else if(hScore===1)details.push("Historia moderadamente sospechosa (1)");
+  else details.push("Historia poco sospechosa (0)");
+  // ECG (0-2)
+  const eScore=p.ecg??0;score+=eScore;
+  if(eScore===2)details.push("ECG: desviación ST significativa (2)");
+  else if(eScore===1)details.push("ECG: repolarización inespecífica (1)");
+  else details.push("ECG: normal (0)");
+  // Age (0-2)
+  const age=p.age??0;
+  const aScore=age>=65?2:age>=45?1:0;score+=aScore;
+  details.push(`Edad ${age} años (${aScore})`);
+  // Risk factors (0-2)
+  const rScore=p.risk??0;score+=rScore;
+  if(rScore===2)details.push("Factores de riesgo: ≥3 o ateroesclerosis conocida (2)");
+  else if(rScore===1)details.push("Factores de riesgo: 1-2 (1)");
+  else details.push("Sin factores de riesgo (0)");
+  // Troponin (0-2)
+  const tScore=p.troponin??0;score+=tScore;
+  if(tScore===2)details.push("Troponina: >3× normal (2)");
+  else if(tScore===1)details.push("Troponina: 1-3× normal (1)");
+  else details.push("Troponina: ≤ normal (0)");
+  let risk,label,color,action;
+  if(score>=7){risk="high";label="Alto riesgo — Revascularización urgente";color="var(--rd)";action="Ingreso + coronariografía precoz";}
+  else if(score>=4){risk="medium";label="Riesgo moderado — Observación y pruebas";color="var(--yw)";action="Observación 6-12h + troponinas seriadas";}
+  else{risk="low";label="Bajo riesgo — Alta precoz posible";color="var(--gn)";action="Protocolo de alta acelerada (si 2 troponinas negativas)";}
+  return{score,risk,label,color,details,action};
+}
+
+/**
+ * ROSIER Scale — Recognition of Stroke in the Emergency Room (−2 to +5).
+ * Stroke likely if score > 0.
+ */
+export function calcROSIER(p){
+  let score=0,details=[];
+  if(p.syncope_seizure){score-=1;details.push("Pérdida de consciencia / convulsión (−1)");}
+  if(p.face_weakness){score+=1;details.push("Debilidad facial asimétrica (+1)");}
+  if(p.arm_weakness){score+=1;details.push("Debilidad en brazo (+1)");}
+  if(p.leg_weakness){score+=1;details.push("Debilidad en pierna (+1)");}
+  if(p.speech_disturbance){score+=1;details.push("Trastorno del habla (+1)");}
+  if(p.visual_field){score+=1;details.push("Defecto campo visual (+1)");}
+  const strokeLikely=score>0;
+  let risk,label,color,action;
+  if(score>=3){risk="high";label="ACV muy probable";color="var(--rd)";action="Activar protocolo CÓDIGO ICTUS — TAC urgente";}
+  else if(score>0){risk="medium";label="ACV posible";color="var(--yw)";action="TAC craneal urgente — Neurología";}
+  else{risk="low";label="ACV poco probable";color="var(--gn)";action="Considerar diagnósticos alternativos";}
+  return{score,risk,label,color,details,strokeLikely,action};
+}
+
+/**
  * Wells DVT Score — Deep vein thrombosis probability.
  * @param {{cancer:boolean, paralysis:boolean, bedridden:boolean, tenderness:boolean, leg_swollen:boolean, calf_diff:boolean, pitting:boolean, collateral:boolean, alt_diagnosis:boolean}} p
  * @returns {{score:number, risk:string, label:string, color:string}}
