@@ -7,15 +7,17 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-touch-fullscreen" content="yes">
 <meta name="apple-mobile-web-app-title" content="MedAI Suite">
 <meta name="theme-color" content="#0b1120">
+<link rel="icon" type="image/png" href="./icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import{getFirestore,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,enableIndexedDbPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT}from"./src/clinical/engine.js?v=1";
 import{getCopilotHints,renderCopilotCard}from"./src/clinical/copilot.js?v=1";
 import{buildTriageTimeline}from"./src/clinical/timeline.js?v=1";
@@ -27,9 +29,11 @@ import{buildTriagePrompt}from"./src/ai/prompt.js?v=1";
 import{saveTriage,updateTriageAttended,getTriagesHistory,syncOfflineQueue as _syncOfflineQueueFn,subscribeTriageQueue}from"./src/firebase/triages.js?v=1";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
-const auth=getAuth(fbapp);const db=getFirestore(fbapp);const gProvider=new GoogleAuthProvider();
+const auth=getAuth(fbapp);const db=getFirestore(fbapp);
+enableIndexedDbPersistence(db).catch(()=>{});
+const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
-window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where};
+window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc};
 window.L=L;
 window.checkCriticalVitals=checkCriticalVitals;window.calcQSOFA=calcQSOFA;window.calcNEWS2=calcNEWS2;window.calcShockIndex=calcShockIndex;window.calcCURB65=calcCURB65;window.calcWellsDVT=calcWellsDVT;
 window.getCopilotHints=getCopilotHints;window.renderCopilotCard=renderCopilotCard;window.buildTriageTimeline=buildTriageTimeline;
@@ -110,7 +114,7 @@ button{border-radius:0;}
 
 /* AUTH */
 .auth-screen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));}
-.auth-box{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--bd);border-radius:22px;padding:28px 24px;box-shadow:var(--shadow);animation:fadeUp .45s cubic-bezier(.34,1.4,.64,1);margin:auto;}
+.auth-box{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--bd);border-radius:22px;padding:28px 24px;box-shadow:var(--shadow);animation:fadeUp .45s cubic-bezier(.34,1.4,.64,1);margin:auto;overflow:hidden;}
 @keyframes authSlideRight{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
 @keyframes authSlideLeft{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
 .auth-slide-right{animation:authSlideRight .32s cubic-bezier(.34,1.1,.64,1) both}
@@ -167,6 +171,7 @@ button{border-radius:0;}
 .auth-patient-btn:active{transform:scale(.97);}
 .auth-staff-link{display:block;text-align:center;font-size:.74rem;color:var(--mu);margin-top:12px;cursor:pointer;transition:color .2s;}
 .auth-staff-link:hover{color:var(--cy);}
+#staffRoleContext{transition:background .25s,color .25s;}
 
 /* APP SHELL — position:fixed fills viewport; height set by JS on iOS via --vh */
 .app{display:none;width:100%;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;}
@@ -235,8 +240,9 @@ button{border-radius:0;}
 /* STATS */
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
 @media(min-width:768px){.stat-grid{grid-template-columns:repeat(4,1fr);}}
-.stat-card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center;transition:all .22s;animation:fadeUp .4s ease;}
-@media(hover:hover){.stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.18);}}
+.stat-card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center;transition:all .22s;animation:fadeUp .4s ease;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.stat-card:active{transform:scale(.95);opacity:.85;}
+@media(hover:hover){.stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.18);border-color:var(--cy);}}
 .stat-num{font-family:"JetBrains Mono",monospace;font-size:1.7rem;font-weight:700;color:var(--cy);}
 .stat-lbl{font-size:.7rem;color:var(--mu);margin-top:3px;}
 
@@ -1030,6 +1036,17 @@ select{padding-right:32px;}
 
 <!-- AUTH SCREEN -->
 <div class="auth-screen" id="authScreen">
+  <!-- Role mismatch banner -->
+  <div id="roleErrBanner" style="display:none;width:100%;max-width:400px;margin-bottom:12px;animation:fadeUp .3s both">
+    <div style="background:rgba(255,58,92,.1);border:1.5px solid var(--rd);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+      <div style="font-size:1.4rem;flex-shrink:0;line-height:1;margin-top:1px">🚫</div>
+      <div style="flex:1">
+        <div style="font-size:.88rem;font-weight:700;color:var(--rd);margin-bottom:4px">Acceso denegado</div>
+        <div style="font-size:.78rem;color:var(--tx);line-height:1.55" id="roleErrMsg"></div>
+      </div>
+      <button type="button" onclick="document.getElementById('roleErrBanner').style.display='none'" style="background:none;border:none;color:var(--mu);font-size:.9rem;cursor:pointer;padding:2px;line-height:1;flex-shrink:0">✕</button>
+    </div>
+  </div>
   <div class="auth-box" id="authBox">
     <div class="auth-logo"><b>MedAI</b><s> Suite</s></div>
     <div class="auth-sub" id="authSub">Sistema medico inteligente</div>
@@ -1063,35 +1080,91 @@ select{padding-right:32px;}
         <button class="bpri" id="patientLoginBtn" style="width:100%;font-size:.95rem" onclick="loginPatientById()">Ingresar</button>
       </div>
       <hr class="auth-sep" style="animation:fadeUp .4s .2s both">
-      <div id="staffLinkWrap" style="text-align:center;animation:fadeUp .4s .25s both">
-        <span class="auth-staff-link" id="staffLink" onclick="showStaffLogin()">Personal médico / Administrador →</span>
+      <div style="animation:fadeUp .4s .25s both">
+        <div style="text-align:center;font-size:.72rem;color:var(--mu);margin-bottom:10px;font-weight:500;letter-spacing:.3px" id="staffAccessLbl">Personal de salud / Administrador</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <button class="bsec" id="btnMedicoAccess" onclick="showStaffLogin('medico')" style="padding:12px 8px;font-size:.88rem;font-weight:600">🩺 Médico</button>
+          <button class="bsec" id="btnAdminAccess" onclick="showStaffLogin('admin')" style="padding:12px 8px;font-size:.88rem;font-weight:600">🔑 Administrador</button>
+        </div>
+        <button class="install-pwa-btn bsec" id="installBtnLogin" onclick="installPWA()" style="display:none;width:100%;font-size:.82rem;padding:10px;margin-top:2px">📲 Agregar a pantalla de inicio</button>
       </div>
+    </div>
+
+    <!-- PATIENT REGISTER (shows when ID not found) -->
+    <div id="patientRegisterView" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;animation:fadeUp .35s both">
+        <button type="button" onclick="_cancelPatientRegister()" style="background:none;border:none;color:var(--mu);font-size:1.1rem;cursor:pointer;padding:4px 6px;border-radius:8px">←</button>
+        <div>
+          <div style="font-weight:700;font-size:.95rem">Nuevo paciente</div>
+          <div style="font-size:.72rem;color:var(--mu)" id="pRegSubtitle">Número de ID no encontrado — completa el registro</div>
+        </div>
+      </div>
+      <div style="background:rgba(0,200,240,.08);border:1px solid rgba(0,200,240,.25);border-radius:10px;padding:8px 14px;margin-bottom:14px;font-size:.78rem;color:var(--cy);text-align:center">
+        ID: <span id="pRegIdDisplay" style="font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:2px"></span>
+      </div>
+      <form id="patientRegForm" autocomplete="on" onsubmit="registerPatient();return false;">
+        <input type="hidden" id="pRegId">
+        <div class="auth-fg">
+          <label class="auth-fl">Nombre completo <span style="color:var(--rd)">*</span></label>
+          <input class="auth-fi" id="pRegName" type="text" placeholder="Nombre y apellido" autocomplete="name" required>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="auth-fg">
+            <label class="auth-fl">Fecha de nacimiento <span style="color:var(--rd)">*</span></label>
+            <input class="auth-fi" id="pRegDob" type="date" required style="font-size:.85rem">
+          </div>
+          <div class="auth-fg">
+            <label class="auth-fl">Sexo <span style="color:var(--rd)">*</span></label>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <label style="display:flex;align-items:center;gap:5px;font-size:.83rem;cursor:pointer"><input type="radio" name="pRegSex" value="M" required> M</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:.83rem;cursor:pointer"><input type="radio" name="pRegSex" value="F"> F</label>
+            </div>
+          </div>
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Teléfono / Contacto de emergencia <span style="color:var(--rd)">*</span></label>
+          <input class="auth-fi" id="pRegPhone" type="tel" placeholder="+57 300 000 0000" autocomplete="tel" required>
+        </div>
+        <div class="auth-err" id="pRegErr"></div>
+        <button type="submit" class="auth-btn" id="pRegBtn" style="margin-top:6px">Completar registro</button>
+      </form>
     </div>
 
     <!-- STAFF LOGIN (secondary) -->
     <div id="authStaffView" style="display:none">
+      <div id="staffRoleContext" style="text-align:center;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:700;margin-bottom:12px;background:rgba(0,200,240,.12);color:var(--cy);display:inline-block;width:100%;box-sizing:border-box">🩺 Médico</div>
       <div class="auth-tabs">
-        <button class="auth-tab on" id="atab-in" onclick="authTab('in')">Iniciar sesion</button>
-        <button class="auth-tab" id="atab-up" onclick="authTab('up')">Registrarse</button>
+        <button type="button" class="auth-tab on" id="atab-in" onclick="authTab('in')">Iniciar sesion</button>
+        <button type="button" class="auth-tab" id="atab-up" onclick="authTab('up')">Registrarse</button>
       </div>
+      <form id="authForm" autocomplete="on" onsubmit="doAuth();return false;">
       <div class="auth-fg" id="nameField" style="display:none">
-        <label class="auth-fl" id="lbName">Nombre</label>
-        <input class="auth-fi" id="aName" type="text" placeholder="Tu nombre">
+        <label class="auth-fl" id="lbName">Nombre completo <span style="color:var(--rd)">*</span></label>
+        <input class="auth-fi" id="aName" type="text" placeholder="Tu nombre y apellido" autocomplete="name">
+      </div>
+      <div class="auth-fg" id="phoneField" style="display:none">
+        <label class="auth-fl" id="lbPhone">Teléfono <span style="color:var(--rd)">*</span></label>
+        <input class="auth-fi" id="aPhone" type="tel" placeholder="+57 300 000 0000" autocomplete="tel">
+      </div>
+      <div class="auth-fg" id="specialtyField" style="display:none">
+        <label class="auth-fl" id="lbSpecialty">Especialidad <span style="color:var(--rd)">*</span></label>
+        <input class="auth-fi" id="aSpecialty" type="text" placeholder="ej. Medicina de Urgencias">
       </div>
       <div class="auth-fg">
         <label class="auth-fl" id="lbEmail">Correo</label>
-        <input class="auth-fi" id="aEmail" type="email" placeholder="correo@ejemplo.com" oninput="onEmailInput()" onblur="onEmailBlur()">
+        <input class="auth-fi" id="aEmail" type="email" placeholder="correo@ejemplo.com" autocomplete="email" oninput="onEmailInput()" onblur="onEmailBlur()">
         <div class="email-hint" id="emailHint"></div>
       </div>
       <div class="auth-fg">
         <label class="auth-fl" id="lbPass">Contrasena</label>
-        <input class="auth-fi" id="aPass" type="password" placeholder="••••••••">
+        <input class="auth-fi" id="aPass" type="password" placeholder="••••••••" autocomplete="current-password">
       </div>
       <div class="remember-row" id="rememberRow" onclick="toggleRemember()">
         <div class="remember-check" id="rememberCheck"></div>
         <span class="remember-lbl" id="rememberLbl">Recordarme en este dispositivo</span>
       </div>
-      <button class="auth-btn" id="authMainBtn" onclick="doAuth()">Continuar</button>
+      <button type="submit" class="auth-btn" id="authMainBtn">Continuar</button>
+      </form>
       <span class="forgot-link" id="forgotLink" onclick="doForgot()">Olvide mi contrasena</span>
       <div class="auth-div" id="authDivOr">o</div>
       <button class="auth-goo" onclick="doGoogle()">
@@ -1103,6 +1176,48 @@ select{padding-right:32px;}
         <span class="auth-staff-link" id="authBackLink" onclick="showPatientView()" style="font-size:.74rem">← Volver</span>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="installFloatBanner" style="display:none;position:fixed;bottom:74px;left:0;right:0;z-index:9998;padding:0 14px;pointer-events:none">
+  <div style="background:var(--bg2);border:1px solid rgba(0,200,240,.3);border-radius:18px;padding:14px 16px 12px;max-width:480px;margin:0 auto;pointer-events:all;box-shadow:0 6px 28px rgba(0,200,240,.13)">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="font-size:1.4rem;line-height:1">📲</div>
+        <div>
+          <div style="font-size:.88rem;font-weight:700;color:var(--tx)">Acceso a la pantalla de inicio</div>
+          <div style="font-size:.72rem;color:var(--mu);margin-top:2px">Instala MedAI Suite como app en tu dispositivo</div>
+        </div>
+      </div>
+      <button type="button" onclick="dismissInstallBanner()" style="background:none;border:none;color:var(--mu);font-size:.95rem;cursor:pointer;padding:2px 4px;line-height:1;margin-left:8px;flex-shrink:0">✕</button>
+    </div>
+    <!-- Botón Android/Chrome/Edge -->
+    <button id="installBannerBtn" onclick="installPWA()" style="width:100%;padding:9px;background:rgba(0,200,240,.12);border:1px solid rgba(0,200,240,.3);border-radius:10px;color:var(--cy);font-size:.83rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s">Agregar a pantalla de inicio</button>
+    <!-- Instrucciones iOS Safari -->
+    <div id="installBannerIosMsg" style="display:none;text-align:center;padding:8px 4px 2px">
+      <div style="font-size:.78rem;color:var(--tx);line-height:1.6">
+        Toca <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,200,240,.12);border:1px solid rgba(0,200,240,.3);border-radius:6px;padding:1px 7px;color:var(--cy);font-weight:600">⬆ Compartir</span> y luego
+      </div>
+      <div style="font-size:.78rem;margin-top:4px;color:var(--tx)">selecciona <span style="font-weight:700;color:var(--cy)">"Añadir a pantalla de inicio"</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRIAGE DETAIL SHEET -->
+<div id="triageDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8999;backdrop-filter:blur(2px)" onclick="_closeTriageDetail()"></div>
+<div id="triageDetailSheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;padding-bottom:env(safe-area-inset-bottom,0px)">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;border-top:1px solid var(--bd);max-height:80vh;overflow-y:auto;padding:8px 18px 22px">
+    <div style="width:36px;height:4px;background:var(--bd);border-radius:2px;margin:8px auto 16px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-weight:700;font-size:.95rem">Detalle del triage</div>
+      <div style="display:flex;gap:7px;align-items:center">
+        <button class="bpri" onclick="exportDataPDF(_currentTriageDetail)" style="font-size:.77rem;padding:7px 11px;background:var(--yw-a);color:var(--yw);border:1px solid rgba(255,184,48,.35)" title="Exportar PDF">📄 PDF</button>
+        <button class="bpri" onclick="_triageDetailToHist()" style="font-size:.77rem;padding:7px 11px">Historial →</button>
+        <button type="button" onclick="_closeTriageDetail()" style="background:none;border:none;color:var(--mu);font-size:1.1rem;cursor:pointer;padding:4px;line-height:1">✕</button>
+      </div>
+    </div>
+    <div id="triageDetailContent"></div>
   </div>
 </div>
 
@@ -1160,8 +1275,20 @@ select{padding-right:32px;}
         <div class="clabel">Estadísticas del turno</div>
         <div class="stat-grid" id="statGrid"></div>
         <button class="bsec" id="handoffBtn" style="width:100%;margin-bottom:14px;font-size:.82rem" onclick="openHandoff()">📋 <span id="handoffBtnTxt">Resumen de turno</span></button>
-        <div class="clabel">Actividad reciente</div>
-        <div class="card"><div id="recentT"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="clabel" style="margin:0">Actividad reciente</div>
+          <div style="display:flex;gap:5px">
+            <button class="hist-flt on" id="dashPer-day" onclick="_setDashPeriod('day',this)">Hoy</button>
+            <button class="hist-flt" id="dashPer-week" onclick="_setDashPeriod('week',this)">Sem.</button>
+            <button class="hist-flt" id="dashPer-month" onclick="_setDashPeriod('month',this)">Mes</button>
+          </div>
+        </div>
+        <div class="card">
+          <div id="recentT"></div>
+          <div id="recentMore" style="display:none;margin-top:8px">
+            <button class="bsec" style="width:100%;font-size:.82rem" onclick="_dashMore()">Mostrar más</button>
+          </div>
+        </div>
         <div class="card" id="chartCard" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div class="clabel" style="margin:0" id="lbChartTitle">Estadisticas</div>
@@ -1171,11 +1298,12 @@ select{padding-right:32px;}
               <button class="hist-flt" id="chartPer-month" onclick="setChartPeriod('month',this)">Mes</button>
             </div>
           </div>
-          <div style="display:flex;justify-content:center;gap:8px;margin-bottom:12px">
-            <button class="hist-flt on" id="chartType-color" onclick="setChartType('color',this)">🎨</button>
-            <button class="hist-flt" id="chartType-type" onclick="setChartType('type',this)">👤</button>
-            <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)">🔬</button>
-            <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)">📈</button>
+          <div style="display:flex;justify-content:center;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+            <button class="hist-flt on" id="chartType-color" onclick="setChartType('color',this)" title="Por clasificación">🎨</button>
+            <button class="hist-flt" id="chartType-type" onclick="setChartType('type',this)" title="Por tipo de paciente">👤</button>
+            <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)" title="Por motivo">🔬</button>
+            <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)" title="Tendencia">📈</button>
+            <button class="hist-flt" id="chartType-mci" onclick="setChartType('mci',this)" title="MCI vs Normal vs Pre-hosp">⚠️</button>
           </div>
           <div style="position:relative;height:260px;width:100%;overflow:hidden">
             <canvas id="mainChart"></canvas>
@@ -1239,6 +1367,15 @@ select{padding-right:32px;}
         </div>
         <!-- BUSCAR -->
         <div class="sc on" id="ms-bs" style="padding:10px 0 0">
+          <div class="card" id="medPatientLookupCard">
+            <div class="clabel" id="lbMedPatientLookup">Contexto de paciente (opcional)</div>
+            <div style="font-size:.72rem;color:var(--mu);margin-bottom:8px">Ingrese el ID del paciente para contextualizar la consulta con su historial clínico.</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input class="fi" id="medPatientIdInput" type="text" placeholder="ID / Documento del paciente" style="flex:1">
+              <button class="bsec" style="flex-shrink:0;padding:0 14px;height:40px;white-space:nowrap;font-size:.8rem" onclick="lookupMedPatient()">🔍 Buscar</button>
+            </div>
+            <div id="medPatientResult" style="font-size:.75rem"></div>
+          </div>
           <div class="card">
             <div class="clabel" id="lbSearchDrug">Buscar medicamento</div>
             <div class="srow"><input class="fi" id="di" type="text" placeholder="..." style="flex:1;height:40px"><button class="bv" id="vd" onclick="voz('di','vd')">🎤</button></div>
@@ -1388,18 +1525,30 @@ select{padding-right:32px;}
 </div>
 
 <div class="sc" id="sc-hist">
-        <div style="padding:10px 0 4px;display:flex;gap:6px;align-items:center;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;flex-shrink:0;padding-bottom:8px" id="histFilters">
-          <button class="hist-flt on" data-f="all" onclick="setHistFilter('all',this)">Todos</button>
-          <button class="hist-flt" data-f="ROJO" onclick="setHistFilter('ROJO',this)" style="color:var(--rd)">🔴</button>
-          <button class="hist-flt" data-f="AMARILLO" onclick="setHistFilter('AMARILLO',this)" style="color:var(--yw)">🟡</button>
-          <button class="hist-flt" data-f="VERDE" onclick="setHistFilter('VERDE',this)" style="color:var(--gn)">🟢</button>
-          <button class="hist-flt" data-f="dolor_pecho" onclick="setHistFilter('dolor_pecho',this)">💔</button>
-          <button class="hist-flt" data-f="disnea" onclick="setHistFilter('disnea',this)">🫁</button>
-          <button class="hist-flt" data-f="trauma" onclick="setHistFilter('trauma',this)">🤕</button>
-          <button class="hist-flt" data-f="abdominal" onclick="setHistFilter('abdominal',this)">🤢</button>
-          <button class="hist-flt" data-f="neuro" onclick="setHistFilter('neuro',this)">🧠</button>
-          <button class="hist-flt" data-f="fiebre" onclick="setHistFilter('fiebre',this)">🌡️</button>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0 4px" id="histFilters">
+          <div style="flex:1;font-size:.75rem;font-weight:700;color:var(--tx)" id="histFilterLbl">Todos los triages</div>
+          <button class="bsec" style="flex-shrink:0;padding:5px 12px;font-size:.72rem;display:flex;align-items:center;gap:5px" onclick="toggleHistFilterMenu()"><span id="histFilterIcon">▼</span> Filtrar</button>
           <button class="hist-legend-btn" onclick="toggleHistLegend()" aria-label="Leyenda">ℹ️</button>
+        </div>
+        <div id="histFilterMenu" style="display:none;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px;animation:dropDown .18s ease">
+          <div style="font-size:.6rem;color:var(--mu);font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:1px;margin-bottom:6px">CLASIFICACIÓN</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+            <button class="hist-flt on" data-f="all" onclick="setHistFilter('all',this)">Todos</button>
+            <button class="hist-flt" data-f="ROJO" onclick="setHistFilter('ROJO',this)" style="color:var(--rd)">🔴 Crítico</button>
+            <button class="hist-flt" data-f="AMARILLO" onclick="setHistFilter('AMARILLO',this)" style="color:var(--yw)">🟡 Urgente</button>
+            <button class="hist-flt" data-f="VERDE" onclick="setHistFilter('VERDE',this)" style="color:var(--gn)">🟢 Estable</button>
+            <button class="hist-flt" data-f="MCI" onclick="setHistFilter('MCI',this)" style="color:#ff8060">⚠️ MCI</button>
+          </div>
+          <div style="font-size:.6rem;color:var(--mu);font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:1px;margin-bottom:6px">MOTIVO</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <button class="hist-flt" data-f="dolor_pecho" onclick="setHistFilter('dolor_pecho',this)">💔 Pecho</button>
+            <button class="hist-flt" data-f="disnea" onclick="setHistFilter('disnea',this)">🫁 Respiratorio</button>
+            <button class="hist-flt" data-f="trauma" onclick="setHistFilter('trauma',this)">🤕 Trauma</button>
+            <button class="hist-flt" data-f="abdominal" onclick="setHistFilter('abdominal',this)">🤢 Abdominal</button>
+            <button class="hist-flt" data-f="neuro" onclick="setHistFilter('neuro',this)">🧠 Neurológico</button>
+            <button class="hist-flt" data-f="fiebre" onclick="setHistFilter('fiebre',this)">🌡️ Fiebre</button>
+            <button class="hist-flt" data-f="otro" onclick="setHistFilter('otro',this)">📋 Otro</button>
+          </div>
         </div>
         <div id="histLegendPanel" class="hist-legend-panel" style="display:none"></div>
         <div class="card"><div class="clabel" id="lbHistTitle">Historial de triages</div><div id="histList"></div></div>
@@ -1421,6 +1570,17 @@ select{padding-right:32px;}
       </div>
       <!-- CONFIGURACION -->
       <div class="sc" id="sc-config">
+        <div class="card" id="installPWACard" style="display:none">
+          <div class="clabel">Aplicación móvil</div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="font-size:2rem">📲</div>
+            <div style="flex:1">
+              <div style="font-size:.85rem;font-weight:600;margin-bottom:3px">Agregar a pantalla de inicio</div>
+              <div style="font-size:.75rem;color:var(--mu);line-height:1.5">Instala MedAI Suite como app nativa en tu dispositivo para acceso rápido.</div>
+            </div>
+          </div>
+          <button class="bpri install-pwa-btn" onclick="installPWA()" style="width:100%;margin-top:12px">📲 Instalar en este dispositivo</button>
+        </div>
         <div class="card">
           <div class="clabel">Idioma / Language</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -1485,11 +1645,13 @@ select{padding-right:32px;}
           <div id="changePassSection" style="display:none">
             <button class="bsec" style="margin-top:10px;width:100%" onclick="togglePassForm()">🔐 <span id="changePassLbl">Cambiar contrasena</span></button>
             <div class="pass-form" id="passForm">
-              <div class="fg" style="margin-top:10px"><label class="fl" id="lbCurPass">Contrasena actual</label><input class="fi" id="curPassInput" type="password" placeholder="••••••••"></div>
-              <div class="fg"><label class="fl" id="lbNewPass">Nueva contrasena</label><input class="fi" id="newPassInput" type="password" placeholder="••••••••"></div>
-              <div class="fg"><label class="fl" id="lbConfirmPass">Confirmar contrasena</label><input class="fi" id="confirmPassInput" type="password" placeholder="••••••••"></div>
+              <form id="changePassForm" autocomplete="off" onsubmit="doChangePass();return false;">
+              <div class="fg" style="margin-top:10px"><label class="fl" id="lbCurPass">Contrasena actual</label><input class="fi" id="curPassInput" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+              <div class="fg"><label class="fl" id="lbNewPass">Nueva contrasena</label><input class="fi" id="newPassInput" type="password" placeholder="••••••••" autocomplete="new-password"></div>
+              <div class="fg"><label class="fl" id="lbConfirmPass">Confirmar contrasena</label><input class="fi" id="confirmPassInput" type="password" placeholder="••••••••" autocomplete="new-password"></div>
               <div class="auth-err" id="passErr"></div>
-              <button class="bpri" style="margin-top:6px;width:100%" onclick="doChangePass()"><span id="savePassLbl">Guardar</span></button>
+              <button type="submit" class="bpri" style="margin-top:6px;width:100%"><span id="savePassLbl">Guardar</span></button>
+              </form>
             </div>
           </div>
           <button class="bsec" onclick="doSignOut()" style="margin-top:10px">⬅ <span id="signOutTxt2">Cerrar sesion</span></button>
@@ -1546,7 +1708,42 @@ const DEMO_PATIENTS=[
    antecedentes:["Hipotiroidismo primario","Depresión mayor","Obesidad grado I"],
    alergias:[],
    medicacion:["Levotiroxina 100mcg","Sertralina 50mg","Metformina 500mg"],
-   notes:"Hipotiroidismo en tratamiento sustitutivo. TSH último control 2.8. Terapia psicológica activa. Sin alergias conocidas."}
+   notes:"Hipotiroidismo en tratamiento sustitutivo. TSH último control 2.8. Terapia psicológica activa. Sin alergias conocidas."},
+  {doc:"318745",name:"Laura Quintero Sánchez",age:"29",sex:"F",
+   antecedentes:["Embarazo 32 semanas","Hipertensión gestacional","Preclampsia leve"],
+   alergias:["Aspirina"],
+   medicacion:["Metildopa 250mg","Calcio 1g","Ácido fólico 5mg","Hierro oral"],
+   notes:"Gestante G2P1, 32 semanas. HTA gestacional en control. PA basal 140/90. Edemas en MMII. Control prenatal mensual. Sin cirugías previas."},
+  {doc:"201983",name:"Samuel Ortiz Ramos",age:"8",sex:"M",
+   antecedentes:["Asma bronquial moderada persistente","Rinitis alérgica"],
+   alergias:["Penicilina","Polen","Ácaros"],
+   medicacion:["Fluticasona inhalada 100mcg","Salbutamol rescate","Cetirizina 5mg"],
+   notes:"Niño de 8 años con asma moderada persistente. Multiples hospitalizaciones previas por crisis obstructiva. Último control espirométrico: FEV1 74%. Padres entrenados en uso de inhaladores."},
+  {doc:"574921",name:"Beatriz Herrera Molina",age:"72",sex:"F",
+   antecedentes:["Demencia senil moderada","Fibrilación auricular","HTA","Insuficiencia renal crónica estadio 3"],
+   alergias:["Contraste yodado","AINES"],
+   medicacion:["Rivaroxabán 20mg","Amlodipino 5mg","Donepezilo 10mg","Omeprazol 20mg"],
+   notes:"Paciente con deterioro cognitivo moderado. FA permanente anticoagulada. TFG estimada 42 ml/min. Vive con cuidadora. Comunicación limitada — responde a su nombre. Revisar interacciones antes de prescribir."},
+  {doc:"447632",name:"Diego Sarmiento Peña",age:"35",sex:"M",
+   antecedentes:["Paraplejia espástica (lesión T6)","Vejiga neurógena","Infecciones urinarias a repetición"],
+   alergias:["Sulfametoxazol"],
+   medicacion:["Baclofeno 10mg","Oxibutinina 5mg","Vitamina D3","Omeprazol 20mg"],
+   notes:"Paraplejia completa desde los 22 años por accidente de tránsito. Usa silla de ruedas. Historia de 3 ITU en el último año. Sin sensibilidad por debajo de T6. Cateterización intermitente vesical."},
+  {doc:"389017",name:"Valentina Ríos Castro",age:"15",sex:"F",
+   antecedentes:["Diabetes tipo 1","Hipotiroidismo autoinmune"],
+   alergias:[],
+   medicacion:["Insulina glargina 18 UI/noche","Insulina lispro a razón de comida","Levotiroxina 50mcg"],
+   notes:"Adolescente con DM1 diagnosticada a los 9 años. Control metabólico aceptable. Última HbA1c 7.8%. Sin complicaciones crónicas detectadas. Adherencia regular al tratamiento. Escolarizada."},
+  {doc:"665248",name:"Roberto Cárdenas Gil",age:"52",sex:"M",
+   antecedentes:["Epilepsia focal con generalización secundaria","Hepatitis B crónica","Depresión moderada"],
+   alergias:["Carbamazepina"],
+   medicacion:["Levetiracetam 1000mg c/12h","Ácido valproico 500mg c/12h","Tenofovir 300mg","Escitalopram 10mg"],
+   notes:"Epilepsia con buen control desde ajuste a politerapia hace 2 años. Última crisis hace 14 meses. HBsAg positivo, carga viral baja en seguimiento. Conduce con restricción médica. No consumo de alcohol."},
+  {doc:"512834",name:"Isabella Moreno Díaz",age:"6",sex:"F",
+   antecedentes:["Cardiopatía congénita operada (CIV pequeña)","Anemia ferropénica"],
+   alergias:["Amoxicilina"],
+   medicacion:["Sulfato ferroso pediátrico","Vitamina C"],
+   notes:"Niña de 6 años. CIV intervenida a los 3 años, con buen resultado. Control ecocardiográfico semestral. Anemia en seguimiento nutricional. Activa y escolarizada. Sin limitaciones funcionales significativas."}
 ];
 let _patientHC=null,_triageLookupDone=false,_triageLookupResult=null;
 
@@ -1767,20 +1964,57 @@ function translateTriageStep(tx){
 }
 
 // AUTH VIEWS
+let _staffLoginRole=null;
+function showRoleError(msg){
+  const banner=document.getElementById("roleErrBanner");
+  const msgEl=document.getElementById("roleErrMsg");
+  if(msgEl)msgEl.textContent=msg;
+  if(banner){
+    banner.style.display="";
+    clearTimeout(banner._t);
+    banner._t=setTimeout(()=>{banner.style.display="none";},7000);
+  }
+}
+function _clearRoleError(){
+  const banner=document.getElementById("roleErrBanner");
+  if(banner){clearTimeout(banner._t);banner.style.display="none";}
+  const err=document.getElementById("authErr");
+  if(err){err.textContent="";err.className="auth-err";}
+}
 function showPatientView(){
+  _clearRoleError();
   const pv=document.getElementById("authPatientView");
   const sv=document.getElementById("authStaffView");
+  const rv=document.getElementById("patientRegisterView");
   sv.style.display="none";
+  if(rv)rv.style.display="none";
   pv.style.display="";
   pv.classList.remove("auth-slide-right","auth-slide-left");
   void pv.offsetWidth;
   pv.classList.add("auth-slide-left");
 }
-function showStaffLogin(){
+function showStaffLogin(role){
+  _clearRoleError();
+  _staffLoginRole=role||"medico";
   const pv=document.getElementById("authPatientView");
   const sv=document.getElementById("authStaffView");
+  const rv=document.getElementById("patientRegisterView");
   pv.style.display="none";
+  if(rv)rv.style.display="none";
   sv.style.display="";
+  // Update context badge
+  const badge=document.getElementById("staffRoleContext");
+  if(badge){
+    if(_staffLoginRole==="admin"){
+      badge.textContent="🔑 Administrador";
+      badge.style.background="rgba(168,85,247,.12)";
+      badge.style.color="var(--pu)";
+    }else{
+      badge.textContent="🩺 Médico";
+      badge.style.background="rgba(0,200,240,.12)";
+      badge.style.color="var(--cy)";
+    }
+  }
   sv.classList.remove("auth-slide-right","auth-slide-left");
   void sv.offsetWidth;
   sv.classList.add("auth-slide-right");
@@ -1790,9 +2024,11 @@ function authTab(m){
   document.getElementById("atab-in").classList.toggle("on",isIn);
   document.getElementById("atab-up").classList.toggle("on",!isIn);
   document.getElementById("nameField").style.display=isIn?"none":"block";
+  const pf=document.getElementById("phoneField");if(pf)pf.style.display=isIn?"none":"block";
+  const sf=document.getElementById("specialtyField");if(sf)sf.style.display=isIn?"none":(_staffLoginRole==="medico"?"block":"none");
+  const ap=document.getElementById("aPass");if(ap)ap.setAttribute("autocomplete",isIn?"current-password":"new-password");
   document.getElementById("authErr").textContent="";
   document.getElementById("authErr").className="auth-err";
-  // Re-run email check for the new mode if email already typed
   const hint=document.getElementById("emailHint");
   if(hint)hint.textContent="";
   const email=document.getElementById("aEmail").value.trim();
@@ -1809,15 +2045,35 @@ function initAuth(){
       CU=user;
       try{
         const snap=await FB.getDoc(FB.doc(FB.db,"users",user.uid));
-        if(snap.exists()){CR=snap.data().role;CUName=snap.data().name||null;CUPhoto=snap.data().photoBase64||null;if(CUPhoto)localStorage.setItem("ms_photo_"+user.uid,CUPhoto);}
-        else{
+        if(snap.exists()){
+          CR=snap.data().role;CUName=snap.data().name||null;CUPhoto=snap.data().photoBase64||null;
+          if(CUPhoto)localStorage.setItem("ms_photo_"+user.uid,CUPhoto);
+          // Role enforcement: only when user explicitly used a staff login button
+          if(_staffLoginRole!==null){
+            const allowed=_staffLoginRole==="admin"?["admin","admin_hosp"]:["medico"];
+            if(!allowed.includes(CR)){
+              const rNames={admin:"Administrador",admin_hosp:"Admin Hospital",medico:"Médico",paciente:"Paciente"};
+              const actualRole=rNames[CR]||CR; // save before signOut clears CR
+              const expectedRole=_staffLoginRole==="admin"?"Administrador":"Médico";
+              _staffLoginRole=null;
+              await FB.signOut(FB.auth);
+              // showAuthScreen() already called by onAuthStateChanged(null) — show banner after reset
+              setTimeout(()=>{
+                showRoleError(`Tu cuenta está registrada como "${actualRole}". Ingresa desde el botón "${actualRole}" en la pantalla de inicio.`);
+              },150);
+              return;
+            }
+          }
+          _staffLoginRole=null;
+        }else{
           const all=await FB.getDocs(FB.collection(FB.db,"users"));
           CR=all.empty?"admin":"medico";
           const autoName=user.displayName||user.email.split("@")[0];
           CUName=autoName;
           await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:autoName,email:user.email,role:CR,createdAt:FB.serverTimestamp()});
+          _staffLoginRole=null;
         }
-      }catch(e){CR="medico";}
+      }catch(e){CR="medico";_staffLoginRole=null;}
       showApp();
       logAudit("login",{method:user.providerData?.[0]?.providerId||"unknown"});
     }else{showAuthScreen();}
@@ -1837,11 +2093,17 @@ async function doAuth(){
     await FB.setPersistence(FB.auth,persistence);
     if(isIn){await FB.signInWithEmailAndPassword(FB.auth,email,pass);}
     else{
-      const name=document.getElementById("aName").value.trim()||email.split("@")[0];
+      const name=document.getElementById("aName").value.trim();
+      const phone=document.getElementById("aPhone")?.value.trim()||"";
+      const specialty=document.getElementById("aSpecialty")?.value.trim()||"";
+      if(!name){err.className="auth-err er";err.textContent="El nombre es obligatorio";return;}
+      if(!phone){err.className="auth-err er";err.textContent="El teléfono es obligatorio";return;}
+      if(_staffLoginRole==="medico"&&!specialty){err.className="auth-err er";err.textContent="La especialidad es obligatoria";return;}
       const cred=await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
-      const all=await FB.getDocs(FB.collection(FB.db,"users"));
-      const role=all.empty?"admin":"medico";
-      await FB.setDoc(FB.doc(FB.db,"users",cred.user.uid),{name,email,role,createdAt:FB.serverTimestamp()});
+      const regRole=_staffLoginRole||"medico";
+      const userData={name,email,role:regRole,phone,createdAt:FB.serverTimestamp()};
+      if(specialty)userData.especialidad=specialty;
+      await FB.setDoc(FB.doc(FB.db,"users",cred.user.uid),userData);
     }
     if(_rememberOn){localStorage.setItem("ms_remember_email",email);}else{localStorage.removeItem("ms_remember_email");}
   }catch(e){
@@ -1916,7 +2178,9 @@ async function onEmailBlur(){
 async function doSignOut(){
   _clearPresence();
   stopInactivityTimer();
-  _patientHC=null;
+  if(_bgTimer){clearTimeout(_bgTimer);_bgTimer=null;}
+  _bgHiddenAt=null;
+  _patientHC=null;_medPatientHC=null;
   intDrugs=[];
   _lastDrugInfo=null;
   ["dr","ir"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML="";});
@@ -2023,6 +2287,31 @@ function stopInactivityTimer(){
 // Track user activity
 ["touchstart","touchmove","mousedown","keydown"].forEach(ev=>{
   document.addEventListener(ev,resetActivity,{passive:true});
+});
+
+// Auto-logout when app goes to background for too long
+const BG_TIMEOUT_MS=5*60*1000;
+let _bgTimer=null,_bgHiddenAt=null;
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){
+    _bgHiddenAt=Date.now();
+    if(CU&&CR!=="paciente"){
+      _bgTimer=setTimeout(()=>{
+        if(document.hidden&&CU){
+          toast(t("sessionOut")||"Sesion cerrada por inactividad en segundo plano.");
+          doSignOut();
+        }
+      },BG_TIMEOUT_MS);
+    }
+  }else{
+    if(_bgTimer){clearTimeout(_bgTimer);_bgTimer=null;}
+    // If we came back after >BG_TIMEOUT_MS, force logout
+    if(_bgHiddenAt&&CU&&CR!=="paciente"&&Date.now()-_bgHiddenAt>=BG_TIMEOUT_MS){
+      toast(t("sessionOut")||"Sesion cerrada por inactividad en segundo plano.");
+      doSignOut();
+    }
+    _bgHiddenAt=null;
+  }
 });
 
 // ── VOICE MODE ──
@@ -2249,6 +2538,7 @@ function showApp(){
   navigateTo(def);
   showWelcome();
   if(CR!=="paciente"){startInactivityTimer();_initPresence();}
+  _tryShowInstallBanner();
 }
 
 function showWelcome(){
@@ -2363,7 +2653,7 @@ function navigateTo(id,_fh){
   if(id==="hc"){if(CR==="paciente"&&_patientHC?.id){viewHC(_patientHC.id);}else{loadHC();}}
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
-  if(id==="meds"){ss("bs");setTimeout(_showDefaultDrugs,80);}
+  if(id==="meds"){ss("bs");setTimeout(_showDefaultDrugs,80);const mlc=document.getElementById("medPatientLookupCard");if(mlc)mlc.style.display=(CR==="paciente")?"none":"";}
   if(id!=="cola")_stopColaTimer();
   document.getElementById("mainBody").scrollTop=0;
   // Show FABs only on triage tab
@@ -2391,6 +2681,7 @@ function updateUI(){
 
 // CHART
 let _chartInst=null,_chartPer="day",_chartType="color",_chartData=[];
+let _dashAllDocs=[],_dashPeriod="day",_dashShown=5,_dashPrehDocs=[];
 
 function setChartPeriod(p,btn){
   _chartPer=p;
@@ -2440,6 +2731,11 @@ function buildChart(){
     const clrs=["#ff3a5c","#00c8f0","#ffb830","#a855f7","#00e07a","#ff7043","#94a3b8"];
     const vals=mots.map(m=>filtered.filter(d=>d.motivo===m).length);
     cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs.map(c=>c+"cc"),borderColor:clrs,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:9}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
+  }else if(_chartType==="mci"){
+    const normalN=filtered.filter(d=>!d.esMCI).length;
+    const mciN=filtered.filter(d=>d.esMCI===true).length;
+    const prehN=(_dashPrehDocs||[]).length;
+    cfg={type:"doughnut",data:{labels:["Triage Normal","MCI","Pre-hospitalario"],datasets:[{data:[normalN,mciN,prehN],backgroundColor:["#00c8f055","#ff806055","#a855f755"],borderColor:["#00c8f0","#ff8060","#a855f7"],borderWidth:2,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{position:"bottom",labels:{color:textC,font:{size:10.5},boxWidth:12,padding:14}}},animation:{animateRotate:true,duration:600}}};
   }else{
     const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
     const days={};for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const k=d.toLocaleDateString(loc,{day:"2-digit",month:"short"});days[k]=0;}
@@ -2588,20 +2884,27 @@ async function loadDash(){
     const ro=myDocs.filter(d=>d.data().clasificacion==="ROJO").length;
     const am=myDocs.filter(d=>d.data().clasificacion==="AMARILLO").length;
     const ve=myDocs.filter(d=>d.data().clasificacion==="VERDE").length;
+    const mci=myDocs.filter(d=>d.data().esMCI===true).length;
+    // Load prehospital notifications count
+    let prehCount=0;
+    try{
+      const prehQ=isAdmin
+        ? FB.query(FB.collection(FB.db,"prehospital"),FB.orderBy("createdAt","desc"),FB.limit(50))
+        : FB.query(FB.collection(FB.db,"prehospital"),FB.where("userId","==",CU.uid),FB.orderBy("createdAt","desc"),FB.limit(50));
+      const prehSnap=await FB.getDocs(prehQ);
+      prehCount=prehSnap.size;
+      _dashPrehDocs=prehSnap.docs.map(d=>({_id:d.id,...d.data()}));
+    }catch(e){_dashPrehDocs=[];}
     document.getElementById("statGrid").innerHTML=`
-      <div class="stat-card"><div class="stat-num">${myDocs.length}</div><div class="stat-lbl">${t("statTotal")||"Total"}</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--rd)">${ro}</div><div class="stat-lbl">🔴 ${t("statCritical")||"Criticos"}</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--yw)">${am}</div><div class="stat-lbl">🟡 ${t("statUrgent")||"Urgentes"}</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--gn)">${ve}</div><div class="stat-lbl">🟢 ${t("statStable")||"Estables"}</div></div>`;
-    const loc3={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
-    const mMD={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
-    const rows=myDocs.slice(0,5).map(d=>{
-      const dt=d.data();const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
-      const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc3,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
-      const quien=dt.userName?`<span style="font-size:.62rem;color:var(--cy);margin-left:4px">· ${dt.userName}</span>`:"";
-      return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1"><div style="font-size:.82rem;font-weight:600">${mMD[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}${quien}</div></div></div>`;
-    }).join("");
-    document.getElementById("recentT").innerHTML=rows||`<div class="empty"><div class="etx">${t("noData")||"Sin triages aun."}</div></div>`;
+      <div class="stat-card" onclick="goToHistWithFilter('all')" title="Ver todos"><div class="stat-num">${myDocs.length}</div><div class="stat-lbl">${t("statTotal")||"Total"}</div></div>
+      <div class="stat-card" onclick="goToHistWithFilter('ROJO')" title="Ver críticos"><div class="stat-num" style="color:var(--rd)">${ro}</div><div class="stat-lbl">🔴 ${t("statCritical")||"Criticos"}</div></div>
+      <div class="stat-card" onclick="goToHistWithFilter('AMARILLO')" title="Ver urgentes"><div class="stat-num" style="color:var(--yw)">${am}</div><div class="stat-lbl">🟡 ${t("statUrgent")||"Urgentes"}</div></div>
+      <div class="stat-card" onclick="goToHistWithFilter('VERDE')" title="Ver estables"><div class="stat-num" style="color:var(--gn)">${ve}</div><div class="stat-lbl">🟢 ${t("statStable")||"Estables"}</div></div>
+      <div class="stat-card" onclick="goToHistWithFilter('MCI')" title="Ver MCI"><div class="stat-num" style="color:#ff8060">${mci}</div><div class="stat-lbl">⚠️ MCI</div></div>
+      <div class="stat-card" title="Notificaciones prehospital"><div class="stat-num" style="color:var(--pu)">${prehCount}</div><div class="stat-lbl">🚑 Pre-hosp</div></div>`;
+    _dashAllDocs=myDocs.map(d=>({_id:d.id,...d.data()}));
+    _dashShown=5;
+    _renderDashRecent();
     _chartData=myDocs.map(d=>d.data());
     buildChart();
     if(CR==="admin"||CR==="medico"||CR==="admin_hosp"){
@@ -2629,6 +2932,9 @@ async function loadDash(){
       document.getElementById("userList").innerHTML=html||"<div class='empty' style='padding:12px'><div class='etx'>Sin usuarios registrados</div></div>";
       const adminAct=document.getElementById("adminActionsCard");if(adminAct)adminAct.style.display="block";
     }else{document.getElementById("userMgmtCard").style.display="none";}
+    // Show/hide meds patient lookup (only for staff roles)
+    const mlCard=document.getElementById("medPatientLookupCard");
+    if(mlCard)mlCard.style.display=(CR==="paciente")?"none":"";
     if(CR==="medico"||CR==="admin"||CR==="admin_hosp"){
       const nc=document.getElementById("nearbyCard");if(nc)nc.style.display="block";
       const ni=document.getElementById("nearbyEpsInput");if(ni)ni.placeholder=getInsLabel();
@@ -2704,25 +3010,40 @@ function toggleHistLegend(){
 // HISTORY FILTERS
 let _histFilter="all";
 let _histDocs=[];
+let _histFiltered=[];
+
+function toggleHistFilterMenu(){
+  const m=document.getElementById("histFilterMenu");
+  const ic=document.getElementById("histFilterIcon");
+  if(!m)return;
+  const open=m.style.display!=="none";
+  m.style.display=open?"none":"";
+  if(ic)ic.textContent=open?"▼":"▲";
+}
 
 function setHistFilter(f,btn){
   _histFilter=f;
-  document.querySelectorAll('.hist-flt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
+  document.querySelectorAll('#histFilterMenu .hist-flt').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  const lblMap={all:"Todos los triages",ROJO:"🔴 Críticos",AMARILLO:"🟡 Urgentes",VERDE:"🟢 Estables",MCI:"⚠️ MCI",
+    dolor_pecho:"💔 Pecho",disnea:"🫁 Respiratorio",trauma:"🤕 Trauma",abdominal:"🤢 Abdominal",neuro:"🧠 Neurológico",fiebre:"🌡️ Fiebre",otro:"📋 Otro"};
+  const lbl=document.getElementById("histFilterLbl");if(lbl)lbl.textContent=lblMap[f]||f;
+  toggleHistFilterMenu();
   renderHist();
 }
 
 function renderHist(){
   const el=document.getElementById("histList");
   const mM={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
-  const filtered=_histDocs.filter(d=>{
+  _histFiltered=_histDocs.filter(d=>{
     if(_histFilter==="all")return true;
+    if(_histFilter==="MCI")return d.esMCI===true;
     if(["ROJO","AMARILLO","VERDE"].includes(_histFilter))return d.clasificacion===_histFilter;
     return d.motivo===_histFilter;
   });
-  if(!filtered.length){el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos."}</div></div>`;return;}
+  if(!_histFiltered.length){el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos."}</div></div>`;return;}
   const rolePrefix={admin:"Admin",admin_hosp:"Adm.",medico:"Dr.",paciente:""};
-  el.innerHTML=filtered.map(dt=>{
+  el.innerHTML=_histFiltered.map((dt,idx)=>{
     const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
     const loc2={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
     const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc2,{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
@@ -2730,20 +3051,140 @@ function renderHist(){
     const pfx=rolePrefix[dt.userRole]||"";
     const quien=dt.userName||(dt.userEmail?.split("@")[0])||"";
     const performer=quien?`<span style="font-size:.65rem;color:var(--mu);opacity:.8">👤 ${pfx}${pfx?" ":""}${quien}</span> · `:"";
-    return`<div class="hist-row"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.82rem">${mM[dt.motivo]||dt.motivo||"—"}${notasBadge}</div><div style="font-size:.69rem;color:var(--mu)">${performer}${dt.tipo||""} · D:${dt.dolor??"-"}/10 · ${date}</div>${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dt.justificacion.slice(0,80)}...</div>`:""}</div></div>`;
+    const mciTag=dt.esMCI?`<span style="font-size:.62rem;background:rgba(255,128,96,.15);color:#ff8060;padding:1px 5px;border-radius:6px;margin-left:4px">MCI</span>`:"";
+    return`<div class="hist-row" onclick="_openHistDetail(${idx})" style="cursor:pointer">
+      <span class="hist-b ${cc}">${dt.clasificacion}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:.82rem">${mM[dt.motivo]||dt.motivo||"—"}${notasBadge}${mciTag}</div>
+        <div style="font-size:.69rem;color:var(--mu)">${performer}${dt.tipo||""} · D:${dt.dolor??"-"}/10 · ${date}</div>
+        ${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dt.justificacion.slice(0,80)}...</div>`:""}
+      </div>
+      <button onclick="event.stopPropagation();exportDataPDF(_histFiltered[${idx}])" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.72rem;padding:4px 7px;cursor:pointer;margin-left:6px" title="Exportar PDF">📄</button>
+    </div>`;
   }).join("");
 }
 
+function _openHistDetail(idx){
+  const dt=_histFiltered[idx];if(!dt)return;
+  _showTriageDetail(dt);
+}
+
 // HISTORY
+// ── DASHBOARD RECENT ACTIVITY ──
+function _dashFilteredDocs(){
+  const now=new Date();
+  const cuts={day:new Date(now.getFullYear(),now.getMonth(),now.getDate()),week:new Date(Date.now()-7*24*3600000),month:new Date(now.getFullYear(),now.getMonth(),1)};
+  const cut=cuts[_dashPeriod]||new Date(0);
+  return _dashAllDocs.filter(d=>{const ts=d.createdAt?.toDate?.();return !ts||ts>=cut;});
+}
+function _renderDashRecent(){
+  const filtered=_dashFilteredDocs();
+  window._dashFiltered=filtered;
+  const el=document.getElementById("recentT");
+  const moreEl=document.getElementById("recentMore");
+  if(!el)return;
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty" style="padding:10px 0"><div class="etx">Sin triages en este período</div></div>`;
+    if(moreEl)moreEl.style.display="none";return;
+  }
+  const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
+  const mMD={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
+  el.innerHTML=filtered.slice(0,_dashShown).map((dt,i)=>{
+    const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
+    const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
+    const quien=dt.userName?`<span style="font-size:.62rem;color:var(--cy);margin-left:4px">· ${dt.userName}</span>`:"";
+    return`<div class="hist-row" style="cursor:pointer" onclick="_openTriageDetail(${i})"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600">${mMD[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}${quien}</div></div><button onclick="event.stopPropagation();exportDataPDF(window._dashFiltered?.[${i}])" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.7rem;padding:3px 6px;cursor:pointer;margin-left:4px" title="PDF">📄</button><span style="color:var(--mu);font-size:.95rem;flex-shrink:0;margin-left:4px">›</span></div>`;
+  }).join("");
+  const hasMore=filtered.length>_dashShown;
+  if(moreEl){
+    moreEl.style.display=hasMore?"":"none";
+    const btn=moreEl.querySelector("button");
+    if(btn){const rem=Math.min(filtered.length-_dashShown,5);btn.textContent=`Mostrar ${rem} más · ${filtered.length} total`;}
+  }
+}
+function _setDashPeriod(p,btn){
+  _dashPeriod=p;_dashShown=5;
+  document.querySelectorAll('[id^="dashPer-"]').forEach(b=>b.classList.toggle("on",b===btn));
+  _renderDashRecent();
+}
+function _dashMore(){_dashShown+=5;_renderDashRecent();}
+
+// ── TRIAGE DETAIL SHEET ──
+let _currentTriageDetail=null;
+function _showTriageDetail(dt){
+  if(!dt)return;
+  _currentTriageDetail=dt;
+  const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
+  const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
+  const mMD={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
+  const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc,{weekday:"short",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+  const row=(lbl,val,extra="")=>val!=null&&val!==""?`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:.82rem"><span style="color:var(--mu)">${lbl}</span><span style="font-weight:600;${extra}">${val}</span></div>`:"";
+  const scores=[];
+  if(dt.qsofa!=null)scores.push({l:"qSOFA",v:dt.qsofa,c:dt.qsofa>=2?"var(--rd)":"var(--gn)"});
+  if(dt.news2!=null)scores.push({l:"NEWS2",v:dt.news2,c:dt.news2>=7?"var(--rd)":dt.news2>=5?"var(--yw)":"var(--gn)"});
+  if(dt.shockIndex!=null)scores.push({l:"Shock",v:typeof dt.shockIndex==="number"?dt.shockIndex.toFixed(2):dt.shockIndex,c:dt.shockIndex>=1?"var(--rd)":"var(--gn)"});
+  if(dt.curb65!=null)scores.push({l:"CURB-65",v:dt.curb65,c:dt.curb65>=3?"var(--rd)":dt.curb65>=2?"var(--yw)":"var(--gn)"});
+  const accionesHtml=dt.acciones?.length?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:6px;font-weight:600">Acciones prioritarias</div>${dt.acciones.map((a,i)=>`<div style="display:flex;gap:7px;margin-bottom:5px;align-items:flex-start"><span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--cy);flex-shrink:0;margin-top:2px;background:var(--cy-a);padding:1px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.8rem;line-height:1.5">${a}</span></div>`).join("")}</div>`:"";
+  const mciTag=dt.esMCI?`<span style="font-size:.62rem;background:rgba(255,128,96,.15);color:#ff8060;padding:1px 6px;border-radius:6px;margin-left:6px">MCI</span>`:"";
+  document.getElementById("triageDetailContent").innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:12px">
+      <span class="hist-b ${cc}" style="font-size:.88rem;padding:5px 14px">${dt.clasificacion}</span>
+      <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.9rem">${mMD[dt.motivo]||dt.motivo||"—"}${mciTag}</div><div style="font-size:.71rem;color:var(--mu);margin-top:2px">${date}</div></div>
+    </div>
+    ${row("Tipo de paciente",dt.tipo)}
+    ${dt.pacienteNombre?row("Paciente",dt.pacienteNombre):""}
+    ${row("Nivel de dolor",dt.dolor!=null?`${dt.dolor}/10`:null)}
+    ${row("Atendido por",dt.userName)}
+    ${dt.notas?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">Notas clínicas</div><div style="font-size:.82rem;line-height:1.55">${dt.notas}</div></div>`:""}
+    ${dt.justificacion?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">Justificación IA</div><div style="font-size:.82rem;line-height:1.55">${dt.justificacion}</div></div>`:""}
+    ${accionesHtml}
+    ${scores.length?`<div style="margin-top:12px"><div style="font-size:.68rem;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Scores clínicos</div><div style="display:flex;gap:8px;flex-wrap:wrap">${scores.map(s=>`<div style="background:var(--bg3);border-radius:10px;padding:9px 14px;text-align:center;flex:1;min-width:64px"><div style="font-size:1.2rem;font-weight:800;color:${s.c}">${s.v}</div><div style="font-size:.65rem;color:var(--mu);margin-top:2px">${s.l}</div></div>`).join("")}</div></div>`:""}
+  `;
+  document.getElementById("triageDetailSheet").style.display="";
+  document.getElementById("triageDetailOverlay").style.display="";
+}
+function _openTriageDetail(idx){
+  const dt=window._dashFiltered?.[idx];if(!dt)return;
+  _showTriageDetail(dt);
+}
+function _closeTriageDetail(){
+  document.getElementById("triageDetailSheet").style.display="none";
+  document.getElementById("triageDetailOverlay").style.display="none";
+}
+function _triageDetailToHist(){
+  _closeTriageDetail();_histFilter="all";navigateTo("hist");
+}
+
+function goToHistWithFilter(filter){
+  _histFilter=filter;
+  navigateTo('hist');
+  // Sync filter button highlights after navigation renders
+  setTimeout(()=>{
+    document.querySelectorAll('#histFilters .hist-flt').forEach(b=>{
+      b.classList.toggle('on',(b.dataset.f||'all')===filter);
+    });
+  },60);
+}
+
 async function loadHist(){
   if(!FB||!CU)return;
-  const el=document.getElementById("histList");el.innerHTML=`<div class="ldg"><div class="sp"></div>${t('loading')||'Cargando...'}</div>`;
+  const el=document.getElementById("histList");
+  const _withTimeout=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),ms))]);
+  // Fast path: render cached data immediately, then refresh silently in background
+  if(_histDocs.length>0){
+    renderHist();
+    _withTimeout(getTriagesHistory(FB),12000).then(({empty,docs})=>{if(!empty){_histDocs=docs;renderHist();}}).catch(()=>{});
+    return;
+  }
+  el.innerHTML=`<div class="ldg"><div class="sp"></div>${t('loading')||'Cargando...'}</div>`;
   try{
-    const{empty,docs}=await getTriagesHistory(FB);
+    const{empty,docs}=await _withTimeout(getTriagesHistory(FB),12000);
     if(empty){_histDocs=[];el.innerHTML=`<div class="empty"><div class="eic">📋</div><div class="etx">${t("noData")||"Sin datos aun."}</div></div>`;return;}
     _histDocs=docs;
     renderHist();
-  }catch(e){el.innerHTML=`<div class="empty"><div class="etx">Error cargando historial.</div></div>`;}
+  }catch(e){
+    if(el.innerHTML.includes("sp"))el.innerHTML=`<div class="empty"><div class="eic">⚠️</div><div class="etx">Error al cargar. <button onclick="loadHist()" style="color:var(--cy);background:none;border:none;cursor:pointer;font-size:.82rem;text-decoration:underline">Reintentar</button></div></div>`;
+  }
 }
 
 // CONFIG & PROFILE
@@ -3118,8 +3559,8 @@ async function loginPatientById(){
   try{
     const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",id),FB.limit(1)));
     if(snap.empty){
-      toast("Número de identificación no encontrado");
       if(btn){btn.disabled=false;btn.textContent=t("patientEnter")||"Ingresar";}
+      _showPatientRegisterForm(id);
       return;
     }
     const docSnap=snap.docs[0];
@@ -3131,6 +3572,134 @@ async function loginPatientById(){
     toast("Error al verificar: "+e.message);
     if(btn){btn.disabled=false;btn.textContent=t("patientEnter")||"Ingresar";}
   }
+}
+
+function _showPatientRegisterForm(patId){
+  const pv=document.getElementById("authPatientView");
+  const rv=document.getElementById("patientRegisterView");
+  if(pv)pv.style.display="none";
+  if(rv){
+    rv.style.display="";
+    const disp=document.getElementById("pRegIdDisplay");if(disp)disp.textContent=patId;
+    const hid=document.getElementById("pRegId");if(hid)hid.value=patId;
+    const sub=document.getElementById("pRegSubtitle");if(sub)sub.textContent="ID "+patId+" no encontrado — completa tu registro";
+    rv.classList.remove("auth-slide-right","auth-slide-left");
+    void rv.offsetWidth;
+    rv.classList.add("auth-slide-right");
+  }
+}
+function _cancelPatientRegister(){
+  const rv=document.getElementById("patientRegisterView");
+  const pv=document.getElementById("authPatientView");
+  if(rv)rv.style.display="none";
+  if(pv){pv.style.display="";pv.classList.remove("auth-slide-right","auth-slide-left");void pv.offsetWidth;pv.classList.add("auth-slide-left");}
+  const inp=document.getElementById("patientIdInput");if(inp)inp.value="";
+}
+async function registerPatient(){
+  const id=document.getElementById("pRegId").value.trim();
+  const name=document.getElementById("pRegName").value.trim();
+  const dob=document.getElementById("pRegDob").value;
+  const sex=document.querySelector('input[name="pRegSex"]:checked')?.value;
+  const phone=document.getElementById("pRegPhone").value.trim();
+  const err=document.getElementById("pRegErr");
+  err.textContent="";err.className="auth-err";
+  if(!name||!dob||!sex||!phone){err.className="auth-err er";err.textContent="Todos los campos son obligatorios";return;}
+  if(!id){err.className="auth-err er";err.textContent="Error: número de ID no encontrado";return;}
+  const btn=document.getElementById("pRegBtn");
+  btn.disabled=true;btn.textContent="Registrando...";
+  try{
+    // Double check: don't create duplicate if somehow a concurrent registration happened
+    const existing=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",id),FB.limit(1)));
+    if(!existing.empty){
+      const docSnap=existing.docs[0];
+      _patientHC={id:docSnap.id,...docSnap.data()};
+      CR="paciente";CU={uid:"patient-"+docSnap.id,email:_patientHC.email||"paciente@local",displayName:_patientHC.name||"Paciente"};
+      showApp();return;
+    }
+    const age=Math.floor((Date.now()-new Date(dob).getTime())/(365.25*24*3600000));
+    const ref=await FB.addDoc(FB.collection(FB.db,"historias"),{
+      doc:id,name,age,sex,dob,telefono:phone,
+      antecedentes:[],alergias:[],medicacion:[],notes:"",
+      createdAt:FB.serverTimestamp()
+    });
+    _patientHC={id:ref.id,doc:id,name,age,sex,dob,telefono:phone,antecedentes:[],alergias:[],medicacion:[]};
+    CR="paciente";CU={uid:"patient-"+ref.id,email:"paciente@local",displayName:name};
+    showApp();
+  }catch(e){
+    err.className="auth-err er";err.textContent="Error al registrar: "+e.message;
+    btn.disabled=false;btn.textContent="Completar registro";
+  }
+}
+
+// PWA INSTALL
+let _deferredInstallPrompt=null;
+const _isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+const _isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode:standalone)').matches;
+
+function _showInstallBanner(){
+  if(localStorage.getItem('ms_install_dismissed'))return;
+  const banner=document.getElementById('installFloatBanner');
+  if(!banner)return;
+  const btn=document.getElementById('installBannerBtn');
+  const iosMsg=document.getElementById('installBannerIosMsg');
+  if(_isIOS){
+    if(btn)btn.style.display='none';
+    if(iosMsg)iosMsg.style.display='';
+  }else{
+    if(btn)btn.style.display='';
+    if(iosMsg)iosMsg.style.display='none';
+  }
+  banner.style.display='';
+}
+
+// iOS: mostrar banner con instrucciones si no está instalada
+if(_isIOS&&!_isStandalone&&!localStorage.getItem('ms_install_dismissed')){
+  const iosLoginBtn=document.getElementById('installBtnLogin');
+  if(iosLoginBtn){
+    iosLoginBtn.style.display='';
+    iosLoginBtn.textContent='📲 Agregar a pantalla de inicio';
+    iosLoginBtn.onclick=function(){_showInstallBanner();};
+  }
+  setTimeout(_showInstallBanner,3000);
+}
+
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  _deferredInstallPrompt=e;
+  document.querySelectorAll('.install-pwa-btn').forEach(b=>b.style.display='');
+  const card=document.getElementById('installPWACard');if(card)card.style.display='';
+  if(!localStorage.getItem('ms_install_dismissed')){
+    setTimeout(()=>{if(_deferredInstallPrompt)_showInstallBanner();},3000);
+  }
+});
+function _tryShowInstallBanner(){
+  if(localStorage.getItem('ms_install_dismissed'))return;
+  if(_deferredInstallPrompt||(_isIOS&&!_isStandalone)){
+    setTimeout(()=>{if(_deferredInstallPrompt||(_isIOS&&!_isStandalone))_showInstallBanner();},2500);
+  }
+}
+window.addEventListener('appinstalled',()=>{
+  _deferredInstallPrompt=null;
+  document.querySelectorAll('.install-pwa-btn').forEach(b=>b.style.display='none');
+  const card=document.getElementById('installPWACard');if(card)card.style.display='none';
+  const banner=document.getElementById('installFloatBanner');if(banner)banner.style.display='none';
+  toast('MedAI Suite instalado en pantalla de inicio 📲');
+});
+async function installPWA(){
+  if(_isIOS){_showInstallBanner();return;}
+  if(!_deferredInstallPrompt)return;
+  _deferredInstallPrompt.prompt();
+  const{outcome}=await _deferredInstallPrompt.userChoice;
+  if(outcome==='accepted'){
+    _deferredInstallPrompt=null;
+    document.querySelectorAll('.install-pwa-btn').forEach(b=>b.style.display='none');
+    const card=document.getElementById('installPWACard');if(card)card.style.display='none';
+  }
+  const banner=document.getElementById('installFloatBanner');if(banner)banner.style.display='none';
+}
+function dismissInstallBanner(){
+  const banner=document.getElementById('installFloatBanner');if(banner)banner.style.display='none';
+  localStorage.setItem('ms_install_dismissed','1');
 }
 
 async function seedDemoPatients(){
@@ -3600,20 +4169,21 @@ function shareResult(){
     navigator.clipboard?.writeText(text).then(()=>toast("Resultado copiado al portapapeles")).catch(()=>toast("No se pudo compartir"));
   }
 }
-function exportTriagePDF(){
-  if(!_lastResult){toast("Sin resultado para exportar");return;}
+function _buildTriagePDF(r){
   const {jsPDF}=window.jspdf;
-  if(!jsPDF){toast("PDF no disponible");return;}
-  const r=_lastResult;
+  if(!jsPDF)return null;
   const pdf=new jsPDF({unit:"mm",format:"a4"});
-  const W=210,margin=18,cw=W-margin*2;
+  const W=210,PH=297,margin=18,cw=W-margin*2;
   let y=margin;
+  const newPage=()=>{pdf.addPage();pdf.setFillColor(255,255,255);y=margin;};
+  const chk=(need=10)=>{if(y+need>PH-15)newPage();};
   const ln=(txt,sz,bold,col)=>{
+    chk(sz?sz*0.5+3:8);
     pdf.setFontSize(sz||11);pdf.setFont("helvetica",bold?"bold":"normal");
     if(col)pdf.setTextColor(...col);else pdf.setTextColor(30,30,30);
     pdf.text(txt,margin,y);y+=sz?sz*0.45+2:7;
   };
-  const rule=(col=[200,200,200])=>{pdf.setDrawColor(...col);pdf.line(margin,y,W-margin,y);y+=4;};
+  const rule=(col=[200,200,200])=>{chk(6);pdf.setDrawColor(...col);pdf.line(margin,y,W-margin,y);y+=4;};
   const colorMap={ROJO:[220,38,38],AMARILLO:[202,138,4],VERDE:[21,128,61]};
   const clr=colorMap[r.clasificacion]||[80,80,80];
 
@@ -3626,56 +4196,119 @@ function exportTriagePDF(){
 
   pdf.setFillColor(...clr);pdf.roundedRect(margin,y,cw,14,3,3,"F");
   pdf.setFontSize(14);pdf.setFont("helvetica","bold");pdf.setTextColor(255,255,255);
-  const icons={ROJO:"ROJO",AMARILLO:"AMARILLO",VERDE:"VERDE"};
-  pdf.text(`${icons[r.clasificacion]||r.clasificacion}  —  ${r.tiempo_atencion||""}`,margin+4,y+9);
+  pdf.text(`${r.clasificacion}  —  ${r.tiempo_atencion||""}`,margin+4,y+9);
   y+=20;
 
-  const tMl={adulto:"Adulto",adulto_mayor:"Adulto mayor",embarazada:"Embarazada",nino:"Pediatrico",adolescente:"Adolescente"};
+  const tMl={adulto:"Adulto",adulto_mayor:"Adulto mayor",embarazada:"Embarazada",nino:"Pediatrico",adolescente:"Adolescente",MCI:"MCI"};
   const mMl={dolor_pecho:"Dolor en el pecho",disnea:"Dificultad respiratoria",trauma:"Trauma/herida",abdominal:"Dolor abdominal",neuro:"Neurologico",fiebre:"Fiebre alta",otro:"Otro"};
   ln("PACIENTE",8,true,[100,120,150]);y-=1;
   ln(`Tipo: ${tMl[r.tipo]||r.tipo||"—"}   Motivo: ${mMl[r.motivo]||r.motivo||"—"}`);
   if(r.dolor!=null)ln(`Dolor: ${r.dolor}/10`);
+  if(r.userName)ln(`Atendido por: ${r.userName}`);
+  if(r.pacienteNombre)ln(`Paciente: ${r.pacienteNombre}`);
   rule();
 
   if(r.vitals&&Object.keys(r.vitals).some(k=>r.vitals[k])){
     ln("SIGNOS VITALES",8,true,[100,120,150]);y-=1;
-    const vlbl={fc:"FC",ps:"P.Sistólica",pd:"P.Diastólica",sat:"SpO2",tem:"Temperatura",fr:"FR",gcs:"Glasgow"};
-    const vun={fc:"lpm",ps:"mmHg",pd:"mmHg",sat:"%",tem:"°C",fr:"rpm",gcs:""};
+    const vlbl={fc:"FC",ps:"P.Sistolica",pd:"P.Diastolica",sat:"SpO2",tem:"Temperatura",fr:"FR",gcs:"Glasgow"};
+    const vun={fc:"lpm",ps:"mmHg",pd:"mmHg",sat:"%",tem:"C",fr:"rpm",gcs:""};
     Object.entries(r.vitals).forEach(([k,v])=>{if(v)ln(`${vlbl[k]||k}: ${v} ${vun[k]||""}`,10,false);});
     rule();
   }
 
-  ln("ANALISIS IA",8,true,[100,120,150]);y-=1;
-  const just=pdf.splitTextToSize(r.justificacion||"",cw);
-  pdf.setFontSize(11);pdf.setFont("helvetica","normal");pdf.setTextColor(30,30,30);
-  pdf.text(just,margin,y);y+=just.length*5+4;
-  rule();
+  if(r.justificacion){
+    ln("ANALISIS IA",8,true,[100,120,150]);y-=1;
+    const just=pdf.splitTextToSize(r.justificacion||"",cw);
+    const lineH=5;
+    for(let i=0;i<just.length;i++){
+      chk(lineH+2);
+      pdf.setFontSize(11);pdf.setFont("helvetica","normal");pdf.setTextColor(30,30,30);
+      pdf.text(just[i],margin,y);y+=lineH;
+    }
+    y+=3;rule();
+  }
 
-  ln("ACCIONES PRIORITARIAS",8,true,[100,120,150]);y-=1;
-  (r.acciones||[]).forEach((a,i)=>{
-    const lines=pdf.splitTextToSize(`${i+1}. ${a}`,cw);
-    pdf.setFontSize(11);pdf.setFont("helvetica","normal");pdf.setTextColor(30,30,30);
-    pdf.text(lines,margin,y);y+=lines.length*5+2;
-  });
-  y+=4;rule([220,220,220]);
+  if(r.acciones&&r.acciones.length){
+    ln("ACCIONES PRIORITARIAS",8,true,[100,120,150]);y-=1;
+    r.acciones.forEach((a,i)=>{
+      const lines=pdf.splitTextToSize(`${i+1}. ${a}`,cw);
+      const lineH=5;
+      for(let j=0;j<lines.length;j++){
+        chk(lineH+2);
+        pdf.setFontSize(11);pdf.setFont("helvetica","normal");pdf.setTextColor(30,30,30);
+        pdf.text(lines[j],margin,y);y+=lineH;
+      }
+      y+=2;
+    });
+    y+=2;rule([220,220,220]);
+  }
 
+  if(r.notas){
+    chk(20);ln("NOTAS CLINICAS",8,true,[100,120,150]);y-=1;
+    const nlines=pdf.splitTextToSize(r.notas,cw);
+    const lineH=5;
+    for(let i=0;i<nlines.length;i++){
+      chk(lineH+2);
+      pdf.setFontSize(10);pdf.setFont("helvetica","normal");pdf.setTextColor(60,60,60);
+      pdf.text(nlines[i],margin,y);y+=lineH;
+    }
+    y+=3;rule([220,220,220]);
+  }
+
+  chk(8);
   pdf.setFontSize(8);pdf.setFont("helvetica","italic");pdf.setTextColor(130,130,130);
   pdf.text("Generado con MedIA Suite. Solo para uso clinico de apoyo — no reemplaza criterio medico.",margin,y);
-
-  pdf.save(`triage-${r.clasificacion}-${Date.now()}.pdf`);
+  return pdf;
 }
 
-// DRUG SEARCH
+function exportTriagePDF(){
+  if(!_lastResult){toast("Sin resultado para exportar");return;}
+  if(typeof window.jspdf==="undefined"){toast("PDF no disponible");return;}
+  const pdf=_buildTriagePDF(_lastResult);
+  if(pdf)pdf.save(`triage-${_lastResult.clasificacion}-${Date.now()}.pdf`);
+}
+
+function exportDataPDF(data){
+  if(!data){toast("Sin datos para exportar");return;}
+  if(typeof window.jspdf==="undefined"){toast("PDF no disponible");return;}
+  const pdf=_buildTriagePDF(data);
+  if(pdf)pdf.save(`triage-${data.clasificacion||"resultado"}-${Date.now()}.pdf`);
+}
+
+// DRUG SEARCH — patient lookup for meds context
+let _medPatientHC=null;
+async function lookupMedPatient(){
+  const docId=document.getElementById("medPatientIdInput")?.value.trim();
+  const res=document.getElementById("medPatientResult");
+  if(!docId){if(res)res.innerHTML=`<span style="color:var(--mu)">Ingrese un ID.</span>`;return;}
+  if(!FB||!CU){if(res)res.innerHTML=`<span style="color:var(--mu)">Sin sesión.</span>`;return;}
+  if(res)res.innerHTML=`<span class="sp" style="margin-right:6px"></span>Buscando...`;
+  try{
+    const q=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",docId),FB.limit(1)));
+    if(q.empty){
+      _medPatientHC=null;
+      if(res)res.innerHTML=`<span style="color:var(--yw)">⚠️ Paciente no encontrado en la base de datos.</span>`;
+      return;
+    }
+    _medPatientHC=q.docs[0].data();
+    if(res)res.innerHTML=`<span style="color:var(--gn)">✓ <b>${_medPatientHC.name}</b> — ${_medPatientHC.age} años${_medPatientHC.alergias?.length?` · Alergias: ${_medPatientHC.alergias.join(", ")}`:""}${_medPatientHC.antecedentes?.length?` · Antecedentes: ${_medPatientHC.antecedentes.slice(0,3).join(", ")}`:""}</span>
+    <button onclick="_medPatientHC=null;document.getElementById('medPatientResult').innerHTML='';document.getElementById('medPatientIdInput').value=''" style="margin-left:8px;background:none;border:none;color:var(--mu);font-size:.7rem;cursor:pointer;text-decoration:underline">Limpiar</button>`;
+    toast(`Contexto cargado: ${_medPatientHC.name}`);
+  }catch(e){if(res)res.innerHTML=`<span style="color:var(--rd)">Error: ${e.message}</span>`;}
+}
+
 async function buscarDrug(){
   const nm=document.getElementById("di").value.trim();
   if(!nm){toast("Escribe el nombre del medicamento");return;}
-  document.getElementById("dr").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Consultando${_patientHC?" con historial del paciente":""}...</div></div>`;
+  // Use medPatientHC (doctor lookup) or patientHC (patient session)
+  const activeHC=_medPatientHC||_patientHC;
+  document.getElementById("dr").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Consultando${activeHC?` · Paciente: ${activeHC.name}`:""}...</div></div>`;
   let hcCtx="";
-  if(_patientHC){
-    const ant=(_patientHC.antecedentes||[]).join(", ");
-    const ale=(_patientHC.alergias||[]).join(", ");
-    const med=(_patientHC.medicacion||[]).join(", ");
-    hcCtx=`\nPACIENTE: ${_patientHC.name}, ${_patientHC.age} años.`;
+  if(activeHC){
+    const ant=(activeHC.antecedentes||[]).join(", ");
+    const ale=(activeHC.alergias||[]).join(", ");
+    const med=(activeHC.medicacion||[]).join(", ");
+    hcCtx=`\nPACIENTE: ${activeHC.name}, ${activeHC.age} años.`;
     if(ant)hcCtx+=`\nAntecedentes: ${ant}.`;
     if(ale)hcCtx+=`\nALERGIAS CONOCIDAS: ${ale}.`;
     if(med)hcCtx+=`\nMedicación actual: ${med}.`;
@@ -3688,8 +4321,8 @@ async function buscarDrug(){
     const d=await r.json();
     const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     _lastDrugInfo={inf,nm};
-    const isContra=_patientHC&&inf.contraindicado_paciente===true;
-    const ptnBadge=_patientHC?`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--cy);background:rgba(0,200,240,.07);border-radius:8px;padding:5px 9px;margin-bottom:10px">🗂️ Análisis personalizado para <strong>${_patientHC.name}</strong></div>`:"";
+    const isContra=activeHC&&inf.contraindicado_paciente===true;
+    const ptnBadge=activeHC?`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--cy);background:rgba(0,200,240,.07);border-radius:8px;padding:5px 9px;margin-bottom:10px">🗂️ Análisis personalizado para <strong>${activeHC.name}</strong></div>`:"";
     const drugHead=`${ptnBadge}<div style="font-size:1.05rem;font-weight:700;margin-bottom:3px">${inf.nombre_comercial||nm}</div><div style="font-size:.73rem;color:var(--mu);margin-bottom:11px">${inf.nombre_generico||""}</div>`;
     if(isContra){
       document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
@@ -3701,8 +4334,8 @@ async function buscarDrug(){
         <button onclick="_showFullDrugInfo()" style="width:100%;padding:11px 14px;background:transparent;border:1.5px solid rgba(255,58,92,.3);border-radius:11px;color:var(--mu);font-size:.73rem;font-family:'Familjen Grotesk',sans-serif;cursor:pointer;touch-action:manipulation;transition:all .18s;text-align:center;animation:fadeUp .3s .2s both;line-height:1.6">&#x26A0;&#xFE0F; Mostrar información de todas formas<br><span style="font-size:.63rem;opacity:.55">Bajo mi propio riesgo — solo personal médico autorizado</span></button>
       </div>`;
     }else{
-      const patientAlert=inf.alerta_paciente&&inf.alerta_paciente.trim()&&_patientHC
-        ?`<div class="ib rd" style="animation:fadeUp .3s both"><div class="ibl">&#x26A0;&#xFE0F; Alerta para ${_patientHC.name}</div><div class="ibt">${inf.alerta_paciente}</div></div>`:"";
+      const patientAlert=inf.alerta_paciente&&inf.alerta_paciente.trim()&&activeHC
+        ?`<div class="ib rd" style="animation:fadeUp .3s both"><div class="ibl">&#x26A0;&#xFE0F; Alerta para ${activeHC.name}</div><div class="ibt">${inf.alerta_paciente}</div></div>`:"";
       document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
         ${drugHead}
         <div style="margin-bottom:11px"><span style="background:var(--cy-a);color:var(--cy);border-radius:20px;padding:3px 9px;font-size:.7rem;font-weight:600">&#x1F48A; ${inf.dosis_tipica||"Ver prospecto"}</span></div>
@@ -3811,8 +4444,36 @@ document.addEventListener("keypress",e=>{
 
 // INIT
 MEDS.forEach(m=>{if(m.active)sAlarm(m);});
-if(typeof L!=="undefined"&&L)setLang(CL);
-if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
+if("serviceWorker" in navigator){
+  let _swReloading=false;
+  function _swReload(){if(!_swReloading){_swReloading=true;window.location.reload();}}
+
+  navigator.serviceWorker.register("./sw.js").then(reg=>{
+    reg.update();
+    setInterval(()=>reg.update(),30000);
+    // Detecta cuando se instala un SW nuevo y recarga cuando activa (crítico para iOS)
+    reg.addEventListener("updatefound",()=>{
+      const nw=reg.installing;
+      if(!nw)return;
+      nw.addEventListener("statechange",()=>{if(nw.state==="activated")_swReload();});
+    });
+  }).catch(()=>{});
+
+  // Fallback 1: controllerchange (Android/Chrome)
+  navigator.serviceWorker.addEventListener("controllerchange",_swReload);
+
+  // Fallback 2: mensaje directo del SW (disparado en activate)
+  navigator.serviceWorker.addEventListener("message",e=>{
+    if(e.data&&e.data.type==="SW_UPDATED")_swReload();
+  });
+
+  // Fallback 3: cada vez que la PWA vuelve al foco verifica actualizaciones
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible"){
+      navigator.serviceWorker.getRegistration().then(reg=>{if(reg)reg.update();}).catch(()=>{});
+    }
+  });
+}
 
 // ══════════════════════════════════════
 // SCALA DE DOLOR MEJORADA + FACIAL
@@ -4204,6 +4865,7 @@ function _renderHCItem(id, dt){
   const av=(dt.name||'?')[0].toUpperCase();const col=cols[av.charCodeAt(0)%cols.length];
   const ants=dt.antecedentes?.length?dt.antecedentes.slice(0,3).join(', '):'Sin antecedentes';
   const alers=dt.alergias?.length?`⚠️ ${dt.alergias.join(', ')}`:'';
+  const safeName=(dt.name||'').replace(/'/g,"\\'");
   return`<div class="hc-card" onclick="viewHC('${id}')">
     <div style="display:flex;gap:12px;align-items:flex-start">
       ${dt.photo?`<img src="${dt.photo}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div class="hc-avatar" style="background:${col}">${av}</div>`}
@@ -4213,8 +4875,49 @@ function _renderHCItem(id, dt){
         <div class="hc-detail" style="margin-top:3px">${ants}</div>
         ${alers?`<div class="hc-badge" style="background:var(--rd-a);color:var(--rd)">${alers}</div>`:''}
       </div>
+      <button onclick="event.stopPropagation();confirmDeleteHC('${id}','${safeName}')" style="flex-shrink:0;background:none;border:1px solid rgba(255,58,92,.3);border-radius:8px;color:var(--rd);font-size:.72rem;padding:5px 8px;cursor:pointer;transition:all .18s;align-self:flex-start;margin-left:4px" title="Eliminar historia clínica">🗑️</button>
     </div>
   </div>`;
+}
+
+function confirmDeleteHC(id, name){
+  const dlg=document.getElementById('deleteHCDialog');
+  const msg=document.getElementById('deleteHCMsg');
+  if(!dlg){
+    // Create dialog if not present
+    const div=document.createElement('div');
+    div.id='deleteHCDialog';
+    div.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)';
+    div.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:18px;padding:24px 20px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:bounceIn .3s ease">
+      <div style="font-size:1.5rem;text-align:center;margin-bottom:10px">⚠️</div>
+      <div style="font-weight:700;font-size:.95rem;text-align:center;margin-bottom:8px">Eliminar historia clínica</div>
+      <div id="deleteHCMsg" style="font-size:.82rem;color:var(--mu);text-align:center;margin-bottom:20px;line-height:1.5"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('deleteHCDialog').style.display='none'" class="bsec" style="flex:1">Cancelar</button>
+        <button id="deleteHCConfirmBtn" class="bpri" style="flex:1;background:var(--rd);color:#fff">Sí, eliminar</button>
+      </div>
+    </div>`;
+    document.body.appendChild(div);
+  }
+  const dlgEl=document.getElementById('deleteHCDialog');
+  const msgEl=document.getElementById('deleteHCMsg');
+  const btnEl=document.getElementById('deleteHCConfirmBtn');
+  if(msgEl)msgEl.textContent=`¿Estás seguro de que deseas eliminar la historia clínica de "${name}"? Esta acción no se puede deshacer.`;
+  if(btnEl){
+    const newBtn=btnEl.cloneNode(true);
+    newBtn.onclick=()=>{dlgEl.style.display='none';deleteHC(id,name);};
+    btnEl.parentNode.replaceChild(newBtn,btnEl);
+  }
+  dlgEl.style.display='flex';
+}
+
+async function deleteHC(id, name){
+  if(!FB||!CU){toast('Sin sesión activa');return;}
+  try{
+    await FB.deleteDoc(FB.doc(FB.db,'historias',id));
+    toast(`Historia de "${name}" eliminada`);
+    logAudit('hc_deleted',{name,id});
+  }catch(e){toast('Error al eliminar: '+e.message);}
 }
 
 function loadHC(){
@@ -4996,6 +5699,8 @@ function _updateMCIBanner(){
   document.getElementById("mciToggleBtn").style.cssText="font-size:.72rem;padding:5px 12px;border-color:rgba(255,60,60,.6);color:#ff6060;background:rgba(255,40,40,.12)";
 }
 
+let _mciPendingClasif=null;
+
 function _renderMCITriage(){
   const tx=L[CL]||L.es;
   const c=document.getElementById("trc");c.innerHTML="";
@@ -5012,29 +5717,100 @@ function _renderMCITriage(){
     <div class="mci-quick-card">
       <div class="mci-patient-n">${tx.mciPatient||"Paciente #"}${_mciPatientN} &nbsp;·&nbsp; ${tot} clasificados</div>
       <div class="mci-btns">
-        <button class="mci-btn ro" onclick="quickMCI('ROJO')"><div class="mci-btn-ic">🔴</div>${tx.mciImmediate||"INMEDIATO"}</button>
-        <button class="mci-btn am" onclick="quickMCI('AMARILLO')"><div class="mci-btn-ic">🟡</div>${tx.mciDelayed||"DIFERIDO"}</button>
-        <button class="mci-btn ve" onclick="quickMCI('VERDE')"><div class="mci-btn-ic">🟢</div>${tx.mciMinor||"MENOR"}</button>
-        <button class="mci-btn ng" onclick="quickMCI('NEGRO')"><div class="mci-btn-ic">⚫</div>${tx.mciExpectant||"EXPECTANTE"}</button>
+        <button class="mci-btn ro" onclick="_mciSelectClasif('ROJO')"><div class="mci-btn-ic">🔴</div>${tx.mciImmediate||"INMEDIATO"}</button>
+        <button class="mci-btn am" onclick="_mciSelectClasif('AMARILLO')"><div class="mci-btn-ic">🟡</div>${tx.mciDelayed||"DIFERIDO"}</button>
+        <button class="mci-btn ve" onclick="_mciSelectClasif('VERDE')"><div class="mci-btn-ic">🟢</div>${tx.mciMinor||"MENOR"}</button>
+        <button class="mci-btn ng" onclick="_mciSelectClasif('NEGRO')"><div class="mci-btn-ic">⚫</div>${tx.mciExpectant||"EXPECTANTE"}</button>
       </div>
       <button class="bsec" style="width:100%;font-size:.75rem" onclick="_mciActive=false;document.getElementById('pgWrap').style.display='';resetT();rTriage()">📋 ${tx.mciFullTriage||"Triage completo"}</button>
+    </div>
+    <!-- Formulario datos paciente MCI -->
+    <div id="mciPatientForm" style="display:none;animation:fadeUp .25s ease">
+      <div class="card" style="border:1.5px solid rgba(255,128,96,.35);margin-top:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:.72rem;font-weight:700;color:#ff8060;font-family:'JetBrains Mono',monospace" id="mciFormTitle">PACIENTE MCI</div>
+          <button onclick="_cancelMciPatient()" style="background:none;border:none;color:var(--mu);font-size:.9rem;cursor:pointer">✕ Saltar</button>
+        </div>
+        <div class="fg" style="margin-bottom:8px"><label class="fl">Nombre</label><input class="fi" id="mciPacNombre" type="text" placeholder="Nombre del paciente (opcional)"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div class="fg"><label class="fl">Sexo</label>
+            <select class="fi" id="mciPacSex"><option value="">—</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select>
+          </div>
+          <div class="fg"><label class="fl">ID / Documento</label><input class="fi" id="mciPacDoc" type="text" placeholder="Opcional"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="bsec" style="flex:1;font-size:.8rem" onclick="_lookupMciPatient()">🔍 Verificar en DB</button>
+          <button class="bpri" style="flex:1;font-size:.8rem" onclick="_confirmMciPatient()" id="mciConfirmBtn">✓ Confirmar</button>
+        </div>
+        <div id="mciPatientDbResult" style="margin-top:8px;font-size:.75rem"></div>
+      </div>
     </div>`;
 }
 
-async function quickMCI(clasificacion){
+function _mciSelectClasif(clasificacion){
+  _mciPendingClasif=clasificacion;
+  const formEl=document.getElementById("mciPatientForm");
+  const titleEl=document.getElementById("mciFormTitle");
+  if(formEl){
+    const cc={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢",NEGRO:"⚫"}[clasificacion]||"";
+    if(titleEl)titleEl.textContent=`${cc} ${clasificacion} — Datos del paciente`;
+    document.getElementById("mciPacNombre").value="";
+    document.getElementById("mciPacSex").value="";
+    document.getElementById("mciPacDoc").value="";
+    document.getElementById("mciPatientDbResult").innerHTML="";
+    formEl.style.display="";
+    formEl.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }else{
+    quickMCI(clasificacion,{});
+  }
+}
+
+async function _lookupMciPatient(){
+  const doc=document.getElementById("mciPacDoc").value.trim();
+  const res=document.getElementById("mciPatientDbResult");
+  if(!doc){res.innerHTML=`<span style="color:var(--mu)">Ingrese un ID para buscar.</span>`;return;}
+  if(!FB||!CU){res.innerHTML=`<span style="color:var(--mu)">Sin conexión Firebase.</span>`;return;}
+  res.innerHTML=`<span class="sp" style="margin-right:6px"></span>Buscando...`;
+  try{
+    const q=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",doc),FB.limit(1)));
+    if(q.empty){res.innerHTML=`<span style="color:var(--yw)">⚠️ Paciente no encontrado en la base de datos.</span>`;return;}
+    const d=q.docs[0].data();
+    document.getElementById("mciPacNombre").value=d.name||"";
+    document.getElementById("mciPacSex").value=d.sex||"";
+    res.innerHTML=`<span style="color:var(--gn)">✓ Paciente encontrado: <b>${d.name}</b> — ${d.age} años</span>`;
+  }catch(e){res.innerHTML=`<span style="color:var(--rd)">Error al buscar: ${e.message}</span>`;}
+}
+
+function _cancelMciPatient(){
+  document.getElementById("mciPatientForm").style.display="none";
+  if(_mciPendingClasif)quickMCI(_mciPendingClasif,{});
+  _mciPendingClasif=null;
+}
+
+function _confirmMciPatient(){
+  if(!_mciPendingClasif)return;
+  const nombre=document.getElementById("mciPacNombre").value.trim();
+  const sex=document.getElementById("mciPacSex").value;
+  const doc=document.getElementById("mciPacDoc").value.trim();
+  document.getElementById("mciPatientForm").style.display="none";
+  quickMCI(_mciPendingClasif,{pacienteNombre:nombre||undefined,pacienteSex:sex||undefined,pacienteDoc:doc||undefined});
+  _mciPendingClasif=null;
+}
+
+async function quickMCI(clasificacion,extra={}){
   _mciCounts[clasificacion]++;_mciPatientN++;
   _updateMCIBanner();
   if(FB&&CU){
     try{
-      await saveTriage(FB,{
-        clasificacion,tipo:"MCI",motivo:_mciName,notas:"Triage START rapido MCI",
+      const data={clasificacion,tipo:"MCI",motivo:_mciName,notas:"Triage START rapido MCI",
         userId:CU.uid,userName:CUName||CU.email,
-        createdAt:FB.serverTimestamp(),esMCI:true
-      });
+        createdAt:FB.serverTimestamp(),esMCI:true,...extra};
+      await saveTriage(FB,data);
     }catch(e){}
   }
   _renderMCITriage();
-  toast(`✓ ${clasificacion} — Paciente #${_mciPatientN-1}`);
+  const nombre=extra.pacienteNombre?` (${extra.pacienteNombre})`:"";
+  toast(`✓ ${clasificacion} — Paciente #${_mciPatientN-1}${nombre}`);
 }
 
 // ── GLASGOW COMA SCALE ─────────────────────────────────────────────────────

@@ -31,7 +31,7 @@ export async function getTriagesHistory(FB,limitN=100){
     FB.orderBy("createdAt","desc"),
     FB.limit(limitN)
   ));
-  return{empty:snap.empty,docs:snap.docs.map(d=>d.data())};
+  return{empty:snap.empty,docs:snap.docs.map(d=>({_id:d.id,...d.data()}))};
 }
 
 /**
