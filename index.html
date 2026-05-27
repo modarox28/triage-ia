@@ -637,6 +637,35 @@ input[type=time]::-webkit-date-and-time-value{text-align:left;}
 .mci-setup-sheet{background:var(--bg2);border:1px solid rgba(255,60,60,.3);border-radius:22px 22px 0 0;padding:22px 18px 36px;width:100%;max-width:480px;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
 .mci-setup-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;color:#ff6060;margin-bottom:4px;}
 .mci-setup-sub{font-size:.73rem;color:var(--mu);margin-bottom:16px;}
+/* MCI START wizard */
+.mci-header-bar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.mci-header-name{font-family:"JetBrains Mono",monospace;font-size:.7rem;color:#ff8060;font-weight:700;letter-spacing:.5px;margin-bottom:3px;}
+.mci-counts-inline{display:flex;gap:7px;font-family:"JetBrains Mono",monospace;font-size:.72rem;flex-wrap:wrap;}
+.mci-mode-link{font-size:.68rem;color:var(--mu);cursor:pointer;text-decoration:underline;white-space:nowrap;touch-action:manipulation;}
+.mci-prog-bar{display:flex;gap:5px;justify-content:center;margin-bottom:12px;}
+.mci-prog-dot{width:7px;height:7px;border-radius:50%;background:var(--bd);transition:background .2s;}
+.mci-prog-dot.on{background:var(--cy);}
+.mci-step-card{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:20px 16px;margin-bottom:12px;text-align:center;}
+.mci-step-label{font-family:"JetBrains Mono",monospace;font-size:.58rem;color:var(--mu);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.mci-step-emoji{font-size:2.2rem;margin-bottom:8px;}
+.mci-step-question{font-size:1.1rem;font-weight:700;color:var(--tx);line-height:1.3;margin-bottom:6px;}
+.mci-step-hint{font-size:.73rem;color:var(--mu);line-height:1.4;}
+.mci-step-instr{background:rgba(255,184,48,.1);border:1px solid rgba(255,184,48,.3);border-radius:10px;padding:10px 12px;font-size:.76rem;color:var(--yw);margin:10px 0;text-align:left;line-height:1.45;}
+.mci-yesno{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.mci-yes,.mci-no{border-radius:14px;padding:18px 8px;font-family:"JetBrains Mono",monospace;font-size:.85rem;font-weight:700;cursor:pointer;touch-action:manipulation;transition:transform .15s;display:flex;flex-direction:column;align-items:center;gap:5px;border:2px solid;}
+.mci-yes{background:rgba(0,200,80,.18);border-color:#00e07a;color:#00e07a;}
+.mci-no{background:rgba(255,40,40,.18);border-color:#ff3a5c;color:#ff3a5c;}
+.mci-yes:active,.mci-no:active{transform:scale(.93);}
+.mci-result-card{background:var(--bg2);border:2px solid var(--bd);border-radius:16px;padding:20px 16px;text-align:center;margin-bottom:12px;animation:fadeUp .3s ease;}
+.mci-result-emoji{font-size:3rem;margin-bottom:8px;}
+.mci-result-label{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;letter-spacing:.5px;border-radius:10px;padding:5px 16px;display:inline-block;margin-bottom:6px;}
+.mci-result-label.ro{color:#ff6060;border:2px solid rgba(255,60,60,.4);}
+.mci-result-label.am{color:#ffc832;border:2px solid rgba(255,200,50,.4);}
+.mci-result-label.ve{color:#00e07a;border:2px solid rgba(0,200,80,.4);}
+.mci-result-label.ng{color:#aaa;border:2px solid rgba(128,128,128,.4);}
+.mci-result-desc{font-size:.76rem;color:var(--mu);margin-top:4px;}
+.mci-confirm-btn{width:100%;padding:15px;background:var(--cy);border:none;border-radius:12px;color:#000;font-family:"JetBrains Mono",monospace;font-size:.88rem;font-weight:700;cursor:pointer;touch-action:manipulation;transition:transform .15s;}
+.mci-confirm-btn:active{transform:scale(.97);}
 /* GLASGOW COMA SCALE */
 .gcs-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3500;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .gcs-overlay.on{display:flex;}
@@ -1372,7 +1401,7 @@ select{padding-right:32px;}
               <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
                 <span style="font-size:.9rem;flex-shrink:0">👤</span>
                 <input class="fi" id="medPatientIdInput" type="text" placeholder="ID del paciente (opcional)" style="flex:1;height:34px;font-size:.78rem">
-                <button class="bsec" style="height:34px;padding:0 12px;font-size:.76rem;flex-shrink:0;white-space:nowrap" onclick="lookupMedPatient()">Buscar</button>
+                <button class="bsec" style="height:34px;padding:0 12px;font-size:.76rem;flex-shrink:0;white-space:nowrap;width:auto;margin-top:0" onclick="lookupMedPatient()">Buscar</button>
               </div>
               <div id="medPatientResult" style="font-size:.75rem;margin-bottom:6px"></div>
             </div>
@@ -3469,8 +3498,8 @@ function _showPatientLookup(){
       <span style="cursor:pointer;font-size:.78rem;color:var(--mu);text-underline-offset:3px;text-decoration:underline" onclick="_skipPatientLookup()">${tx.lookupSkip||"Continuar con paciente no registrado"} →</span>
     </div>
   </div>`;
-  setTimeout(()=>document.getElementById("triagePatientId")?.focus(),120);
 }
+
 
 async function _searchPatientForTriage(){
   const inp=document.getElementById("triagePatientId");
@@ -5666,6 +5695,7 @@ function closeMCISetup(){document.getElementById("mciSetupOverlay").classList.re
 function activateMCI(){
   const name=document.getElementById("mciNameInput").value.trim()||"Incidente MCI";
   _mciName=name;_mciCounts={ROJO:0,AMARILLO:0,VERDE:0,NEGRO:0};_mciPatientN=1;_mciActive=true;
+  _mciSTARTStep='walk';_mciSTARTResult=null;
   closeMCISetup();
   _updateMCIBanner();
   navigateTo("triage");
@@ -5701,68 +5731,150 @@ function _updateMCIBanner(){
 }
 
 let _mciPendingClasif=null;
+let _mciSTARTStep='walk',_mciSTARTResult=null;
+
+// START triage step definitions
+const _MCI_STEPS={
+  walk:{label:"PASO 1 · MOVILIDAD",emoji:"🚶",q:"¿El paciente camina por sí mismo?",hint:"Indica que camine unos pasos",y:"✓ SÍ, CAMINA",n:"✕ NO CAMINA"},
+  breathe:{label:"PASO 2 · RESPIRACIÓN",emoji:"🫁",q:"¿El paciente respira?",hint:"Observa movimiento torácico 5-10 seg",y:"✓ RESPIRA",n:"✕ NO RESPIRA"},
+  breathe2:{label:"PASO 2b · VÍA AÉREA",emoji:"⚠️",q:"Tras la maniobra, ¿respira ahora?",hint:"",instr:"Extiende el cuello / tracción mandibular. Espera 5 seg.",y:"✓ RESPIRA AHORA",n:"✕ SIGUE SIN RESPIRAR"},
+  rr:{label:"PASO 3 · FRECUENCIA RESP.",emoji:"🌬️",q:"¿Frecuencia respiratoria mayor de 30 rpm?",hint:"Cuenta resp. en 15 seg × 4",y:"> 30 rpm",n:"≤ 30 rpm"},
+  pulse:{label:"PASO 4 · PERFUSIÓN",emoji:"🫀",q:"¿Pulso radial presente?",hint:"Palpar muñeca 5-10 seg",y:"✓ PULSO PRESENTE",n:"✕ PULSO AUSENTE"},
+  mental:{label:"PASO 5 · CONSCIENCIA",emoji:"🧠",q:"¿Obedece órdenes simples?",hint:"\"Cierra los ojos\" / \"Aprieta mi mano\"",y:"✓ OBEDECE",n:"✕ NO OBEDECE"},
+};
+const _MCI_RESULT_LBL={ROJO:"ROJO — INMEDIATO",AMARILLO:"AMARILLO — DIFERIDO",VERDE:"VERDE — MENOR",NEGRO:"NEGRO — EXPECTANTE"};
+const _MCI_RESULT_DESC={ROJO:"Amenaza vital — atención inmediata.",AMARILLO:"Lesión seria pero estable — puede esperar.",VERDE:"Lesión leve — puede caminar.",NEGRO:"Sin signos de vida — expectante."};
 
 function _renderMCITriage(){
   const tx=L[CL]||L.es;
-  const c=document.getElementById("trc");c.innerHTML="";
+  const c=document.getElementById("trc");if(!c)return;
+  c.innerHTML="";
   document.getElementById("pgWrap").style.display="none";
   const tot=_mciCounts.ROJO+_mciCounts.AMARILLO+_mciCounts.VERDE+_mciCounts.NEGRO;
-  c.innerHTML=`
-    <div style="font-size:.72rem;color:#ff8060;font-family:'JetBrains Mono',monospace;font-weight:700;margin-bottom:10px;letter-spacing:.5px">⚠️ MODO MCI — ${_mciName}</div>
-    <div class="mci-stats-grid">
-      <div class="mci-stat ro"><div class="mci-stat-n">${_mciCounts.ROJO}</div><div class="mci-stat-l">ROJO</div></div>
-      <div class="mci-stat am"><div class="mci-stat-n">${_mciCounts.AMARILLO}</div><div class="mci-stat-l">AMARILLO</div></div>
-      <div class="mci-stat ve"><div class="mci-stat-n">${_mciCounts.VERDE}</div><div class="mci-stat-l">VERDE</div></div>
-      <div class="mci-stat ng"><div class="mci-stat-n">${_mciCounts.NEGRO}</div><div class="mci-stat-l">NEGRO</div></div>
+
+  const hdr=`<div class="mci-header-bar">
+    <div>
+      <div class="mci-header-name">⚠️ MCI — ${_mciName}</div>
+      <div class="mci-counts-inline">
+        <span style="color:#ff6060">🔴 ${_mciCounts.ROJO}</span>
+        <span style="color:#ffc832">🟡 ${_mciCounts.AMARILLO}</span>
+        <span style="color:#00e07a">🟢 ${_mciCounts.VERDE}</span>
+        <span style="color:#aaa">⚫ ${_mciCounts.NEGRO}</span>
+        <span style="color:var(--mu)">· ${tot} total</span>
+      </div>
     </div>
-    <div class="mci-quick-card">
-      <div class="mci-patient-n">${tx.mciPatient||"Paciente #"}${_mciPatientN} &nbsp;·&nbsp; ${tot} clasificados</div>
+    <button class="bsec" style="width:auto;padding:5px 11px;font-size:.7rem;margin:0;flex-shrink:0" onclick="confirmDeactivateMCI()">Finalizar</button>
+  </div>`;
+
+  // ── RESULT STEP ──────────────────────────────────────────────────────────
+  if(_mciSTARTStep==='result'){
+    const cc={ROJO:'ro',AMARILLO:'am',VERDE:'ve',NEGRO:'ng'}[_mciSTARTResult]||'ng';
+    const ic={ROJO:'🔴',AMARILLO:'🟡',VERDE:'🟢',NEGRO:'⚫'}[_mciSTARTResult]||'⚪';
+    const bdrClr={ro:'rgba(255,60,60,.4)',am:'rgba(255,200,50,.4)',ve:'rgba(0,200,80,.4)',ng:'rgba(128,128,128,.4)'}[cc];
+    c.innerHTML=hdr+`
+    <div class="mci-result-card" style="border-color:${bdrClr}">
+      <div class="mci-result-emoji">${ic}</div>
+      <div class="mci-result-label ${cc}">${_MCI_RESULT_LBL[_mciSTARTResult]||_mciSTARTResult}</div>
+      <div class="mci-result-desc">${_MCI_RESULT_DESC[_mciSTARTResult]||""}</div>
+      <div style="height:1px;background:var(--bd);margin:14px 0 10px"></div>
+      <div style="font-size:.6rem;color:var(--mu);font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:1px;margin-bottom:8px;text-align:left">DATOS DEL PACIENTE (OPCIONAL)</div>
+      <input class="fi" id="mciQNombre" type="text" placeholder="Nombre del paciente" style="height:38px;margin-bottom:8px;font-size:.82rem" autocomplete="off">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <select class="fi" id="mciQSex" style="height:38px;font-size:.82rem">
+          <option value="">Sexo</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option>
+        </select>
+        <input class="fi" id="mciQDoc" type="text" placeholder="ID / Documento" style="height:38px;font-size:.82rem" autocomplete="off">
+      </div>
+      <button class="mci-confirm-btn" onclick="_mciSTARTConfirm()">✓ CONFIRMAR · SIGUIENTE PACIENTE</button>
+      <div style="text-align:center;margin-top:10px">
+        <span class="mci-mode-link" onclick="_mciSetMode('walk')">← Volver a corregir</span>
+      </div>
+    </div>`;
+    return;
+  }
+
+  // ── MANUAL MODE ──────────────────────────────────────────────────────────
+  if(_mciSTARTStep==='manual'){
+    c.innerHTML=hdr+`
+    <div class="card" style="border:1px solid rgba(255,60,60,.25);margin-bottom:10px">
+      <div class="mci-patient-n">${tx.mciPatient||"Paciente #"}${_mciPatientN} · clasificación manual</div>
       <div class="mci-btns">
-        <button class="mci-btn ro" onclick="_mciSelectClasif('ROJO')"><div class="mci-btn-ic">🔴</div>${tx.mciImmediate||"INMEDIATO"}</button>
-        <button class="mci-btn am" onclick="_mciSelectClasif('AMARILLO')"><div class="mci-btn-ic">🟡</div>${tx.mciDelayed||"DIFERIDO"}</button>
-        <button class="mci-btn ve" onclick="_mciSelectClasif('VERDE')"><div class="mci-btn-ic">🟢</div>${tx.mciMinor||"MENOR"}</button>
-        <button class="mci-btn ng" onclick="_mciSelectClasif('NEGRO')"><div class="mci-btn-ic">⚫</div>${tx.mciExpectant||"EXPECTANTE"}</button>
+        <button class="mci-btn ro" onclick="_mciSTARTSetResult('ROJO')"><div class="mci-btn-ic">🔴</div>${tx.mciImmediate||"INMEDIATO"}</button>
+        <button class="mci-btn am" onclick="_mciSTARTSetResult('AMARILLO')"><div class="mci-btn-ic">🟡</div>${tx.mciDelayed||"DIFERIDO"}</button>
+        <button class="mci-btn ve" onclick="_mciSTARTSetResult('VERDE')"><div class="mci-btn-ic">🟢</div>${tx.mciMinor||"MENOR"}</button>
+        <button class="mci-btn ng" onclick="_mciSTARTSetResult('NEGRO')"><div class="mci-btn-ic">⚫</div>${tx.mciExpectant||"EXPECTANTE"}</button>
       </div>
-      <button class="bsec" style="width:100%;font-size:.75rem" onclick="_mciActive=false;document.getElementById('pgWrap').style.display='';resetT();rTriage()">📋 ${tx.mciFullTriage||"Triage completo"}</button>
+      <div style="text-align:center;margin-top:4px">
+        <span class="mci-mode-link" onclick="_mciSetMode('walk')">← Usar algoritmo START</span>
+      </div>
     </div>
-    <!-- Formulario datos paciente MCI -->
-    <div id="mciPatientForm" style="display:none;animation:fadeUp .25s ease">
-      <div class="card" style="border:1.5px solid rgba(255,128,96,.35);margin-top:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="font-size:.72rem;font-weight:700;color:#ff8060;font-family:'JetBrains Mono',monospace" id="mciFormTitle">PACIENTE MCI</div>
-          <button onclick="_cancelMciPatient()" style="background:none;border:none;color:var(--mu);font-size:.9rem;cursor:pointer">✕ Saltar</button>
-        </div>
-        <div class="fg" style="margin-bottom:8px"><label class="fl">Nombre</label><input class="fi" id="mciPacNombre" type="text" placeholder="Nombre del paciente (opcional)"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div class="fg"><label class="fl">Sexo</label>
-            <select class="fi" id="mciPacSex"><option value="">—</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select>
-          </div>
-          <div class="fg"><label class="fl">ID / Documento</label><input class="fi" id="mciPacDoc" type="text" placeholder="Opcional"></div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="bsec" style="flex:1;font-size:.8rem" onclick="_lookupMciPatient()">🔍 Verificar en DB</button>
-          <button class="bpri" style="flex:1;font-size:.8rem" onclick="_confirmMciPatient()" id="mciConfirmBtn">✓ Confirmar</button>
-        </div>
-        <div id="mciPatientDbResult" style="margin-top:8px;font-size:.75rem"></div>
-      </div>
+    <button class="bsec" style="width:100%;font-size:.75rem" onclick="_mciActive=false;document.getElementById('pgWrap').style.display='';resetT();rTriage()">📋 ${tx.mciFullTriage||"Triage completo"}</button>`;
+    return;
+  }
+
+  // ── START WIZARD ─────────────────────────────────────────────────────────
+  const SORD=['walk','breathe','rr','pulse','mental'];
+  const step=_MCI_STEPS[_mciSTARTStep]||_MCI_STEPS.walk;
+  const prog=SORD.map(s=>`<div class="mci-prog-dot${s===_mciSTARTStep||(_mciSTARTStep==='breathe2'&&s==='breathe')?' on':''}"></div>`).join('');
+  const instrHtml=step.instr?`<div class="mci-step-instr">🔧 ${step.instr}</div>`:'';
+
+  c.innerHTML=hdr+`
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--mu);text-align:center;margin-bottom:8px">${tx.mciPatient||"Paciente #"}${_mciPatientN} · ${tot} clasificados</div>
+    <div class="mci-prog-bar">${prog}</div>
+    <div class="mci-step-card">
+      <div class="mci-step-label">${step.label}</div>
+      <div class="mci-step-emoji">${step.emoji}</div>
+      <div class="mci-step-question">${step.q}</div>
+      ${step.hint?`<div class="mci-step-hint">${step.hint}</div>`:''}
+      ${instrHtml}
+    </div>
+    <div class="mci-yesno">
+      <button class="mci-yes" onclick="_mciSTARTAnswer(true)"><span style="font-size:1.4rem">✓</span>${step.y}</button>
+      <button class="mci-no" onclick="_mciSTARTAnswer(false)"><span style="font-size:1.4rem">✕</span>${step.n}</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+      <span class="mci-mode-link" onclick="_mciSetMode('manual')">Clasificar manualmente</span>
+      <button class="bsec" style="width:auto;padding:4px 10px;font-size:.7rem;margin:0" onclick="_mciActive=false;document.getElementById('pgWrap').style.display='';resetT();rTriage()">📋 Triage completo</button>
     </div>`;
 }
 
-function _mciSelectClasif(clasificacion){
-  _mciPendingClasif=clasificacion;
-  const formEl=document.getElementById("mciPatientForm");
-  const titleEl=document.getElementById("mciFormTitle");
-  if(formEl){
-    const cc={ROJO:"🔴",AMARILLO:"🟡",VERDE:"🟢",NEGRO:"⚫"}[clasificacion]||"";
-    if(titleEl)titleEl.textContent=`${cc} ${clasificacion} — Datos del paciente`;
-    document.getElementById("mciPacNombre").value="";
-    document.getElementById("mciPacSex").value="";
-    document.getElementById("mciPacDoc").value="";
-    document.getElementById("mciPatientDbResult").innerHTML="";
-    formEl.style.display="";
-    formEl.scrollIntoView({behavior:"smooth",block:"nearest"});
-  }else{
-    quickMCI(clasificacion,{});
+function _mciSelectClasif(clasificacion){_mciSTARTSetResult(clasificacion);}
+
+function _mciSTARTAnswer(yes){
+  switch(_mciSTARTStep){
+    case 'walk':    yes?(_mciSTARTResult='VERDE',_mciSTARTStep='result'):(_mciSTARTStep='breathe'); break;
+    case 'breathe': yes?(_mciSTARTStep='rr'):(_mciSTARTStep='breathe2'); break;
+    case 'breathe2':_mciSTARTResult=yes?'ROJO':'NEGRO';_mciSTARTStep='result'; break;
+    case 'rr':      yes?(_mciSTARTResult='ROJO',_mciSTARTStep='result'):(_mciSTARTStep='pulse'); break;
+    case 'pulse':   !yes?(_mciSTARTResult='ROJO',_mciSTARTStep='result'):(_mciSTARTStep='mental'); break;
+    case 'mental':  _mciSTARTResult=yes?'AMARILLO':'ROJO';_mciSTARTStep='result'; break;
+  }
+  _renderMCITriage();
+}
+function _mciSTARTSetResult(clasificacion){_mciSTARTResult=clasificacion;_mciSTARTStep='result';_renderMCITriage();}
+function _mciSetMode(mode){_mciSTARTStep=mode;_mciSTARTResult=null;_renderMCITriage();}
+async function _mciSTARTConfirm(){
+  if(!_mciSTARTResult)return;
+  const cl=_mciSTARTResult;
+  const nombre=(document.getElementById("mciQNombre")?.value||"").trim();
+  const docId=(document.getElementById("mciQDoc")?.value||"").trim();
+  const sex=document.getElementById("mciQSex")?.value||"";
+  const extra={};
+  if(nombre)extra.pacienteNombre=nombre;
+  if(docId)extra.pacienteDoc=docId;
+  if(sex)extra.pacienteSex=sex;
+  // Optimistic: update counts & reset wizard immediately so the UI is instant
+  _mciCounts[cl]=(_mciCounts[cl]||0)+1;_mciPatientN++;
+  _mciSTARTStep='walk';_mciSTARTResult=null;
+  _updateMCIBanner();_renderMCITriage();
+  toast(`✓ ${cl} — Paciente #${_mciPatientN-1}${nombre?" ("+nombre+")":""}`);
+  if(FB&&CU){
+    try{
+      const data={clasificacion:cl,tipo:"MCI",motivo:_mciName,notas:"Triage START MCI",
+        userId:CU.uid,userName:CUName||CU.email,createdAt:FB.serverTimestamp(),esMCI:true,...extra};
+      await saveTriage(FB,data);
+      _updateColaBadge(_colaData.filter(d=>!d.atendido).length+1);
+    }catch(e){toast("⚠️ Error guardando paciente MCI: "+e.message);}
   }
 }
 
