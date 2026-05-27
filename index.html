@@ -1367,16 +1367,16 @@ select{padding-right:32px;}
         </div>
         <!-- BUSCAR -->
         <div class="sc on" id="ms-bs" style="padding:10px 0 0">
-          <div class="card" id="medPatientLookupCard">
-            <div class="clabel" id="lbMedPatientLookup">Contexto de paciente (opcional)</div>
-            <div style="font-size:.72rem;color:var(--mu);margin-bottom:8px">Ingrese el ID del paciente para contextualizar la consulta con su historial clínico.</div>
-            <div style="display:flex;gap:8px;margin-bottom:8px">
-              <input class="fi" id="medPatientIdInput" type="text" placeholder="ID / Documento del paciente" style="flex:1">
-              <button class="bsec" style="flex-shrink:0;padding:0 14px;height:40px;white-space:nowrap;font-size:.8rem" onclick="lookupMedPatient()">🔍 Buscar</button>
-            </div>
-            <div id="medPatientResult" style="font-size:.75rem"></div>
-          </div>
           <div class="card">
+            <div id="medPatientLookupCard">
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+                <span style="font-size:.9rem;flex-shrink:0">👤</span>
+                <input class="fi" id="medPatientIdInput" type="text" placeholder="ID del paciente (opcional)" style="flex:1;height:34px;font-size:.78rem">
+                <button class="bsec" style="height:34px;padding:0 12px;font-size:.76rem;flex-shrink:0;white-space:nowrap" onclick="lookupMedPatient()">Buscar</button>
+              </div>
+              <div id="medPatientResult" style="font-size:.75rem;margin-bottom:6px"></div>
+            </div>
+            <div id="medPatientDivider" style="height:1px;background:var(--bd);margin-bottom:10px"></div>
             <div class="clabel" id="lbSearchDrug">Buscar medicamento</div>
             <div class="srow"><input class="fi" id="di" type="text" placeholder="..." style="flex:1;height:40px"><button class="bv" id="vd" onclick="voz('di','vd')">🎤</button></div>
             <button class="bpri" id="consultBtn" onclick="buscarDrug()">Consultar con IA</button>
@@ -2653,7 +2653,7 @@ function navigateTo(id,_fh){
   if(id==="hc"){if(CR==="paciente"&&_patientHC?.id){viewHC(_patientHC.id);}else{loadHC();}}
   if(id==="config")loadConfig();
   if(id==="prof")loadProf();
-  if(id==="meds"){ss("bs");setTimeout(_showDefaultDrugs,80);const mlc=document.getElementById("medPatientLookupCard");if(mlc)mlc.style.display=(CR==="paciente")?"none":"";}
+  if(id==="meds"){ss("bs");setTimeout(_showDefaultDrugs,80);const _mp=CR==="paciente";const mlc=document.getElementById("medPatientLookupCard");if(mlc)mlc.style.display=_mp?"none":"";const mld=document.getElementById("medPatientDivider");if(mld)mld.style.display=_mp?"none":"";}
   if(id!=="cola")_stopColaTimer();
   document.getElementById("mainBody").scrollTop=0;
   // Show FABs only on triage tab
@@ -5669,6 +5669,7 @@ function activateMCI(){
   closeMCISetup();
   _updateMCIBanner();
   navigateTo("triage");
+  if(!window._queueUnsub)loadCola();
   toast("⚠️ MCI activado: "+name);
 }
 function confirmDeactivateMCI(){
@@ -5806,7 +5807,8 @@ async function quickMCI(clasificacion,extra={}){
         userId:CU.uid,userName:CUName||CU.email,
         createdAt:FB.serverTimestamp(),esMCI:true,...extra};
       await saveTriage(FB,data);
-    }catch(e){}
+      _updateColaBadge(_colaData.filter(d=>!d.atendido).length+1);
+    }catch(e){toast("⚠️ Error guardando paciente MCI: "+e.message);}
   }
   _renderMCITriage();
   const nombre=extra.pacienteNombre?` (${extra.pacienteNombre})`:"";

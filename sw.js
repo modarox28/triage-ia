@@ -1,4 +1,4 @@
-const CACHE = 'media-suite-v6';
+const CACHE = 'media-suite-v13';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -16,9 +16,13 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.matchAll({includeUncontrolled: true, type: 'window'}))
+      .then(clients => {
+        // Avisa a todas las ventanas/tabs que hay versión nueva → dispara controllerchange → recarga
+        clients.forEach(client => client.postMessage({type: 'SW_UPDATED', cache: CACHE}));
+      })
   );
   self.clients.claim();
 });
