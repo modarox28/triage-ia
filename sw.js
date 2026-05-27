@@ -1,4 +1,4 @@
-const CACHE = 'media-suite-v5';
+const CACHE = 'media-suite-v6';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -25,8 +25,8 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  // Network first para index.html — siempre trae la versión más nueva
-  if (e.request.url.includes('index.html') || e.request.url.endsWith('/')) {
+  // Network first para index.html y módulos JS de /src/ — siempre trae la versión más nueva
+  if (e.request.url.includes('index.html') || e.request.url.endsWith('/') || e.request.url.includes('/src/')) {
     e.respondWith(
       fetch(e.request).then(res => {
         const clone = res.clone();
@@ -36,7 +36,7 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
-  // Cache first para el resto
+  // Cache first para el resto (iconos, manifest, fuentes)
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
