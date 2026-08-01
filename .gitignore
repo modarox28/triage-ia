@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+.npm
+
+# Firebase local
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc
+
+# Variables de entorno
+.env
+.env.local
+*.env
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Claves / credenciales
+*service-account*.json
+*credentials*.json
+*secret*.json
