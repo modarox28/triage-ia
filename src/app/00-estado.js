@@ -178,6 +178,7 @@ function _applyTheme(){
     const lbl=isDark?"Cambiar a modo claro":"Cambiar a modo oscuro";el.title=lbl;el.setAttribute("aria-label",lbl);});
   document.querySelectorAll("[data-theme-opt]").forEach(b=>{const on=b.dataset.themeOpt===_themePref;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
   if(typeof _chartInst!=="undefined"&&_chartInst&&typeof buildChart==="function")buildChart(); // colores del gráfico
+  if(typeof _setRefresh==="function")_setRefresh();
 }
 function setTheme(pref){
   _themePref=pref;

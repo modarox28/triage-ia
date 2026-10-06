@@ -71,7 +71,8 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   │   ├── 00-busqueda.js     #   Búsqueda de pacientes: claves de búsqueda por nombre y documento
 │   │   ├── 19-pdf.js          #   Utilidades de PDF: ajuste de línea, salto de página, pie con número de página
 │   │   ├── 20-pin.js          #   Recuperación de PIN de pacientes (restablecer, aviso y cambio obligatorio)
-│   │   └── 21-estadisticas.js #   Estadísticas del inicio: gráfico, tabla con porcentajes y reporte PDF
+│   │   ├── 21-estadisticas.js #   Estadísticas del inicio: gráfico, tabla con porcentajes y reporte PDF
+│   │   └── 22-ajustes.js      #   Ajustes con navegación tipo iOS: subpáginas, saludo de idioma y selectores animados
 │   ├── styles/                # CSS por área: base, auth, layout, components, screens, clinical, queue, ios
 │   │                          #   y tema.css (estilo visual, Inicio y diseño para tablet/escritorio; se carga al final)
 │   ├── clinical/              # Motor de scores clínicos, copiloto y línea de tiempo (módulos ES)

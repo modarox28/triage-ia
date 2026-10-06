@@ -86,6 +86,9 @@ function _openMoreSheet(){
 function _closeMoreSheet(){const sh=document.getElementById("moreSheet");if(sh)sh.classList.remove("on");}
 
 function navigateTo(id,_fh){
+  // Atrás desde una subpágina de Ajustes: vuelve a la lista con animación
+  if(id==="config"&&_curTab==="config"&&typeof _setSub!=="undefined"&&_setSub){_setBack();return;}
+  if(id==="config"&&typeof _setReset==="function")_setReset();
   _curTab=id;
   document.documentElement.classList.remove("nav-compact");
   if(!_fh)history.pushState({_ms:'tab',id},'');
@@ -128,8 +131,8 @@ function updateUI(){
   const avInner=photo?`<img id="userAvSidebar" src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span id="userAvSidebar" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">${av}</span>`;
   const sc=document.getElementById("sideChip");
   if(sc)sc.innerHTML=`<div class="user-av" style="background:${photo?"transparent":col}">${avInner}</div><div><div class="user-name">${_esc(name)}</div><div class="user-role">${RL[CR]||CR}</div></div>`;
-  document.getElementById("qrCard").style.display=(CR==="admin"||CR==="medico")?"block":"none";
-  const pqr=document.getElementById("patientQRCard");if(pqr)pqr.style.display=(CR==="paciente"&&_patientHC?.doc)?"block":"none";
+  document.getElementById("qrCard").style.display=(CR==="admin"||CR==="medico")?"":"none";
+  const pqr=document.getElementById("patientQRCard");if(pqr)pqr.style.display=(CR==="paciente"&&_patientHC?.doc)?"":"none";
   if(CR==="paciente"&&_patientHC?.doc){const d=document.getElementById("patientIdDisplay");if(d)d.textContent=_patientHC.doc;}
 }
 

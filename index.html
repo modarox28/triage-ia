@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="./src/styles/clinical.css?v=4">
 <link rel="stylesheet" href="./src/styles/queue.css?v=4">
 <link rel="stylesheet" href="./src/styles/ios.css?v=5">
-<link rel="stylesheet" href="./src/styles/tema.css?v=14">
+<link rel="stylesheet" href="./src/styles/tema.css?v=15">
 </head>
 <body>
 
@@ -503,6 +503,7 @@
             <div class="lang-item" onclick="setLang('pt')">🇧🇷 Português</div>
             <div class="lang-item" onclick="setLang('fr')">🇫🇷 Français</div>
             <div class="lang-item" onclick="setLang('de')">🇩🇪 Deutsch</div>
+            <div class="lang-item" onclick="setLang('ja')">🇯🇵 日本語</div>
           </div>
         </div>
         <span class="role-badge" id="roleBadge"></span>
@@ -1028,100 +1029,115 @@
       </div>
       <!-- CONFIGURACION -->
       <div class="sc" id="sc-config">
-        <div class="card" id="privacyCard">
-          <div class="clabel">Privacidad y datos</div>
-          <div style="font-size:.85rem;color:var(--mu);line-height:1.5;margin-bottom:10px">Cómo se tratan tus datos personales y de salud, tus derechos y cómo ejercerlos (Ley 1581 de 2012).</div>
-          <a class="bsec" href="./privacidad.html" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none;margin:0">Ver política de tratamiento de datos</a>
-        </div>
-        <div class="card" id="installPWACard" style="display:none">
-          <div class="clabel">Aplicación móvil</div>
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="font-size:2rem">📲</div>
-            <div style="flex:1">
-              <div style="font-size:.85rem;font-weight:600;margin-bottom:3px">Agregar a pantalla de inicio</div>
-              <div style="font-size:.75rem;color:var(--mu);line-height:1.5">Instala MedIA Suite como app nativa en tu dispositivo para acceso rápido.</div>
-            </div>
+        <div class="set-stack" id="setStack">
+        <!-- Ajustes: página principal -->
+        <section class="set-page on" id="setp-main">
+          <header class="set-hero set-anim"><h1 class="set-h1">Ajustes</h1><p class="set-lead">Haz que la app se sienta tuya.</p></header>
+          <button type="button" class="set-profile set-anim" onclick="_setOpen('cuenta')">
+            <span class="set-av" id="setAv">?</span>
+            <span class="set-txt"><b id="setName">—</b><small id="setEmail">—</small></span>
+            <span class="role-badge" id="setRole"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+          <div class="set-group set-anim">
+            <button type="button" class="set-row" onclick="toggleTheme()" aria-describedby="setThemeS">
+              <span class="set-ic set-ic-theme" id="setThemeIc"></span>
+              <span class="set-txt"><b id="setThemeT">Modo oscuro</b><small id="setThemeS">Toca para cambiar a claro</small></span>
+              <span class="set-switch" id="setThemeSw" aria-hidden="true"><i></i></span>
+            </button>
           </div>
-          <button class="bpri install-pwa-btn" onclick="installPWA()" style="width:100%;margin-top:12px">📲 Instalar en este dispositivo</button>
-        </div>
-        <div class="card">
-          <div class="clabel">Idioma / Language</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <button class="opt" id="lng-es" onclick="setLang('es')">🇪🇸 Español</button>
-            <button class="opt" id="lng-en" onclick="setLang('en')">🇺🇸 English</button>
-            <button class="opt" id="lng-pt" onclick="setLang('pt')">🇧🇷 Português</button>
-            <button class="opt" id="lng-fr" onclick="setLang('fr')">🇫🇷 Français</button>
-            <button class="opt" id="lng-de" onclick="setLang('de')">🇩🇪 Deutsch</button>
-            <button class="opt" id="lng-ja" onclick="setLang('ja')">🇯🇵 日本語</button>
+          <div class="set-cap set-anim">Personalización</div>
+          <div class="set-group set-anim">
+            <button type="button" class="set-row " onclick="_setOpen('apariencia')"><span class="set-ic"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2a2 2 0 0 0-1.5 3.3A1.6 1.6 0 0 1 12 22Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/></svg></span><span class="set-txt"><b>Apariencia</b><small><span id="setApSub">Tema y tamaño de texto</span></small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+            <button type="button" class="set-row " onclick="_setOpen('idioma')"><span class="set-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></svg></span><span class="set-txt"><b>Idioma</b><small><span id="setLangSub">Español</span></small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+            <button type="button" class="set-row " onclick="_setOpen('pais')"><span class="set-ic"><svg viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.3 2A6 6 0 0 0 20 3v11a6 6 0 0 1-4.7 1c-2.3 0-4.3-2-7.3-2a6 6 0 0 0-4 1.2"/></svg></span><span class="set-txt"><b>País</b><small><span id="setCtrSub">Colombia</span></small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
           </div>
-        </div>
-        <div class="card">
-          <div class="clabel" id="lbCountryLabel">Pais / Country</div>
-          <div style="font-size:.72rem;color:var(--mu);margin-bottom:10px" id="lbCountrySub">Adapta terminologia y sistema de triage.</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <button class="opt" id="ctr-CO" onclick="setCountry('CO')">🇨🇴 Colombia</button>
-            <button class="opt" id="ctr-AR" onclick="setCountry('AR')">🇦🇷 Argentina</button>
-            <button class="opt" id="ctr-US" onclick="setCountry('US')">🇺🇸 Estados Unidos</button>
-            <button class="opt" id="ctr-DE" onclick="setCountry('DE')">🇩🇪 Alemania</button>
-            <button class="opt" id="ctr-JP" onclick="setCountry('JP')">🇯🇵 Japon</button>
+          <div class="set-cap set-anim" id="setCapTools">Acceso y app</div>
+          <div class="set-group set-anim">
+            <button type="button" class="set-row" style="display:none" id="qrCard" onclick="showQR()"><span class="set-ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg></span><span class="set-txt"><b>QR de acceso para pacientes</b><small>Para mostrar en recepción</small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+            <button type="button" class="set-row" style="display:none" id="patientQRCard" onclick="showPatientQR()"><span class="set-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.8-2 3-2s2.4.6 3 2M15 10h3M15 13h3"/></svg></span><span class="set-txt"><b>Mi código de acceso</b><small><span id="patientIdDisplay">—</span></small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+            <button type="button" class="set-row" style="display:none" id="installPWACard" onclick="installPWA()"><span class="set-ic"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7m-3-3 3 3 3-3M10 18h4"/></svg></span><span class="set-txt"><b>Instalar la app</b><small>Acceso rápido desde tu pantalla de inicio</small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+            <a class="set-row" href="./privacidad.html" target="_blank" rel="noopener"><span class="set-ic"><svg viewBox="0 0 24 24"><path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="set-txt"><b>Privacidad y datos</b><small>Política de tratamiento · Ley 1581</small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+            <button type="button" class="set-row " onclick="_setOpen('cuenta')"><span class="set-ic"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M17 6l3 3M14.5 8.5l2 2"/></svg></span><span class="set-txt"><b>Cuenta y seguridad</b><small>Foto, contraseña y sesión</small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
           </div>
-        </div>
-        <div class="card">
-          <div class="clabel" id="lbAppearance">Apariencia</div>
-          <div class="setting-row">
-            <div><div class="setting-label">Tema</div><div class="setting-sub">Automático sigue el modo de tu dispositivo</div></div>
+          <button type="button" class="set-signout set-anim" onclick="doSignOut()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span id="signOutTxt2">Cerrar sesión</span></button>
+        </section>
+
+        <!-- Apariencia -->
+        <section class="set-page" id="setp-apariencia" hidden>
+          <div class="set-bar"><button type="button" class="set-back" onclick="history.back()" aria-label="Volver a Ajustes"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg><span>Ajustes</span></button><span class="set-bar-t">Apariencia</span></div>
+          <header class="set-hero set-anim"><h1 class="set-h1">Apariencia</h1><p class="set-lead">Cada cambio se ve al instante.</p></header>
+          <div class="set-preview set-anim" aria-hidden="true">
+            <div class="pv-head"><span class="pv-dot"></span><b>Dolor torácico</b><span class="pv-chip">ROJO</span></div>
+            <div class="pv-meta">Adulto · hace 4 min · Dra. Laura Gómez</div>
+            <div class="pv-vit"><span><small>FC</small>118</span><span><small>PA</small>88/54</span><span><small>SpO₂</small>91%</span></div>
+            <div class="pv-btn">Atender ahora</div>
           </div>
-          <div class="theme-seg" role="group" aria-label="Tema">
+          <div class="set-cap set-anim">Tema</div>
+          <div class="set-seg set-anim theme-seg" id="setThemeSeg" role="group" aria-label="Tema">
+            <span class="seg-pill"></span>
             <button type="button" class="theme-opt" data-theme-opt="dark" onclick="setTheme('dark')">Oscuro</button>
             <button type="button" class="theme-opt" data-theme-opt="light" onclick="setTheme('light')">Claro</button>
             <button type="button" class="theme-opt" data-theme-opt="auto" onclick="setTheme('auto')">Automático</button>
           </div>
-          <div class="setting-row">
-            <div><div class="setting-label" id="lbZoomMode">Tamaño de texto</div><div class="setting-sub" id="lbZoomSub">Ajuste para mejor visibilidad</div></div>
-            <div class="access-bar">
-              <button class="zoom-btn" onclick="adjustZoom(-1)" aria-label="Reducir texto">A−</button>
-              <span class="zoom-lbl" id="zoomLbl">100%</span>
-              <button class="zoom-btn" onclick="adjustZoom(1)" aria-label="Aumentar texto">A+</button>
-            </div>
+          <p class="set-note set-anim">Automático sigue el modo de tu dispositivo: oscuro de noche si tu teléfono lo hace.</p>
+          <div class="set-cap set-anim">Tamaño de texto <span class="set-cap-r" id="zoomLbl">100%</span></div>
+          <div class="set-seg set-anim" id="setZoomSeg" role="group" aria-label="Tamaño de texto">
+            <span class="seg-pill"></span>
+            <button type="button" data-zoom="0.9" onclick="setZoom(0.9)" style="font-size:.78rem">Aa</button>
+            <button type="button" data-zoom="1" onclick="setZoom(1)" style="font-size:.92rem">Aa</button>
+            <button type="button" data-zoom="1.1" onclick="setZoom(1.1)" style="font-size:1.05rem">Aa</button>
+            <button type="button" data-zoom="1.2" onclick="setZoom(1.2)" style="font-size:1.18rem">Aa</button>
+            <button type="button" data-zoom="1.35" onclick="setZoom(1.35)" style="font-size:1.32rem">Aa</button>
           </div>
-        </div>
-        <div class="card" id="qrCard" style="display:none">
-          <div class="clabel">QR Acceso Pacientes</div>
-          <div style="font-size:.8rem;color:var(--mu);margin-bottom:10px">Muestra este QR en recepción para que los pacientes accedan a la app.</div>
-          <button class="bpri" onclick="showQR()">📱 Ver código QR global</button>
-        </div>
-        <div class="card" id="patientQRCard" style="display:none;animation:fadeUp .4s both">
-          <div class="clabel">Mi código de acceso</div>
-          <div style="font-size:.8rem;color:var(--mu);margin-bottom:10px;line-height:1.55">Muéstrale este código al médico para identificarte sin necesidad de teclear tu número.</div>
-          <div id="patientIdDisplay" style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;text-align:center;color:var(--cy);background:var(--bg3);border-radius:12px;padding:12px;margin-bottom:12px;letter-spacing:4px">—</div>
-          <button class="bpri" onclick="showPatientQR()">📱 Ver QR de identificación</button>
-        </div>
-        <div class="card">
-          <div class="clabel" id="lbAccount">Cuenta</div>
-          <div style="text-align:center;margin-bottom:14px">
+        </section>
+
+        <!-- Idioma -->
+        <section class="set-page" id="setp-idioma" hidden>
+          <div class="set-bar"><button type="button" class="set-back" onclick="history.back()" aria-label="Volver a Ajustes"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg><span>Ajustes</span></button><span class="set-bar-t">Idioma</span></div>
+          <header class="set-hero set-anim"><h1 class="set-h1">Idioma</h1><p class="set-lead">El idioma de los menús y textos de la app.</p></header>
+          <div class="set-hello set-anim"><span class="hello-w" id="helloW">Hola</span><small id="helloS">Menús y textos en español</small></div>
+          <div class="set-cap set-anim">Todos los idiomas</div>
+          <div class="set-group set-anim">
+            <button type="button" class="set-row set-opt" id="lng-es" onclick="setLang('es')"><span class="set-txt"><b>Español</b><small>Español</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="lng-en" onclick="setLang('en')"><span class="set-txt"><b>English</b><small>Inglés</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="lng-pt" onclick="setLang('pt')"><span class="set-txt"><b>Português</b><small>Portugués</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="lng-fr" onclick="setLang('fr')"><span class="set-txt"><b>Français</b><small>Francés</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="lng-de" onclick="setLang('de')"><span class="set-txt"><b>Deutsch</b><small>Alemán</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="lng-ja" onclick="setLang('ja')"><span class="set-txt"><b>日本語</b><small>Japonés</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button>
+          </div>
+        </section>
+
+        <!-- País -->
+        <section class="set-page" id="setp-pais" hidden>
+          <div class="set-bar"><button type="button" class="set-back" onclick="history.back()" aria-label="Volver a Ajustes"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg><span>Ajustes</span></button><span class="set-bar-t">País</span></div>
+          <header class="set-hero set-anim"><h1 class="set-h1">País</h1><p class="set-lead">Adapta la terminología y el sistema de triage.</p></header>
+          <div class="set-group set-anim">
+            <button type="button" class="set-row set-opt" id="ctr-CO" onclick="setCountry('CO')"><span class="set-txt"><b>Colombia</b><small>Triage colombiano · EPS</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="ctr-AR" onclick="setCountry('AR')"><span class="set-txt"><b>Argentina</b><small>Obra social / prepaga</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="ctr-US" onclick="setCountry('US')"><span class="set-txt"><b>Estados Unidos</b><small>ESI · Insurance</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="ctr-DE" onclick="setCountry('DE')"><span class="set-txt"><b>Alemania</b><small>Manchester · Krankenkasse</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><button type="button" class="set-row set-opt" id="ctr-JP" onclick="setCountry('JP')"><span class="set-txt"><b>Japón</b><small>JTAS · 健康保険</small></span><svg class="set-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button>
+          </div>
+        </section>
+
+        <!-- Cuenta -->
+        <section class="set-page" id="setp-cuenta" hidden>
+          <div class="set-bar"><button type="button" class="set-back" onclick="history.back()" aria-label="Volver a Ajustes"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg><span>Ajustes</span></button><span class="set-bar-t" style="opacity:1">Cuenta</span></div>
+          <div class="set-acc set-anim">
             <div class="prof-photo-wrap" onclick="document.getElementById('configPhotoInput').click()" style="cursor:pointer">
               <div class="prof-photo-av" id="configPhotoAv" style="background:var(--cy)">?</div>
               <div class="prof-photo-badge">📷</div>
               <input type="file" id="configPhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhoto(this,'config')">
             </div>
-          </div>
-          <div class="setting-row">
-            <div><div class="setting-label" id="profName">—</div><div class="setting-sub" id="profEmail">—</div></div>
+            <div class="set-acc-n" id="profName">—</div>
+            <div class="set-acc-e" id="profEmail">—</div>
             <span class="role-badge" id="profRole"></span>
           </div>
-          <div id="changePassSection" style="display:none">
-            <button class="bsec" style="margin-top:10px;width:100%" onclick="togglePassForm()">🔐 <span id="changePassLbl">Cambiar contrasena</span></button>
+          <div class="set-group set-anim set-pad" id="changePassSection" style="display:none">
+            <button class="bsec" style="margin:0;width:100%" onclick="togglePassForm()">🔐 <span id="changePassLbl">Cambiar contraseña</span></button>
             <div class="pass-form" id="passForm">
               <form id="changePassForm" autocomplete="off" onsubmit="doChangePass();return false;">
-              <div class="fg" style="margin-top:10px"><label class="fl" id="lbCurPass">Contrasena actual</label><input class="fi" id="curPassInput" type="password" placeholder="••••••••" autocomplete="current-password"></div>
-              <div class="fg"><label class="fl" id="lbNewPass">Nueva contrasena</label><input class="fi" id="newPassInput" type="password" placeholder="••••••••" autocomplete="new-password"></div>
-              <div class="fg"><label class="fl" id="lbConfirmPass">Confirmar contrasena</label><input class="fi" id="confirmPassInput" type="password" placeholder="••••••••" autocomplete="new-password"></div>
+              <div class="fg" style="margin-top:10px"><label class="fl" id="lbCurPass">Contraseña actual</label><input class="fi" id="curPassInput" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+              <div class="fg"><label class="fl" id="lbNewPass">Nueva contraseña</label><input class="fi" id="newPassInput" type="password" placeholder="••••••••" autocomplete="new-password"></div>
+              <div class="fg"><label class="fl" id="lbConfirmPass">Confirmar contraseña</label><input class="fi" id="confirmPassInput" type="password" placeholder="••••••••" autocomplete="new-password"></div>
               <div class="auth-err" id="passErr"></div>
               <button type="submit" class="bpri" style="margin-top:6px;width:100%"><span id="savePassLbl">Guardar</span></button>
               </form>
             </div>
           </div>
-          <button class="bsec" onclick="doSignOut()" style="margin-top:10px">⬅ <span id="signOutTxt2">Cerrar sesion</span></button>
+          <button type="button" class="set-signout set-anim" onclick="doSignOut()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Cerrar sesión</span></button>
+        </section>
         </div>
       </div>
       <!-- PERFIL (paciente) -->
@@ -1168,29 +1184,30 @@
     </div>
   </div>
 </div>
-<script src="./src/app/00-iconos.js?v=19"></script>
-<script src="./src/app/00-busqueda.js?v=19"></script>
-<script src="./src/app/00-estado.js?v=19"></script>
-<script src="./src/app/01-auth.js?v=19"></script>
-<script src="./src/app/02-voz-notas.js?v=19"></script>
-<script src="./src/app/03-navegacion.js?v=19"></script>
-<script src="./src/app/04-dashboard-historial.js?v=19"></script>
-<script src="./src/app/05-perfil-qr.js?v=19"></script>
-<script src="./src/app/06-pacientes.js?v=19"></script>
-<script src="./src/app/07-pwa.js?v=19"></script>
-<script src="./src/app/08-triage.js?v=19"></script>
-<script src="./src/app/09-medicamentos.js?v=19"></script>
-<script src="./src/app/10-init.js?v=19"></script>
-<script src="./src/app/11-dolor-sintomas.js?v=19"></script>
-<script src="./src/app/12-historia-clinica.js?v=19"></script>
-<script src="./src/app/13-cola.js?v=19"></script>
-<script src="./src/app/14-herramientas.js?v=19"></script>
-<script src="./src/app/15-mci.js?v=19"></script>
-<script src="./src/app/16-glasgow-gestos.js?v=19"></script>
-<script src="./src/app/17-scores-tablero.js?v=19"></script>
-<script src="./src/app/18-demo.js?v=19"></script>
-<script src="./src/app/19-pdf.js?v=19"></script>
-<script src="./src/app/20-pin.js?v=19"></script>
-<script src="./src/app/21-estadisticas.js?v=19"></script>
+<script src="./src/app/00-iconos.js?v=20"></script>
+<script src="./src/app/00-busqueda.js?v=20"></script>
+<script src="./src/app/00-estado.js?v=20"></script>
+<script src="./src/app/01-auth.js?v=20"></script>
+<script src="./src/app/02-voz-notas.js?v=20"></script>
+<script src="./src/app/03-navegacion.js?v=20"></script>
+<script src="./src/app/04-dashboard-historial.js?v=20"></script>
+<script src="./src/app/05-perfil-qr.js?v=20"></script>
+<script src="./src/app/06-pacientes.js?v=20"></script>
+<script src="./src/app/07-pwa.js?v=20"></script>
+<script src="./src/app/08-triage.js?v=20"></script>
+<script src="./src/app/09-medicamentos.js?v=20"></script>
+<script src="./src/app/10-init.js?v=20"></script>
+<script src="./src/app/11-dolor-sintomas.js?v=20"></script>
+<script src="./src/app/12-historia-clinica.js?v=20"></script>
+<script src="./src/app/13-cola.js?v=20"></script>
+<script src="./src/app/14-herramientas.js?v=20"></script>
+<script src="./src/app/15-mci.js?v=20"></script>
+<script src="./src/app/16-glasgow-gestos.js?v=20"></script>
+<script src="./src/app/17-scores-tablero.js?v=20"></script>
+<script src="./src/app/18-demo.js?v=20"></script>
+<script src="./src/app/19-pdf.js?v=20"></script>
+<script src="./src/app/20-pin.js?v=20"></script>
+<script src="./src/app/21-estadisticas.js?v=20"></script>
+<script src="./src/app/22-ajustes.js?v=20"></script>
 </body>
 </html>
