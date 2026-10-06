@@ -7,7 +7,7 @@ if("serviceWorker" in navigator){
   let _swReloading=false;
   function _swReload(){if(!_swReloading){_swReloading=true;window.location.reload();}}
 
-  navigator.serviceWorker.register("./sw.js").then(reg=>{
+  navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(reg=>{
     reg.update();
     setInterval(()=>reg.update(),30000);
     // Detecta cuando se instala un SW nuevo y recarga cuando activa (crítico para iOS)

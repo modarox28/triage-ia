@@ -1,4 +1,4 @@
-const CACHE = 'media-suite-v45';
+const CACHE = 'media-suite-v46';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -13,7 +13,7 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => {})
+    caches.open(CACHE).then(c => c.addAll(ASSETS.map(u => new Request(u, {cache: 'reload'})))).catch(() => {})
   );
   self.skipWaiting();
 });
@@ -36,7 +36,8 @@ self.addEventListener('fetch', e => {
   // Network first para index.html y módulos JS de /src/ — siempre trae la versión más nueva
   if (e.request.url.includes('index.html') || e.request.url.endsWith('/') || e.request.url.includes('/src/')) {
     e.respondWith(
-      fetch(e.request).then(res => {
+      // cache:'no-cache' = siempre pregunta al servidor (si no cambió, responde rápido con 304)
+      fetch(e.request, {cache: 'no-cache'}).then(res => {
         const clone = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
         return res;
