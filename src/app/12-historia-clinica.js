@@ -200,6 +200,7 @@ function loadHC(){
     // Se fusiona (no se borra) para no perder las historias abiertas desde una búsqueda
     _hcRecentIds=snap.docs.map(d=>d.id);
     snap.docs.forEach(d=>{_hcCache[d.id]=d.data();});
+    _autoPrepareHCSearch(snap.docs);
     const listEl=document.getElementById('hcList');
     if(listEl)_refreshHCList(listEl);
   },(e)=>{
@@ -403,6 +404,8 @@ async function _runHCSearch(){
     if(seq!==_hcSearchSeq)return; // llegó una búsqueda más nueva
     const res=new Map();
     snaps.forEach(s=>s.docs.forEach(d=>{const v=d.data();if(_matchesSearch(v,parsed)||parsed.tipo==="doc")res.set(d.id,v);}));
+    // También se buscan las historias ya cargadas (sirve para las antiguas que aún no tienen searchKeys)
+    Object.entries(_hcCache).forEach(([id,v])=>{if(!res.has(id)&&_matchesSearch(v,parsed))res.set(id,v);});
     const ts=v=>v.createdAt?.toMillis?.()||Date.parse(v.createdAt)||0;
     const ids=[...res.keys()].sort((a,b)=>ts(res.get(b))-ts(res.get(a)));
     ids.forEach(id=>{_hcCache[id]=res.get(id);}); // para abrir el detalle al instante
@@ -418,7 +421,7 @@ async function _runHCSearch(){
 }
 
 // Admin: agrega searchKeys a las historias creadas antes de la búsqueda
-async function prepareHCSearch(btn){
+async function prepareHCSearch(btn,silencioso=false){
   if(!FB||!CU){toast("Sin sesión activa");return;}
   const txt=btn?.textContent;if(btn){btn.disabled=true;btn.textContent="Preparando…";}
   try{
@@ -433,7 +436,18 @@ async function prepareHCSearch(btn){
       n++;
     }
     logAudit("search_index",{updated:n,total:snap.size});
-    toast(n?`${n} de ${snap.size} historias preparadas para la búsqueda`:`Las ${snap.size} historias ya estaban listas`);
-  }catch(e){toast("Error: "+e.message);}
+    if(!silencioso||n)toast(n?`${n} de ${snap.size} historias preparadas para la búsqueda`:`Las ${snap.size} historias ya estaban listas`);
+    if(n&&_hcSearchQ)_runHCSearch();
+  }catch(e){if(!silencioso)toast("Error: "+e.message);}
   finally{if(btn){btn.disabled=false;btn.textContent=txt;}}
+}
+
+// Si un admin abre Pacientes y hay historias antiguas sin searchKeys,
+// se preparan solas una vez por sesión (las reglas solo dejan editar a los admins).
+let _hcAutoPrepDone=false;
+function _autoPrepareHCSearch(docs){
+  if(_hcAutoPrepDone||!(CR==="admin"||CR==="admin_hosp"))return;
+  if(!docs.some(d=>!Array.isArray(d.data().searchKeys)))return;
+  _hcAutoPrepDone=true;
+  prepareHCSearch(null,true);
 }
