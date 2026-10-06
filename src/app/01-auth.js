@@ -89,6 +89,7 @@ function initAuth(){
         if(snap.exists()){
           CR=snap.data().role;CUName=snap.data().name||null;CUPhoto=snap.data().photoBase64||null;
           try{localStorage.setItem("ms_role_"+user.uid,CR||"");}catch(_){}
+          _watchOwnRole(user.uid);
           if(CUPhoto)localStorage.setItem("ms_photo_"+user.uid,CUPhoto);
           if(CR==="pendiente"||CR==="rechazado"){
             _staffLoginRole=null;
@@ -134,6 +135,7 @@ function initAuth(){
           // merge: no borra teléfono/especialidad si doAuth() ya guardó el perfil
           await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:autoName,email:user.email,role:CR,createdAt:FB.serverTimestamp()},{merge:true});
           _staffLoginRole=null;
+          _watchOwnRole(user.uid);
           _showPendingView(false);
           return;
         }
@@ -151,7 +153,7 @@ function initAuth(){
       }
       showApp();
       logAudit("login",{method:user.providerData?.[0]?.providerId||"unknown"});
-    }else{showAuthScreen();}
+    }else{_stopRoleWatch();showAuthScreen();}
   });
 }
 
@@ -256,6 +258,7 @@ async function doSignOut(){
   _lastDrugInfo=null;
   ["dr","ir"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML="";});
   if(_hcUnsub){_hcUnsub();_hcUnsub=null;}_hcCache={};
+  _stopRoleWatch();
   if(CR==="paciente"){CR=null;CU=null;try{await FB.signOut(FB.auth);}catch(e){}showAuthScreen();return;}
   await logAudit("logout");
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
@@ -278,6 +281,30 @@ function showAuthScreen(){
   // Pre-fill email if saved
   const saved=localStorage.getItem("ms_remember_email");
   if(saved){document.getElementById("aEmail").value=saved;_rememberOn=true;document.getElementById("rememberCheck").classList.add("on");}
+}
+
+// ── CAMBIOS DE ROL EN TIEMPO REAL ──
+// Si un admin cambia el rol de esta cuenta (o borra su perfil) mientras está
+// abierta, la app se recarga para aplicar el nuevo rol de inmediato.
+// Las reglas de Firestore ya bloquean los datos; esto actualiza la pantalla.
+let _roleUnsub=null,_roleReloading=false;
+function _stopRoleWatch(){if(_roleUnsub){try{_roleUnsub();}catch(_){}_roleUnsub=null;}}
+function _watchOwnRole(uid){
+  _stopRoleWatch();
+  if(!FB?.onSnapshot)return;
+  _roleUnsub=FB.onSnapshot(FB.doc(FB.db,"users",uid),snap=>{
+    if(snap.metadata?.fromCache||snap.metadata?.hasPendingWrites)return; // solo datos confirmados por el servidor
+    if(!CU||CU.uid!==uid||_roleReloading)return;
+    const role=snap.exists()?snap.data().role:null;
+    if(role===CR)return;
+    _roleReloading=true;
+    try{localStorage.setItem("ms_role_"+uid,role||"");}catch(_){}
+    const msg=role==="medico"&&CR==="pendiente"?"✓ Tu cuenta fue aprobada":
+      (!role?"Tu perfil fue eliminado por un administrador":"Un administrador cambió tu rol");
+    toast(msg);
+    _stopRoleWatch();
+    setTimeout(()=>window.location.reload(),1500);
+  },()=>{});
 }
 
 // ── CUENTA EN REVISIÓN ──
