@@ -162,15 +162,32 @@ async function logAudit(action,meta={}){
   }catch(e){}
 }
 
-// THEME
-function toggleTheme(){
-  isDark=!isDark;document.body.classList.toggle("light",!isDark);
-  const ico=isDark?"🌙":"☀️";
-  ["themeBtn","authThemeBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ico;});
-  const t=document.getElementById("themeTgl");if(t)t.classList.toggle("on",isDark);
-  localStorage.setItem("theme",isDark?"dark":"light");
+// THEME — "dark", "light" o "auto" (sigue al sistema: oscuro de noche si el teléfono lo hace)
+const _ICO_MOON='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+const _ICO_SUN='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+const _mqDark=window.matchMedia?window.matchMedia("(prefers-color-scheme: dark)"):null;
+let _themePref="auto";
+try{_themePref=localStorage.getItem("theme")||"auto";}catch(_){}
+function _applyTheme(){
+  isDark=_themePref==="auto"?(_mqDark?_mqDark.matches:true):_themePref!=="light";
+  document.body.classList.toggle("light",!isDark);
+  const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=isDark?"#0b1120":"#f3f5f8";
+  // El botón muestra a qué tema se cambia al tocarlo
+  ["themeBtn","authThemeBtn"].forEach(id=>{const el=document.getElementById(id);if(!el)return;
+    el.innerHTML=isDark?_ICO_SUN:_ICO_MOON;
+    const lbl=isDark?"Cambiar a modo claro":"Cambiar a modo oscuro";el.title=lbl;el.setAttribute("aria-label",lbl);});
+  document.querySelectorAll("[data-theme-opt]").forEach(b=>{const on=b.dataset.themeOpt===_themePref;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
+  if(typeof _chartInst!=="undefined"&&_chartInst&&typeof buildChart==="function")buildChart(); // colores del gráfico
 }
-(()=>{const t=localStorage.getItem("theme");if(t==="light"){isDark=false;document.body.classList.add("light");["themeBtn","authThemeBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent="☀️";});const tg=document.getElementById("themeTgl");if(tg)tg.classList.remove("on");}})();
+function setTheme(pref){
+  _themePref=pref;
+  try{localStorage.setItem("theme",pref);}catch(_){}
+  _applyTheme();
+}
+// Botón rápido (barra superior y pantalla de acceso): alterna claro/oscuro
+function toggleTheme(){setTheme(isDark?"light":"dark");}
+if(_mqDark){const f=()=>{if(_themePref==="auto")_applyTheme();};_mqDark.addEventListener?_mqDark.addEventListener("change",f):_mqDark.addListener(f);}
+_applyTheme();
 
 // TOAST
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2400);}

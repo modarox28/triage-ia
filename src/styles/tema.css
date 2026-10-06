@@ -202,3 +202,14 @@ button.stat-card{font:inherit;color:inherit;width:100%;text-align:left;display:f
   .est-canvas{height:280px;}
 }
 @media(max-width:899px){.est-card.solo-tabla .est-canvas{display:none;}}
+
+/* ── Selector de tema (Ajustes) ── */
+.theme-seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;margin:2px 0 12px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;}
+.theme-opt{min-height:40px;border:none;border-radius:9px;background:none;color:var(--mu);font-family:var(--font-ui);font-size:.86rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s;}
+.theme-opt.on{background:var(--bg2);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.25);}
+#themeBtn,#authThemeBtn{display:flex;align-items:center;justify-content:center;}
+/* Modo claro: cifras y etiquetas con más contraste sobre fondo blanco */
+.light .dash-stats .stat-num{filter:brightness(.72) saturate(1.3);}
+.light .dash-crit-lbl{color:#c81e3c;}
+.light .dash-crit-num{color:#d61f45;}
+.light .dash-crit.calm .dash-crit-num{color:#15803d;}
