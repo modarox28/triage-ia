@@ -175,8 +175,10 @@ function _showDemoBanner(){
   if(document.getElementById("demoBanner"))return;
   const b=document.createElement("div");
   b.id="demoBanner";
-  b.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 84px);z-index:9998;background:var(--yw);color:#1a1300;font-size:.72rem;font-weight:700;padding:6px 8px 6px 12px;border-radius:20px;box-shadow:0 4px 16px rgba(0,0,0,.35);display:flex;gap:8px;align-items:center;max-width:calc(100% - 32px)";
-  b.innerHTML='<span>👀 MODO DEMO · datos ficticios, nada se guarda</span><button type="button" onclick="_exitDemo()" style="background:#1a1300;color:var(--yw);border:none;border-radius:12px;padding:3px 10px;font-size:.68rem;font-weight:700;cursor:pointer">Salir</button>';
+  // Franja delgada arriba, fuera del contenido (la app se corre hacia abajo para no taparla)
+  b.style.cssText="position:fixed;top:0;left:0;right:0;z-index:9998;height:calc(env(safe-area-inset-top,0px) + 26px);padding:env(safe-area-inset-top,0px) 10px 0;background:var(--yw);color:#1a1300;font-size:.7rem;font-weight:700;display:flex;gap:10px;align-items:center;justify-content:center;font-family:'Familjen Grotesk',sans-serif";
+  b.innerHTML='<span>Modo demo · datos ficticios, nada se guarda</span><button type="button" onclick="_exitDemo()" style="background:#1a1300;color:var(--yw);border:none;border-radius:10px;padding:2px 10px;font-size:.66rem;font-weight:700;cursor:pointer">Salir</button>';
+  document.body.classList.add("demo-on");
   document.body.appendChild(b);
 }
 

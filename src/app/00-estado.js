@@ -23,6 +23,13 @@ async function _aiFetch(payload){
   return r;
 }
 
+// Nombre legible del tipo de paciente (los datos guardan claves como "adulto_mayor")
+function _tipoLabel(t){
+  const tx=(typeof L!=="undefined"&&L&&(L[CL]||L.es))||{};
+  const m={adulto:tx.adultLbl||"Adulto",adulto_mayor:tx.elderLbl||"Adulto mayor",embarazada:tx.pregLbl||"Embarazada",
+    nino:tx.childLbl||"Pediátrico",adolescente:tx.teenLbl||"Adolescente",MCI:"MCI"};
+  return m[t]||t||"";
+}
 // Escapa texto antes de insertarlo con innerHTML (evita inyección de HTML/JS
 // con nombres o correos escritos por los usuarios).
 function _esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}

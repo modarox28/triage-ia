@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — App-wide Constants
+ * MedIA Suite — App-wide Constants
  * @module src/config/constants
  */
 

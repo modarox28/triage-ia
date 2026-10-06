@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — Clinical Copilot (Layer 1: deterministic hints)
+ * MedIA Suite — Clinical Copilot (Layer 1: deterministic hints)
  * Stateless. Receives triage data object, returns hint sets per chief complaint.
  * @module src/clinical/copilot
  */

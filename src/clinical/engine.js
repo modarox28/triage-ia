@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — Clinical Scoring Engine
+ * MedIA Suite — Clinical Scoring Engine
  * Deterministic clinical scores. No AI, no side effects, pure functions.
  * @module src/clinical/engine
  */

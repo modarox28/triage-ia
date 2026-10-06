@@ -53,7 +53,7 @@ window.addEventListener('appinstalled',()=>{
   document.querySelectorAll('.install-pwa-btn').forEach(b=>b.style.display='none');
   const card=document.getElementById('installPWACard');if(card)card.style.display='none';
   const banner=document.getElementById('installFloatBanner');if(banner)banner.style.display='none';
-  toast('MedAI Suite instalado en pantalla de inicio 📲');
+  toast('MedIA Suite instalado en pantalla de inicio 📲');
 });
 async function installPWA(){
   if(_isIOS){_showInstallBanner();return;}

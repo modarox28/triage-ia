@@ -234,7 +234,7 @@ async function openHandoff(){
         <div class="handoff-entry-cl" style="background:${clrDot[it.clasificacion]||"#888"}"></div>
         <div class="handoff-entry-info">
           <div class="handoff-entry-top">${_esc(it.clasificacion)} — ${_esc(mM[it.motivo]||it.motivo||"—")}</div>
-          <div class="handoff-entry-sub">${_esc(it.tipo||"—")} · ${_esc(it.userName||"—")} ${it.atendido?"✓":""}</div>
+          <div class="handoff-entry-sub">${_esc(_tipoLabel(it.tipo)||"—")} · ${_esc(it.userName||"—")} ${it.atendido?"✓":""}</div>
         </div>
         <div class="handoff-entry-time">${dt}</div>
       </div>`;}).join("");

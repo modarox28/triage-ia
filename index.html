@@ -3,33 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>MedAI Suite</title>
+<title>MedIA Suite</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-touch-fullscreen" content="yes">
-<meta name="apple-mobile-web-app-title" content="MedAI Suite">
+<meta name="apple-mobile-web-app-title" content="MedIA Suite">
 <meta name="theme-color" content="#0b1120">
 <link rel="icon" type="image/png" href="./icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script type="module" src="./src/app/firebase-init.js?v=3"></script>
-<link rel="stylesheet" href="./src/styles/base.css?v=2">
-<link rel="stylesheet" href="./src/styles/auth.css?v=2">
-<link rel="stylesheet" href="./src/styles/layout.css?v=2">
-<link rel="stylesheet" href="./src/styles/components.css?v=2">
-<link rel="stylesheet" href="./src/styles/screens.css?v=2">
-<link rel="stylesheet" href="./src/styles/clinical.css?v=2">
-<link rel="stylesheet" href="./src/styles/queue.css?v=2">
-<link rel="stylesheet" href="./src/styles/ios.css?v=2">
+<script type="module" src="./src/app/firebase-init.js?v=4"></script>
+<link rel="stylesheet" href="./src/styles/base.css?v=3">
+<link rel="stylesheet" href="./src/styles/auth.css?v=3">
+<link rel="stylesheet" href="./src/styles/layout.css?v=3">
+<link rel="stylesheet" href="./src/styles/components.css?v=3">
+<link rel="stylesheet" href="./src/styles/screens.css?v=3">
+<link rel="stylesheet" href="./src/styles/clinical.css?v=3">
+<link rel="stylesheet" href="./src/styles/queue.css?v=3">
+<link rel="stylesheet" href="./src/styles/ios.css?v=3">
 </head>
 <body>
 
 <!-- SPLASH SCREEN -->
 <div id="splash">
   <div class="splash-logo">
-    <div class="splash-med"><b>MedAI</b><s> Suite</s></div>
+    <div class="splash-med"><b>MedIA</b><s> Suite</s></div>
     <div class="splash-sub">Sistema medico inteligente</div>
     <div class="splash-bar"><div class="splash-progress"></div></div>
   </div>
@@ -268,7 +268,7 @@
     </div>
   </div>
   <div class="auth-box" id="authBox">
-    <div class="auth-logo"><b>MedAI</b><s> Suite</s></div>
+    <div class="auth-logo"><b>MedIA</b><s> Suite</s></div>
     <div class="auth-sub" id="authSub">Sistema medico inteligente</div>
     <div class="auth-lang-row">
       <div class="lang-wrap">
@@ -434,7 +434,7 @@
         <div style="font-size:1.4rem;line-height:1">📲</div>
         <div>
           <div style="font-size:.88rem;font-weight:700;color:var(--tx)">Acceso a la pantalla de inicio</div>
-          <div style="font-size:.72rem;color:var(--mu);margin-top:2px">Instala MedAI Suite como app en tu dispositivo</div>
+          <div style="font-size:.72rem;color:var(--mu);margin-top:2px">Instala MedIA Suite como app en tu dispositivo</div>
         </div>
       </div>
       <button type="button" onclick="dismissInstallBanner()" style="background:none;border:none;color:var(--mu);font-size:.95rem;cursor:pointer;padding:2px 4px;line-height:1;margin-left:8px;flex-shrink:0">✕</button>
@@ -471,7 +471,7 @@
 <!-- MAIN APP -->
 <div class="app" id="mainApp">
   <div class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><div class="top-logo"><b>MedAI</b><s> Suite</s></div></div>
+    <div class="sidebar-logo"><div class="top-logo"><b>MedIA</b><s> Suite</s></div></div>
     <nav class="sidebar-nav" id="sidebarNav"></nav>
     <div class="sidebar-bottom">
       <div class="user-chip" id="sideChip"></div>
@@ -480,9 +480,10 @@
   </div>
   <div class="main-area">
     <div class="top-bar">
-      <div class="top-logo"><b>MedAI</b><s> Suite</s></div>
+      <div class="top-logo"><b>MedIA</b><s> Suite</s></div>
       <div class="top-right">
-        <div class="lang-wrap">
+        <!-- Idioma y tema están en Ajustes; se ocultan aquí para despejar el encabezado -->
+        <div class="lang-wrap" style="display:none">
           <button class="lang-btn" onclick="toggleLang('top')">🌐 <span id="topLC">ES</span> ▾</button>
           <div class="lang-menu" id="topLM">
             <div class="lang-item cur" onclick="setLang('es')">🇪🇸 Español</div>
@@ -493,8 +494,8 @@
           </div>
         </div>
         <span class="role-badge" id="roleBadge"></span>
-        <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Tema">🌙</button>
-        <button class="icon-btn" onclick="doSignOut()" title="Salir">⬅</button>
+        <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Tema" style="display:none">🌙</button>
+        <button class="icon-btn" onclick="doSignOut()" title="Cerrar sesión" aria-label="Cerrar sesión"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg></button>
       </div>
     </div>
     <!-- OFFLINE BANNER -->
@@ -992,7 +993,7 @@
             <div style="font-size:2rem">📲</div>
             <div style="flex:1">
               <div style="font-size:.85rem;font-weight:600;margin-bottom:3px">Agregar a pantalla de inicio</div>
-              <div style="font-size:.75rem;color:var(--mu);line-height:1.5">Instala MedAI Suite como app nativa en tu dispositivo para acceso rápido.</div>
+              <div style="font-size:.75rem;color:var(--mu);line-height:1.5">Instala MedIA Suite como app nativa en tu dispositivo para acceso rápido.</div>
             </div>
           </div>
           <button class="bpri install-pwa-btn" onclick="installPWA()" style="width:100%;margin-top:12px">📲 Instalar en este dispositivo</button>
@@ -1098,25 +1099,25 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="./src/app/00-estado.js?v=6"></script>
-<script src="./src/app/01-auth.js?v=6"></script>
-<script src="./src/app/02-voz-notas.js?v=6"></script>
-<script src="./src/app/03-navegacion.js?v=6"></script>
-<script src="./src/app/04-dashboard-historial.js?v=7"></script>
-<script src="./src/app/05-perfil-qr.js?v=6"></script>
-<script src="./src/app/06-pacientes.js?v=6"></script>
-<script src="./src/app/07-pwa.js?v=7"></script>
-<script src="./src/app/08-triage.js?v=7"></script>
-<script src="./src/app/09-medicamentos.js?v=6"></script>
-<script src="./src/app/10-init.js?v=6"></script>
-<script src="./src/app/11-dolor-sintomas.js?v=6"></script>
-<script src="./src/app/12-historia-clinica.js?v=7"></script>
-<script src="./src/app/13-cola.js?v=6"></script>
-<script src="./src/app/14-herramientas.js?v=6"></script>
-<script src="./src/app/15-mci.js?v=6"></script>
-<script src="./src/app/16-glasgow-gestos.js?v=6"></script>
-<script src="./src/app/17-scores-tablero.js?v=6"></script>
-<script src="./src/app/18-demo.js?v=6"></script>
-<script src="./src/app/19-pdf.js?v=1"></script>
+<script src="./src/app/00-estado.js?v=8"></script>
+<script src="./src/app/01-auth.js?v=8"></script>
+<script src="./src/app/02-voz-notas.js?v=8"></script>
+<script src="./src/app/03-navegacion.js?v=8"></script>
+<script src="./src/app/04-dashboard-historial.js?v=8"></script>
+<script src="./src/app/05-perfil-qr.js?v=8"></script>
+<script src="./src/app/06-pacientes.js?v=8"></script>
+<script src="./src/app/07-pwa.js?v=8"></script>
+<script src="./src/app/08-triage.js?v=8"></script>
+<script src="./src/app/09-medicamentos.js?v=8"></script>
+<script src="./src/app/10-init.js?v=8"></script>
+<script src="./src/app/11-dolor-sintomas.js?v=8"></script>
+<script src="./src/app/12-historia-clinica.js?v=8"></script>
+<script src="./src/app/13-cola.js?v=8"></script>
+<script src="./src/app/14-herramientas.js?v=8"></script>
+<script src="./src/app/15-mci.js?v=8"></script>
+<script src="./src/app/16-glasgow-gestos.js?v=8"></script>
+<script src="./src/app/17-scores-tablero.js?v=8"></script>
+<script src="./src/app/18-demo.js?v=8"></script>
+<script src="./src/app/19-pdf.js?v=2"></script>
 </body>
 </html>

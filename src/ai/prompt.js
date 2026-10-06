@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — AI Triage Prompt Builder
+ * MedIA Suite — AI Triage Prompt Builder
  * Constructs the DeepSeek prompt string from triage data. Pure function.
  * @module src/ai/prompt
  */

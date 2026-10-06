@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — Triage Step Definitions
+ * MedIA Suite — Triage Step Definitions
  * Returns the ordered triage wizard steps, localized via the L/CL pair.
  * @module src/triage/steps
  */

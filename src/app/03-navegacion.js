@@ -2,53 +2,108 @@
 // Script clásico: comparte el ámbito global con los demás archivos de src/app,
 // que se cargan en orden numérico desde index.html.
 // NAV
-const NAV={
-  admin:[{id:"dash",ic:"📊",k:"dash"},{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"scores",ic:"🔬",k:"scores"},{id:"config",ic:"⚙️",k:"config"}],
-  admin_hosp:[{id:"dash",ic:"📊",k:"dash"},{id:"cola",ic:"🩺",k:"cola"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"scores",ic:"🔬",k:"scores"},{id:"config",ic:"⚙️",k:"config"}],
-  medico:[{id:"triage",ic:"🏥",k:"triage"},{id:"cola",ic:"🩺",k:"cola"},{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"hist",ic:"📋",k:"hist"},{id:"scores",ic:"🔬",k:"scores"},{id:"config",ic:"⚙️",k:"config"}],
-  paciente:[{id:"meds",ic:"💊",k:"meds"},{id:"hc",ic:"🗂️",k:"hc"},{id:"config",ic:"⚙️",k:"config"}],
+// Íconos de línea (estilo Lucide, licencia ISC) — se ven igual en Android, iPhone y escritorio
+const _ICON_PATHS={
+  dash:'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  triage:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  cola:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  meds:'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
+  hc:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+  hist:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+  scores:'<rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/>',
+  config:'<line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/>',
+  more:'<circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/>',
 };
+function _icon(name,size=24){
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${_ICON_PATHS[name]||""}</svg>`;
+}
+
+// Orden por rol: las 4 primeras van en la barra inferior; el resto, en "Más".
+// En escritorio la barra lateral muestra todas.
+const NAV={
+  admin:[{id:"dash",k:"dash"},{id:"triage",k:"triage"},{id:"cola",k:"cola"},{id:"hc",k:"hc"},{id:"meds",k:"meds"},{id:"hist",k:"hist"},{id:"scores",k:"scores"},{id:"config",k:"config"}],
+  admin_hosp:[{id:"dash",k:"dash"},{id:"cola",k:"cola"},{id:"hc",k:"hc"},{id:"hist",k:"hist"},{id:"scores",k:"scores"},{id:"config",k:"config"}],
+  medico:[{id:"triage",k:"triage"},{id:"cola",k:"cola"},{id:"hc",k:"hc"},{id:"meds",k:"meds"},{id:"hist",k:"hist"},{id:"scores",k:"scores"},{id:"config",k:"config"}],
+  paciente:[{id:"meds",k:"meds"},{id:"hc",k:"hc"},{id:"config",k:"config"}],
+};
+const NAV_MAX=5; // botones visibles en la barra inferior (incluido "Más")
+
+// Etiquetas cortas y claras para la navegación (no cambian los títulos de las pantallas)
+const _NAV_LBL={
+  es:{dash:"Inicio",hc:"Pacientes",hist:"Historial",meds:"Medicamentos",more:"Más"},
+  en:{dash:"Home",hc:"Patients",hist:"History",meds:"Medications",more:"More"},
+  pt:{dash:"Início",hc:"Pacientes",hist:"Histórico",meds:"Remédios",more:"Mais"},
+  fr:{dash:"Accueil",hc:"Patients",hist:"Historique",meds:"Médicaments",more:"Plus"},
+  de:{dash:"Start",hc:"Patienten",hist:"Verlauf",meds:"Medikamente",more:"Mehr"},
+  ja:{dash:"ホーム",hc:"患者",hist:"履歴",meds:"薬",more:"その他"},
+};
+function _navLabel(k){const tx=L[CL]||L.es;return _NAV_LBL[CL]?.[k]||_NAV_LBL.es[k]||tx[k]||k;}
+function _navSplit(items){
+  if(items.length<=NAV_MAX)return{main:items,extra:[]};
+  return{main:items.slice(0,NAV_MAX-1),extra:items.slice(NAV_MAX-1)};
+}
 
 function buildNav(){
-  const items=NAV[CR]||NAV.medico;const tx=L[CL]||L.es;
+  const items=NAV[CR]||NAV.medico;
+  const {main,extra}=_navSplit(items);
   const bnav=document.getElementById("bnav");
-  // Save active tab before rebuild
-  const prevActive=bnav.querySelector(".nb.on");
-  const activeId=prevActive?prevActive.id.replace("nb-",""):null;
+  const activeId=_curTab||null;
   bnav.innerHTML=`<div class="nind" id="nind"></div>`;
-  items.forEach((it)=>{
+  const addBtn=(id,label,onclick)=>{
     const b=document.createElement("button");
-    b.className="nb"+(it.id===activeId?" on":"");
-    b.id="nb-"+it.id;
-    b.innerHTML=`<span class="ni">${it.ic}</span><span class="nl">${tx[it.k]||it.k}</span>`;
-    b.onclick=()=>navigateTo(it.id);bnav.appendChild(b);
-  });
+    b.className="nb";b.id="nb-"+id;b.type="button";
+    b.setAttribute("aria-label",label);
+    b.innerHTML=`<span class="ni">${_icon(id)}</span><span class="nl">${_esc(label)}</span>`;
+    b.onclick=onclick;bnav.appendChild(b);
+  };
+  main.forEach(it=>addBtn(it.id,_navLabel(it.k),()=>navigateTo(it.id)));
+  if(extra.length)addBtn("more",_navLabel("more"),()=>_openMoreSheet());
   const snav=document.getElementById("sidebarNav");snav.innerHTML="";
   items.forEach(it=>{
-    const b=document.createElement("button");b.className="snav-btn";b.id="snb-"+it.id;
-    b.innerHTML=`<span class="sni">${it.ic}</span>${tx[it.k]||it.k}`;
+    const b=document.createElement("button");b.className="snav-btn";b.id="snb-"+it.id;b.type="button";
+    b.innerHTML=`<span class="sni">${_icon(it.id,20)}</span>${_esc(_navLabel(it.k))}`;
     b.onclick=()=>navigateTo(it.id);snav.appendChild(b);
   });
-  // Position pill precisely after layout paint
-  requestAnimationFrame(()=>{
-    const targetId=activeId||items[0].id;
-    const nb=document.getElementById("nb-"+targetId);
-    const ind=document.getElementById("nind");
-    if(ind&&nb){ind.style.width=nb.offsetWidth+"px";ind.style.left=nb.offsetLeft+"px";}
-  });
+  requestAnimationFrame(()=>_markActiveNav(activeId||items[0].id));
 }
+
+// Resalta el botón activo; si la pantalla está dentro de "Más", resalta "Más"
+function _markActiveNav(id){
+  document.querySelectorAll(".nb,.snav-btn").forEach(b=>b.classList.remove("on"));
+  const enExtra=_navSplit(NAV[CR]||NAV.medico).extra.some(x=>x.id===id);
+  const nb=document.getElementById("nb-"+id)||(enExtra?document.getElementById("nb-more"):null);
+  if(nb)nb.classList.add("on");
+  const snb=document.getElementById("snb-"+id);if(snb)snb.classList.add("on");
+  const ind=document.getElementById("nind");
+  const on=document.querySelector(".nb.on");
+  if(ind&&on){ind.style.width=on.offsetWidth+"px";ind.style.left=on.offsetLeft+"px";ind.style.opacity="1";}
+  else if(ind)ind.style.opacity="0";
+}
+
+// Hoja inferior con las secciones que no caben en la barra
+function _openMoreSheet(){
+  const {extra}=_navSplit(NAV[CR]||NAV.medico);
+  let sh=document.getElementById("moreSheet");
+  if(!sh){
+    sh=document.createElement("div");sh.id="moreSheet";sh.className="more-sheet";
+    sh.addEventListener("click",e=>{if(e.target===sh)_closeMoreSheet();});
+    document.body.appendChild(sh);
+  }
+  sh.innerHTML=`<div class="more-panel" role="dialog" aria-label="${_esc(_navLabel("more"))}">
+    <div class="more-handle"></div>
+    ${extra.map(it=>`<button type="button" class="more-item${_curTab===it.id?" on":""}" onclick="_closeMoreSheet();navigateTo('${it.id}')">
+      <span class="more-ic">${_icon(it.id,22)}</span><span>${_esc(_navLabel(it.k))}</span></button>`).join("")}
+  </div>`;
+  requestAnimationFrame(()=>sh.classList.add("on"));
+}
+function _closeMoreSheet(){const sh=document.getElementById("moreSheet");if(sh)sh.classList.remove("on");}
 
 function navigateTo(id,_fh){
   _curTab=id;
   if(!_fh)history.pushState({_ms:'tab',id},'');
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
-  document.querySelectorAll(".nb,.snav-btn").forEach(b=>b.classList.remove("on"));
   const sc=document.getElementById("sc-"+id);if(sc)sc.classList.add("on");
-  const nb=document.getElementById("nb-"+id);if(nb)nb.classList.add("on");
-  const snb=document.getElementById("snb-"+id);if(snb)snb.classList.add("on");
-  // Pixel-precise pill positioning — no floating-point percentage drift
-  const ind=document.getElementById("nind");
-  if(ind&&nb){ind.style.width=nb.offsetWidth+"px";ind.style.left=nb.offsetLeft+"px";}
+  _markActiveNav(id);
   if(id==="dash")loadDash();
   if(id==="triage"){
     if(CR!=="paciente"&&!_triageLookupDone){_showPatientLookup();}

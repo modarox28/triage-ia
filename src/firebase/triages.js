@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — Firestore Triages Data Layer
+ * MedIA Suite — Firestore Triages Data Layer
  * All Firestore CRUD for the "triages" collection. No UI, no side effects.
  * @module src/firebase/triages
  */

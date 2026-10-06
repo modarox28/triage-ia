@@ -140,7 +140,7 @@ function _renderColaBoard(){
             const name=d.pacienteNombre||`#${d._boardN||'?'}`;
             return`<div style="background:var(--bg2);border-radius:9px;padding:8px 10px;font-size:.75rem;cursor:pointer;border:1px solid var(--bd)" onclick="navigateTo('cola')">
               <div style="font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${motIc} ${_esc(name)}</div>
-              <div style="color:var(--mu);font-size:.68rem">${mins}m · ${_esc(d.tipo||'')}${d.esMCI?' · MCI':''}</div>
+              <div style="color:var(--mu);font-size:.68rem">${mins}m · ${_esc(_tipoLabel(d.tipo))}${d.esMCI?' · MCI':''}</div>
             </div>`;
           }).join('')}
         </div>

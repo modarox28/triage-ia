@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — i18n translations
+ * MedIA Suite — i18n translations
  * @module src/i18n
  */
 export const L={

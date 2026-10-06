@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — Clinical Threshold Utilities
+ * MedIA Suite — Clinical Threshold Utilities
  * Vital-sign severity classifiers. Pure functions, no side effects.
  * @module src/utils/clinical
  */

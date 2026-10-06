@@ -242,7 +242,7 @@ function renderHist(){
       <span class="hist-b ${cc}">${dt.clasificacion}</span>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:.82rem">${_esc(mM[dt.motivo]||dt.motivo||"—")}${notasBadge}${mciTag}</div>
-        <div style="font-size:.69rem;color:var(--mu)">${performer}${_esc(dt.tipo||"")} · D:${dt.dolor??"-"}/10 · ${_esc(date)}</div>
+        <div style="font-size:.69rem;color:var(--mu)">${performer}${_esc(_tipoLabel(dt.tipo))} · D:${dt.dolor??"-"}/10 · ${_esc(date)}</div>
         ${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esc(dt.justificacion.slice(0,80))}...</div>`:""}
       </div>
       <button onclick="event.stopPropagation();_exportHistPDF(${idx})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.72rem;padding:4px 7px;cursor:pointer;margin-left:6px;touch-action:manipulation" title="Exportar PDF">📄</button>
@@ -279,7 +279,7 @@ function _renderDashRecent(){
     const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
     const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
     const quien=dt.userName?`<span style="font-size:.62rem;color:var(--cy);margin-left:4px">· ${_esc(dt.userName)}</span>`:"";
-    return`<div class="hist-row" style="cursor:pointer" onclick="_openTriageDetail(${i})"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600">${_esc(mMD[dt.motivo]||dt.motivo||"—")}</div><div style="font-size:.69rem;color:var(--mu)">${_esc(dt.tipo||"")} · ${_esc(date)}${quien}</div></div><button onclick="event.stopPropagation();_exportDashPDF(${i})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.7rem;padding:3px 6px;cursor:pointer;margin-left:4px;touch-action:manipulation" title="PDF">📄</button><span style="color:var(--mu);font-size:.95rem;flex-shrink:0;margin-left:4px">›</span></div>`;
+    return`<div class="hist-row" style="cursor:pointer" onclick="_openTriageDetail(${i})"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600">${_esc(mMD[dt.motivo]||dt.motivo||"—")}</div><div style="font-size:.69rem;color:var(--mu)">${_esc(_tipoLabel(dt.tipo))} · ${_esc(date)}${quien}</div></div><button onclick="event.stopPropagation();_exportDashPDF(${i})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.7rem;padding:3px 6px;cursor:pointer;margin-left:4px;touch-action:manipulation" title="PDF">📄</button><span style="color:var(--mu);font-size:.95rem;flex-shrink:0;margin-left:4px">›</span></div>`;
   }).join("");
   const hasMore=filtered.length>_dashShown;
   if(moreEl){
@@ -304,7 +304,7 @@ function _showTriageDetail(dt){
   const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
   const mMD={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
   const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc,{weekday:"short",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
-  const row=(lbl,val,extra="")=>val!=null&&val!==""?`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:.82rem"><span style="color:var(--mu)">${lbl}</span><span style="font-weight:600;${extra}">${val}</span></div>`:"";
+  const row=(lbl,val,extra="")=>val!=null&&val!==""?`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:.82rem"><span style="color:var(--mu)">${lbl}</span><span style="font-weight:600;${extra}">${_esc(val)}</span></div>`:"";
   const scores=[];
   if(dt.qsofa!=null)scores.push({l:"qSOFA",v:dt.qsofa,c:dt.qsofa>=2?"var(--rd)":"var(--gn)"});
   if(dt.news2!=null)scores.push({l:"NEWS2",v:dt.news2,c:dt.news2>=7?"var(--rd)":dt.news2>=5?"var(--yw)":"var(--gn)"});
@@ -317,7 +317,7 @@ function _showTriageDetail(dt){
       <span class="hist-b ${cc}" style="font-size:.88rem;padding:5px 14px">${dt.clasificacion}</span>
       <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.9rem">${_esc(mMD[dt.motivo]||dt.motivo||"—")}${mciTag}</div><div style="font-size:.71rem;color:var(--mu);margin-top:2px">${_esc(date)}</div></div>
     </div>
-    ${row("Tipo de paciente",dt.tipo)}
+    ${row("Tipo de paciente",_tipoLabel(dt.tipo))}
     ${dt.pacienteNombre?row("Paciente",dt.pacienteNombre):""}
     ${row("Nivel de dolor",dt.dolor!=null?`${dt.dolor}/10`:null)}
     ${row("Atendido por",dt.userName)}

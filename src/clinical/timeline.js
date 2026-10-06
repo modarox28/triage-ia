@@ -1,5 +1,5 @@
 /**
- * MedAI Suite — Clinical Timeline Builder (P5)
+ * MedIA Suite — Clinical Timeline Builder (P5)
  * Generates a triage session event log from scored data.
  * Depends on checkCriticalVitals from engine.js.
  * @module src/clinical/timeline
