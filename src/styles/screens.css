@@ -1,0 +1,202 @@
+/* screens.css — Medicamentos, QR, paciente, ajustes, perfil y herramientas
+   Parte de los estilos de MedIA Suite (antes dentro de index.html). */
+/* MEDS REDESIGN */
+.med-add-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:2px 0 4px;}
+.med-add-toggle{font-size:1.3rem;transition:transform .25s cubic-bezier(.34,1.4,.64,1);color:var(--cy);line-height:1;}
+.med-add-form{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.med-add-form.on{max-height:600px;}
+.mi2{display:flex;align-items:stretch;border-radius:11px;background:var(--bg3);margin-bottom:7px;overflow:hidden;border:1px solid var(--bd);transition:box-shadow .2s;}
+.mi2:active{box-shadow:0 0 0 2px var(--cy);}
+.mi2-bar{width:3px;flex-shrink:0;}
+.mi2-body{flex:1;padding:10px 6px 10px 12px;min-width:0;}
+.mi2-name{font-weight:700;font-size:.88rem;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mi2-info{font-size:.71rem;color:var(--mu);}
+.mi2-note{font-size:.68rem;color:var(--mu);font-style:italic;margin-top:2px;}
+.mi2-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px 10px 8px 4px;}
+.mi2-del{background:none;border:none;color:var(--mu);cursor:pointer;font-size:.85rem;padding:4px 5px;border-radius:6px;transition:color .2s;touch-action:manipulation;}
+.mi2-del:hover{color:var(--rd);}
+.ri2{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);}
+.ri2:last-child{border-bottom:none;}
+.ri2-time{font-family:"JetBrains Mono",monospace;font-size:.78rem;color:var(--cy);min-width:44px;font-weight:700;}
+.ri2-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ri2-body{flex:1;min-width:0;}
+.ri2-name{font-weight:700;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ri2-dose{font-size:.69rem;color:var(--mu);}
+/* QR SCAN */
+.qr-video-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:12px;}
+#qrVideo{width:100%;display:block;border-radius:12px;}
+.qr-line{position:absolute;left:8%;right:8%;height:2px;background:var(--cy);box-shadow:0 0 8px var(--cy);animation:scanLine 2s linear infinite;}
+
+/* TRIAGE TOOLBAR */
+.triage-tb{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;min-height:34px;}
+.triage-act-bar{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--bd);border-radius:22px;overflow:hidden;flex-shrink:0;}
+.triage-act-btn{display:flex;align-items:center;gap:4px;padding:6px 12px;border:none;background:transparent;font-size:.73rem;font-weight:600;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:background .18s,opacity .18s;touch-action:manipulation;white-space:nowrap;-webkit-user-select:none;user-select:none;}
+.triage-act-btn:active{opacity:.65;}
+.triage-act-btn.t-preh{color:#ffa040;}
+.triage-act-btn.t-mci{color:#ff8060;}
+.triage-act-sep{width:1px;height:18px;background:var(--bd);flex-shrink:0;}
+/* PATIENT HC CHIP (persistent banner across triage steps) */
+.pt-hc-chip{display:flex;align-items:center;gap:10px;background:rgba(0,200,240,.07);border:1px solid rgba(0,200,240,.25);border-radius:14px;padding:10px 14px;margin-bottom:10px;animation:fadeUp .35s both;}
+.pt-hc-chip .pt-av{width:34px;height:34px;border-radius:50%;background:var(--cy-a);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--cy);flex-shrink:0;}
+.pt-hc-chip .pt-name{font-weight:700;font-size:.88rem;color:var(--tx);}
+.pt-hc-chip .pt-sub{font-size:.72rem;color:var(--mu);margin-top:1px;}
+.pt-hc-chip .pt-ale{font-size:.68rem;font-weight:700;color:var(--rd);background:var(--rd-a);padding:2px 8px;border-radius:10px;margin-top:4px;display:inline-block;}
+/* PATIENT LOOKUP STEP */
+.lookup-wrap{animation:fadeUp .4s both;}
+.lookup-icon-wrap{text-align:center;padding:20px 0 14px;}
+.lookup-icon-wrap .lookup-ic{font-size:3rem;display:block;animation:fadeUp .4s .05s both;}
+.lookup-icon-wrap .lookup-title{font-size:1.05rem;font-weight:700;color:var(--tx);margin-top:6px;animation:fadeUp .4s .1s both;}
+.lookup-icon-wrap .lookup-sub{font-size:.78rem;color:var(--mu);margin-top:4px;animation:fadeUp .4s .15s both;line-height:1.5;}
+.lookup-input-row{display:flex;gap:8px;animation:fadeUp .4s .2s both;margin-top:4px;}
+.lookup-divider{border:none;border-top:1px solid var(--bd);margin:14px 0;animation:fadeUp .4s .25s both;}
+.lookup-result-enter{animation:fadeUp .3s both;}
+.lookup-found-card{background:rgba(0,200,240,.07);border:1.5px solid rgba(0,200,240,.3);border-radius:14px;padding:14px;margin-bottom:10px;}
+.lookup-found-card .lf-name{font-weight:700;font-size:.97rem;color:var(--tx);}
+.lookup-found-card .lf-meta{font-size:.74rem;color:var(--mu);margin-top:2px;}
+.lookup-found-card .lf-ant{font-size:.74rem;color:var(--mu);margin-top:5px;}
+.lookup-found-card .lf-ale{font-size:.7rem;font-weight:700;color:var(--rd);background:var(--rd-a);padding:2px 8px;border-radius:10px;margin-top:6px;display:inline-block;}
+.lookup-found-card .lf-med{font-size:.72rem;color:var(--cy);margin-top:5px;}
+/* ALARM */
+.abanner{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:linear-gradient(135deg,#00c8f0,#00e07a);color:#000;padding:12px 14px;z-index:9999;display:none;animation:fadeUp .3s ease;}
+.atitle{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:.88rem;}
+.asub{font-size:.72rem;opacity:.75;margin-top:2px;}
+.aok{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.15);border:none;color:#000;padding:4px 11px;border-radius:6px;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;font-size:.7rem;font-weight:700;}
+.toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-6px);background:rgba(30,40,60,.95);color:var(--tx);border:1px solid rgba(255,255,255,.12);padding:9px 18px;border-radius:22px;font-size:.78rem;z-index:9998;opacity:0;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:88vw;pointer-events:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.4);}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* SETTINGS SCREEN */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bd);}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-size:.88rem;font-weight:600;}
+.setting-sub{font-size:.72rem;color:var(--mu);margin-top:2px;}
+
+/* SYMPTOM DETAIL */
+.symptom-q{background:var(--bg3);border:1px solid var(--bd);border-left:3px solid var(--cy);border-radius:11px;padding:12px 14px;margin-bottom:9px;animation:fadeUp .35s cubic-bezier(.4,0,.2,1) both;}
+.symptom-q:nth-child(1){animation-delay:.04s}.symptom-q:nth-child(2){animation-delay:.11s}.symptom-q:nth-child(3){animation-delay:.18s}
+.symptom-q-title{font-size:.72rem;font-family:"JetBrains Mono",monospace;color:var(--cy);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
+.symptom-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.symptom-opt{padding:10px 11px;border-radius:9px;border:1.5px solid var(--bd);background:var(--bg2);font-size:.8rem;color:var(--tx);cursor:pointer;transition:all .18s;font-family:"Familjen Grotesk",sans-serif;text-align:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+.symptom-opt:hover{border-color:var(--cy);color:var(--cy);background:var(--cy-a);}
+.symptom-opt:active{transform:scale(.95);}
+.symptom-opt.sel{background:linear-gradient(135deg,var(--cy-a),rgba(0,200,240,.15));border-color:var(--cy);color:var(--cy);font-weight:700;box-shadow:0 0 0 1px var(--cy),0 2px 8px rgba(0,200,240,.15);}
+
+/* WELCOME OVERLAY */
+@keyframes welcomeIn{from{opacity:0;transform:scale(.92) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes welcomeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.04)}}
+.welcome-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3000;background:rgba(11,17,32,.92);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.welcome-box{text-align:center;animation:welcomeIn .55s cubic-bezier(.34,1.4,.64,1);}
+.welcome-box.out{animation:welcomeOut .4s cubic-bezier(.4,0,.6,1) forwards;}
+.welcome-av{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;margin:0 auto 16px;box-shadow:0 0 0 3px rgba(255,255,255,.12),0 0 32px rgba(0,200,240,.3);}
+.welcome-hello{font-size:.78rem;font-family:"JetBrains Mono",monospace;color:var(--cy);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.welcome-name{font-size:1.8rem;font-weight:700;color:var(--tx);margin-bottom:6px;line-height:1.1;}
+.welcome-role{font-size:.72rem;color:var(--mu);font-family:"JetBrains Mono",monospace;letter-spacing:1px;text-transform:uppercase;}
+.welcome-dots{display:flex;gap:8px;justify-content:center;margin-top:24px;}
+.welcome-dot{width:7px;height:7px;background:var(--cy);border-radius:50%;animation:dot 1.2s infinite;}
+.welcome-dot:nth-child(2){animation-delay:.2s}.welcome-dot:nth-child(3){animation-delay:.4s}
+
+/* PROFILE PHOTO */
+.prof-photo-wrap{position:relative;width:80px;height:80px;margin:0 auto 14px;cursor:pointer;}
+.prof-photo-wrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.prof-photo-av{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;overflow:hidden;box-shadow:0 0 0 3px rgba(255,255,255,.1);}
+.prof-photo-av img{width:100%;height:100%;object-fit:cover;}
+.prof-photo-badge{position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--cy);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#000;border:2px solid var(--bg2);}
+
+/* INACTIVITY WARNING BANNER */
+@keyframes slideDown{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-100%)}}
+.inact-banner{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:linear-gradient(135deg,var(--yw),#ff9500);color:#000;padding:13px 16px;z-index:8000;display:none;animation:slideDown .4s cubic-bezier(.34,1.4,.64,1);}
+.inact-banner.on{display:flex;align-items:center;gap:10px;}
+.inact-banner.out{animation:slideUp .3s ease forwards;}
+.inact-title{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:.82rem;flex:1;}
+.inact-btn{background:rgba(0,0,0,.18);border:none;color:#000;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;font-size:.76rem;font-weight:700;white-space:nowrap;touch-action:manipulation;}
+
+/* REMEMBER ME TOGGLE */
+.remember-row{display:flex;align-items:center;gap:10px;margin:8px 0 2px;cursor:pointer;user-select:none;}
+.remember-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--bd);background:var(--bg3);display:flex;align-items:center;justify-content:center;transition:all .2s cubic-bezier(.34,1.4,.64,1);flex-shrink:0;}
+.remember-check.on{background:var(--cy);border-color:var(--cy);}
+.remember-check.on::after{content:"✓";font-size:.7rem;color:#000;font-weight:700;}
+.remember-lbl{font-size:.74rem;color:var(--mu);transition:color .2s;}
+.remember-row:hover .remember-lbl{color:var(--tx);}
+
+/* CONFIRM DIALOG */
+@keyframes dialogIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.confirm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9000;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.confirm-overlay.on{display:flex;}
+.confirm-box{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:24px 20px 32px;width:100%;max-width:430px;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.confirm-icon{font-size:2rem;text-align:center;margin-bottom:10px;}
+.confirm-title{font-family:"JetBrains Mono",monospace;font-size:.92rem;font-weight:700;text-align:center;margin-bottom:6px;}
+.confirm-msg{font-size:.8rem;color:var(--mu);text-align:center;line-height:1.6;margin-bottom:20px;}
+.confirm-actions{display:flex;flex-direction:column;gap:8px;}
+
+/* RECONOCIMIENTO IMAGEN VITALES */
+.vitcam-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3900;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.vitcam-overlay.on{display:flex;}
+.vitcam-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:20px 16px calc(36px + env(safe-area-inset-bottom,0px));width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.vitcam-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;margin-bottom:2px;}
+.vitcam-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
+.vitcam-preview{width:100%;height:180px;border-radius:12px;object-fit:contain;background:var(--bg3);border:1px solid var(--bd);display:none;margin-bottom:12px;}
+.vitcam-drop{border:2px dashed var(--bd);border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;margin-bottom:12px;transition:border-color .2s;}
+.vitcam-drop:hover{border-color:var(--cy);}
+.vitcam-drop-ic{font-size:2rem;margin-bottom:6px;}
+.vitcam-drop-txt{font-size:.75rem;color:var(--mu);}
+.vitcam-result{background:var(--bg3);border-radius:12px;padding:12px;border:1px solid var(--bd);margin-bottom:12px;display:none;}
+.vitcam-res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.vitcam-res-item{text-align:center;padding:8px 4px;}
+.vitcam-res-val{font-family:"JetBrains Mono",monospace;font-size:1.1rem;font-weight:700;color:var(--cy);}
+.vitcam-res-lbl{font-size:.6rem;color:var(--mu);margin-top:2px;}
+/* OFFLINE BANNER */
+.offline-bar{display:none;align-items:center;justify-content:center;gap:8px;padding:6px 12px;background:rgba(255,170,0,.18);border-bottom:1px solid rgba(255,170,0,.4);font-size:.72rem;font-family:"JetBrains Mono",monospace;color:#ffb830;font-weight:700;flex-shrink:0;z-index:300;animation:fadeUp .3s ease;}
+.offline-bar.on{display:flex;}
+.offline-bar .ob-dot{width:8px;height:8px;border-radius:50%;background:#ffb830;}
+/* NOTIFICACION PRE-HOSPITALARIA */
+.preh-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3800;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.preh-overlay.on{display:flex;}
+.preh-sheet{background:var(--bg2);border:1px solid rgba(255,140,0,.3);border-radius:22px 22px 0 0;padding:20px 16px calc(36px + env(safe-area-inset-bottom,0px));width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.preh-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;color:#ffa040;}
+.preh-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
+.preh-field{margin-bottom:10px;}
+.preh-lbl{font-size:.68rem;font-weight:700;color:var(--mu);font-family:"JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.preh-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.preh-vital{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;}
+.preh-vital-lbl{font-size:.62rem;color:var(--mu);margin-bottom:3px;}
+.preh-vital-in{width:100%;background:none;border:none;outline:none;font-size:.88rem;font-family:"JetBrains Mono",monospace;color:var(--tx);font-weight:700;}
+.preh-eta-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.preh-eta-btn{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:5px 12px;font-size:.74rem;cursor:pointer;transition:all .15s;font-family:"JetBrains Mono",monospace;}
+.preh-eta-btn.sel{background:rgba(255,140,0,.15);border-color:rgba(255,140,0,.5);color:#ffa040;}
+.preh-send{background:linear-gradient(135deg,rgba(255,120,0,.8),rgba(255,60,0,.8));border:none;border-radius:12px;color:#fff;padding:13px;font-size:.85rem;font-weight:700;font-family:"JetBrains Mono",monospace;width:100%;cursor:pointer;margin-top:4px;touch-action:manipulation;}
+/* RESUMEN DE TURNO / HANDOFF */
+.handoff-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3700;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.handoff-overlay.on{display:flex;}
+.handoff-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:20px 16px calc(36px + env(safe-area-inset-bottom,0px));width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.handoff-title{font-family:"JetBrains Mono",monospace;font-size:1rem;font-weight:700;margin-bottom:2px;}
+.handoff-sub{font-size:.7rem;color:var(--mu);margin-bottom:14px;}
+.handoff-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.handoff-stat{background:var(--bg3);border-radius:10px;padding:9px 5px;text-align:center;border:1px solid var(--bd);}
+.handoff-stat-n{font-family:"JetBrains Mono",monospace;font-size:1.5rem;font-weight:700;line-height:1;}
+.handoff-stat-l{font-size:.58rem;color:var(--mu);margin-top:3px;}
+.handoff-stat.ro .handoff-stat-n{color:#ff6060;}
+.handoff-stat.am .handoff-stat-n{color:#ffc832;}
+.handoff-stat.ve .handoff-stat-n{color:#00e07a;}
+.handoff-stat.total .handoff-stat-n{color:var(--cy);}
+.handoff-entry{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border-radius:10px;margin-bottom:6px;border:1px solid var(--bd);}
+.handoff-entry-cl{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.handoff-entry-info{flex:1;min-width:0;}
+.handoff-entry-top{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.handoff-entry-sub{font-size:.66rem;color:var(--mu);}
+.handoff-entry-time{font-family:"JetBrains Mono",monospace;font-size:.64rem;color:var(--mu);flex-shrink:0;}
+/* CALCULADORA DOSIS PEDIÁTRICA */
+.dosp-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:3600;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.dosp-overlay.on{display:flex;}
+.dosp-sheet{background:var(--bg2);border:1px solid var(--bd);border-radius:22px 22px 0 0;padding:18px 16px calc(36px + env(safe-area-inset-bottom,0px));width:100%;max-width:500px;max-height:92vh;overflow-y:auto;animation:dialogIn .38s cubic-bezier(.34,1.4,.64,1);}
+.dosp-drug-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;}
+.dosp-drug{background:var(--bg3);border:1.5px solid var(--bd);border-radius:10px;padding:8px 10px;font-size:.73rem;cursor:pointer;text-align:left;transition:all .15s;touch-action:manipulation;}
+.dosp-drug:active{transform:scale(.95);}
+.dosp-drug.sel{background:rgba(100,160,255,.12);border-color:rgba(100,160,255,.5);}
+.dosp-drug-name{font-weight:700;}
+.dosp-drug-sub{font-size:.64rem;color:var(--mu);}
+.dosp-result{background:var(--bg3);border-radius:14px;padding:14px;border:1px solid var(--bd);margin-top:12px;}
+.dosp-res-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd);}
+.dosp-res-row:last-child{border-bottom:none;}
+.dosp-res-lbl{font-size:.72rem;color:var(--mu);}
+.dosp-res-val{font-family:"JetBrains Mono",monospace;font-size:.88rem;font-weight:700;color:var(--cy);}
+.dosp-warn{font-size:.7rem;color:var(--yw);background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);border-radius:8px;padding:7px 10px;margin-top:8px;}

@@ -1,0 +1,69 @@
+/* base.css — Variables de tema, reset, animaciones y utilidades
+   Parte de los estilos de MedIA Suite (antes dentro de index.html). */
+:root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#5a7299;--mu2:#3d5580;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);--zoom:1;--nav-h:70px;}
+.light{--bg:#f0f4f8;--bg2:#fff;--bg3:#e8edf5;--bd:#d0dae8;--tx:#0f1923;--mu:#6b7fa3;--mu2:#9aabc4;--cy:#0099bb;--gn:#00a855;--rd:#d42042;--yw:#c97a00;--cy-a:rgba(0,153,187,.08);--gn-a:rgba(0,168,85,.08);--rd-a:rgba(212,32,66,.08);--yw-a:rgba(201,122,0,.08);--shadow:0 4px 24px rgba(0,0,0,.08);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;touch-action:manipulation;}
+html{font-size:calc(16px * var(--zoom));-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation;}
+body{overflow:hidden;width:100%;max-width:100%;background:var(--bg);color:var(--tx);font-family:"Familjen Grotesk",sans-serif;transition:background .3s,color .3s;overscroll-behavior:none;}
+
+/* .app usa position:fixed top:0 left:0 right:0 bottom:0 — no necesita altura explícita */
+
+/* iOS — prevent auto zoom on input focus (font-size must be ≥ 16px rendered) */
+input,select,textarea{font-size:max(16px,1em)!important;}
+/* Reset iOS native styling */
+input,button,select,textarea{-webkit-appearance:none;appearance:none;}
+button{border-radius:0;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+@keyframes slideR{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+@keyframes optIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scanLine{0%{top:8%}100%{top:88%}}
+@keyframes dropDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes pageSlideIn{from{opacity:0;transform:translateX(22px) scale(.985)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes pageSlideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rippleAnim{0%{transform:scale(0);opacity:.45}100%{transform:scale(4.5);opacity:0}}
+@keyframes skeletonPulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes critBlink{0%,100%{background:var(--rd-a);border-color:var(--rd)}50%{background:rgba(255,58,92,.22);border-color:rgba(255,58,92,.6)}}
+@keyframes bounceIn{0%{transform:scale(0)}60%{transform:scale(1.1)}80%{transform:scale(.95)}100%{transform:scale(1)}}
+@keyframes ringCritPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,58,92,0)}50%{box-shadow:0 0 0 7px rgba(255,58,92,.18);}}
+@keyframes slideInBottom{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Ripple container */
+.rpl-wrap{position:relative;overflow:hidden;}
+.rpl{position:absolute;border-radius:50%;width:100px;height:100px;margin-left:-50px;margin-top:-50px;pointer-events:none;background:rgba(255,255,255,.25);animation:rippleAnim .55s linear forwards;}
+/* Skeleton loader */
+.skel{background:linear-gradient(90deg,var(--bg3) 25%,var(--bd) 50%,var(--bg3) 75%);background-size:200%;animation:skeletonPulse 1.4s ease-in-out infinite;border-radius:8px;}
+/* Vitals críticos */
+.vital-crit{animation:critBlink 1.2s ease-in-out infinite;border-radius:8px;}
+/* Zoom btns */
+.zoom-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--bd);background:var(--bg3);cursor:pointer;font-size:1rem;font-weight:700;color:var(--tx);transition:all .18s cubic-bezier(.34,1.4,.64,1);touch-action:manipulation;display:flex;align-items:center;justify-content:center;}
+.zoom-btn:hover{border-color:var(--cy);color:var(--cy);transform:scale(1.1);}
+.zoom-btn:active{transform:scale(.92);}
+.zoom-lbl{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:700;color:var(--cy);min-width:38px;text-align:center;}
+/* Critical vitals badge */
+.vcrit-badge{display:inline-flex;align-items:center;gap:4px;background:var(--rd-a);border:1px solid var(--rd);color:var(--rd);border-radius:6px;padding:2px 7px;font-size:.65rem;font-family:"JetBrains Mono",monospace;font-weight:700;animation:critBlink 1s ease-in-out infinite;margin-left:6px;}
+/* Triage timer badge */
+.triage-timer{display:inline-flex;align-items:center;gap:5px;background:var(--cy-a);border:1px solid rgba(0,200,240,.22);border-radius:20px;padding:3px 10px;font-family:"JetBrains Mono",monospace;font-size:.65rem;color:var(--cy);font-weight:700;}
+/* qSOFA chip */
+.sofa-chip{display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;font-family:"JetBrains Mono",monospace;}
+.sofa-chip.low{background:var(--gn-a);color:var(--gn);border:1px solid rgba(0,224,122,.25);}
+.sofa-chip.high{background:var(--rd-a);color:var(--rd);border:1px solid rgba(255,58,92,.25);}
+/* Nearby result card */
+.near-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--bd);border-radius:10px;margin-bottom:6px;transition:all .18s;cursor:pointer;}
+.near-item:hover{border-color:var(--cy);background:var(--cy-a);}
+.near-icon{font-size:1.4rem;flex-shrink:0;}
+.near-name{font-weight:700;font-size:.84rem;}
+.near-dist{font-size:.68rem;color:var(--cy);font-family:"JetBrains Mono",monospace;font-weight:700;}
+.near-addr{font-size:.68rem;color:var(--mu);}
+/* Accessibility banner */
+.access-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--bd);}
+/* Score display */
+.score-ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",monospace;font-size:1.3rem;font-weight:700;flex-shrink:0;border:3px solid;transition:box-shadow .3s;}
+.score-ring.ok{border-color:var(--gn);color:var(--gn);background:var(--gn-a);}
+.score-ring.warn{border-color:var(--yw);color:var(--yw);background:var(--yw-a);}
+.score-ring.crit{border-color:var(--rd);color:var(--rd);background:var(--rd-a);animation:ringCritPulse 1.6s ease-in-out infinite;}
+

@@ -1,0 +1,63 @@
+/* auth.css — Pantalla de acceso y selector de idioma
+   Parte de los estilos de MedIA Suite (antes dentro de index.html). */
+/* AUTH */
+.auth-screen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));}
+.auth-box{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--bd);border-radius:22px;padding:28px 24px;box-shadow:var(--shadow);animation:fadeUp .45s cubic-bezier(.34,1.4,.64,1);margin:auto;overflow:hidden;}
+@keyframes authSlideRight{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes authSlideLeft{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
+.auth-slide-right{animation:authSlideRight .32s cubic-bezier(.34,1.1,.64,1) both}
+.auth-slide-left{animation:authSlideLeft .32s cubic-bezier(.34,1.1,.64,1) both}
+.auth-logo{font-family:"JetBrains Mono",monospace;font-size:1.4rem;font-weight:700;text-align:center;margin-bottom:4px;}
+.auth-logo b{background:linear-gradient(90deg,var(--cy),#fff,var(--cy));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;}
+.auth-logo s{color:var(--mu);text-decoration:none;font-style:normal;-webkit-text-fill-color:var(--mu);}
+.auth-sub{text-align:center;font-size:.8rem;color:var(--mu);margin-bottom:16px;}
+
+/* LANG SELECTOR */
+.lang-wrap{position:relative;display:inline-block;}
+.lang-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;border:1px solid var(--bd);background:var(--bg3);font-family:"JetBrains Mono",monospace;font-size:.65rem;font-weight:700;cursor:pointer;color:var(--mu);transition:all .2s;white-space:nowrap;}
+.lang-btn:hover{border-color:var(--cy);color:var(--cy);}
+.lang-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:5px;box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:700;min-width:150px;display:none;}
+.lang-menu.open{display:block;animation:dropDown .18s ease;}
+.lang-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.83rem;color:var(--tx);transition:all .15s;white-space:nowrap;}
+.lang-item:hover{background:var(--cy-a);color:var(--cy);}
+.lang-item.cur{background:var(--cy-a);color:var(--cy);font-weight:700;}
+
+.auth-lang-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;}
+.auth-theme-btn{background:none;border:1.5px solid var(--bd);border-radius:10px;padding:5px 10px;font-size:1rem;cursor:pointer;color:var(--tx);transition:border-color .18s,background .18s;touch-action:manipulation;line-height:1;flex-shrink:0;}
+.auth-theme-btn:active{opacity:.7;}
+.triage-quick-btn{display:flex;align-items:center;gap:12px;width:100%;padding:13px 15px;background:var(--bg2);border:1px solid var(--bd);border-radius:15px;cursor:pointer;touch-action:manipulation;transition:background .18s,border-color .18s,opacity .18s;text-align:left;font-family:"Familjen Grotesk",sans-serif;-webkit-user-select:none;user-select:none;}
+.triage-quick-btn:active{opacity:.7;}
+.triage-quick-ic{font-size:1.5rem;flex-shrink:0;}
+.triage-quick-body{flex:1;min-width:0;}
+.triage-quick-title{font-size:.88rem;font-weight:700;color:var(--tx);}
+.triage-quick-sub{font-size:.7rem;color:var(--mu);margin-top:2px;line-height:1.4;}
+.triage-quick-arrow{font-size:1.2rem;color:var(--mu);flex-shrink:0;font-weight:300;}
+.auth-tabs{display:flex;gap:0;margin-bottom:18px;background:var(--bg3);border-radius:10px;padding:3px;}
+.auth-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-family:"Familjen Grotesk",sans-serif;font-size:.85rem;font-weight:600;color:var(--mu);cursor:pointer;transition:all .22s;}
+.auth-tab.on{background:var(--cy);color:#000;}
+.auth-fg{margin-bottom:11px;}
+.auth-fl{display:block;font-family:"JetBrains Mono",monospace;font-size:.58rem;font-weight:700;color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.auth-fi{width:100%;background:var(--bg3);border:1.5px solid var(--bd);border-radius:9px;padding:11px 13px;font-size:.9rem;color:var(--tx);font-family:"Familjen Grotesk",sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;}
+.auth-fi:focus{border-color:var(--cy);box-shadow:0 0 0 3px rgba(0,200,240,.12);}
+.auth-fi::placeholder{color:var(--mu2);}
+.auth-btn{width:100%;padding:12px;background:var(--cy);border:none;border-radius:9px;color:#000;font-weight:700;font-size:.92rem;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:all .22s;margin-top:6px;}
+.auth-btn:hover{background:#22d4f5;transform:translateY(-1px);}
+.auth-btn:active{transform:scale(.97);}
+.forgot-link{display:block;text-align:center;font-size:.74rem;color:var(--mu);margin-top:9px;cursor:pointer;transition:color .2s;}
+.forgot-link:hover{color:var(--cy);}
+.auth-div{display:flex;align-items:center;gap:10px;margin:13px 0;color:var(--mu);font-size:.76rem;}
+.auth-div::before,.auth-div::after{content:"";flex:1;height:1px;background:var(--bd);}
+.auth-goo{width:100%;padding:11px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:9px;color:var(--tx);font-weight:600;font-size:.86rem;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:all .22s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.auth-goo:hover{border-color:var(--cy);color:var(--cy);}
+.auth-goo:active{transform:scale(.97);}
+.auth-err{font-size:.76rem;text-align:center;margin-top:9px;min-height:18px;transition:color .2s;}
+.auth-err.ok{color:var(--gn);}
+.auth-err.er{color:var(--rd);}
+.auth-sep{margin:18px 0 14px;border:none;border-top:1px solid var(--bd);}
+.auth-patient-btn{width:100%;padding:13px;background:transparent;border:1.5px solid var(--bd);border-radius:12px;color:var(--mu);font-size:.88rem;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;transition:all .22s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.auth-patient-btn:hover{border-color:var(--pu);color:var(--pu);background:rgba(168,85,247,.06);}
+.auth-patient-btn:active{transform:scale(.97);}
+.auth-staff-link{display:block;text-align:center;font-size:.74rem;color:var(--mu);margin-top:12px;cursor:pointer;transition:color .2s;}
+.auth-staff-link:hover{color:var(--cy);}
+#staffRoleContext{transition:background .25s,color .25s;}
+

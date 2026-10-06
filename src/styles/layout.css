@@ -1,0 +1,60 @@
+/* layout.css — Estructura de la app: barra superior, pantallas y navegación
+   Parte de los estilos de MedIA Suite (antes dentro de index.html). */
+/* APP SHELL — position:fixed fills viewport; height set by JS on iOS via --vh */
+.app{display:none;width:100%;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;}
+.app.on{display:flex;flex-direction:column;width:100%;height:100%;}
+@media(min-width:768px){
+  .app.on{flex-direction:row;}
+  .sidebar{width:230px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:18px 0;overflow:hidden;}
+  .main-area{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+  .bottom-nav{display:none!important;}
+  .body{padding-bottom:0!important;}
+  .sidebar-logo{padding:0 18px 18px;border-bottom:1px solid var(--bd);margin-bottom:10px;}
+  .snav-btn{display:flex;align-items:center;gap:12px;padding:10px 18px;background:none;border:none;cursor:pointer;font-family:"Familjen Grotesk",sans-serif;font-size:.88rem;color:var(--mu);width:100%;text-align:left;transition:all .22s;border-left:3px solid transparent;white-space:nowrap;}
+  .snav-btn:hover{background:var(--cy-a);color:var(--tx);padding-left:22px;}
+  .snav-btn.on{background:var(--cy-a);color:var(--cy);border-left-color:var(--cy);padding-left:22px;}
+  .snav-btn .sni{font-size:1.05rem;width:22px;text-align:center;flex-shrink:0;}
+  .sidebar-bottom{padding:10px 18px;border-top:1px solid var(--bd);}
+  .user-chip{display:flex;align-items:center;gap:9px;padding:9px;background:var(--bg3);border-radius:9px;margin-bottom:8px;}
+  .user-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;color:#000;flex-shrink:0;}
+  .user-name{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .user-role{font-size:.65rem;color:var(--mu);}
+  .sidebar-nav{flex:1;overflow-y:auto;}
+}
+@media(max-width:767px){.sidebar{display:none;}}
+
+/* TOP BAR — padding-top absorbs status bar when in standalone PWA mode */
+.top-bar{padding:11px 16px;padding-top:calc(11px + env(safe-area-inset-top,0px));background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;}
+.top-logo{font-family:"JetBrains Mono",monospace;font-size:.95rem;font-weight:700;flex-shrink:0;}
+.top-logo b{background:linear-gradient(90deg,var(--cy),#fff,var(--cy));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;}
+.top-logo s{color:var(--mu);text-decoration:none;font-style:normal;-webkit-text-fill-color:var(--mu);}
+.top-right{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.icon-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--bd);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;color:var(--tx);flex-shrink:0;}
+.icon-btn:hover{border-color:var(--cy);}
+.role-badge{padding:3px 9px;border-radius:20px;font-family:"JetBrains Mono",monospace;font-size:.58rem;font-weight:700;letter-spacing:.5px;white-space:nowrap;}
+.role-badge.admin{background:rgba(255,58,92,.15);color:var(--rd);}
+.role-badge.medico{background:var(--cy-a);color:var(--cy);}
+.role-badge.admin_hosp{background:rgba(168,85,247,.15);color:var(--pu);}
+.role-badge.paciente{background:var(--gn-a);color:var(--gn);}
+
+/* BODY + SCREENS */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0;}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
+.body::-webkit-scrollbar{width:3px;}
+.body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.sc{display:none;padding:14px;width:100%;box-sizing:border-box;}
+.sc.on{display:block;animation:pageSlideIn .3s cubic-bezier(.34,1.4,.64,1);}
+
+/* BOTTOM NAV — floating pill, flush to safe area */
+.bottom-nav{display:flex;background:rgba(13,19,33,0.88);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.3);position:fixed;bottom:0;left:0;right:0;z-index:50;border-radius:26px 26px 0 0;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,20px);}
+.light .bottom-nav{background:rgba(240,244,248,.92);border:1px solid rgba(0,0,0,.1);box-shadow:0 8px 32px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.07);}
+.nb{flex:1;min-width:44px;display:flex;flex-direction:column;align-items:center;padding:11px 8px 12px;gap:3px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;position:relative;z-index:1;}
+.nb .ni{font-size:1.6rem;transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.nb.on .ni{transform:scale(1.18);}
+.nb .nl{font-size:.58rem;font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--mu);letter-spacing:0;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 3px;transition:color .2s;}
+.nb.on .nl{color:var(--cy);}
+.nb:active{opacity:.6;}
+/* Active tab indicator */
+.nind{position:absolute;top:5px;bottom:5px;left:0;background:rgba(255,255,255,.08);border-radius:20px;transition:left .28s cubic-bezier(.34,1.4,.64,1),width .28s cubic-bezier(.34,1.4,.64,1);pointer-events:none;z-index:0;}
+.light .nind{background:rgba(0,0,0,.06);}
+

@@ -1,0 +1,30 @@
+// firebase-init.js — Inicializa Firebase y expone helpers en window (módulo ES).
+// Se ejecuta después de los scripts clásicos y avisa con el evento "fbready".
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{getFirestore,enableIndexedDbPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT,calcHEART,calcROSIER}from"../clinical/engine.js?v=2";
+import{getCopilotHints,renderCopilotCard}from"../clinical/copilot.js?v=1";
+import{buildTriageTimeline}from"../clinical/timeline.js?v=1";
+import{L}from"../i18n/index.js?v=1";
+import{chkPA,chkFC,chkSat,chkT,chkFR}from"../utils/clinical.js?v=1";
+import{COLA_DEADLINE,INACT_MS,WARN_MS}from"../config/constants.js?v=1";
+import{getSteps as _getStepsModule}from"../triage/steps.js?v=1";
+import{buildTriagePrompt}from"../ai/prompt.js?v=1";
+import{saveTriage,updateTriageAttended,getTriagesHistory,syncOfflineQueue as _syncOfflineQueueFn,subscribeTriageQueue}from"../firebase/triages.js?v=1";
+const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
+const fbapp=initializeApp(firebaseConfig);
+const auth=getAuth(fbapp);const db=getFirestore(fbapp);
+enableIndexedDbPersistence(db).catch(()=>{});
+const gProvider=new GoogleAuthProvider();
+gProvider.setCustomParameters({prompt:"select_account"});
+window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc};
+window.L=L;
+window.checkCriticalVitals=checkCriticalVitals;window.calcQSOFA=calcQSOFA;window.calcNEWS2=calcNEWS2;window.calcShockIndex=calcShockIndex;window.calcCURB65=calcCURB65;window.calcWellsDVT=calcWellsDVT;window.calcHEART=calcHEART;window.calcROSIER=calcROSIER;
+window.getCopilotHints=getCopilotHints;window.renderCopilotCard=renderCopilotCard;window.buildTriageTimeline=buildTriageTimeline;
+window.chkPA=chkPA;window.chkFC=chkFC;window.chkSat=chkSat;window.chkT=chkT;window.chkFR=chkFR;
+window.COLA_DEADLINE=COLA_DEADLINE;window.INACT_MS=INACT_MS;window.WARN_MS=WARN_MS;
+window._getStepsModule=_getStepsModule;
+window.buildTriagePrompt=buildTriagePrompt;
+window.saveTriage=saveTriage;window.updateTriageAttended=updateTriageAttended;window.getTriagesHistory=getTriagesHistory;window._syncOfflineQueueFn=_syncOfflineQueueFn;window.subscribeTriageQueue=subscribeTriageQueue;
+window.dispatchEvent(new Event("fbready"));

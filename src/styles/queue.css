@@ -1,0 +1,48 @@
+/* queue.css — Cola de pacientes y pantalla de carga
+   Parte de los estilos de MedIA Suite (antes dentro de index.html). */
+/* PATIENT QUEUE */
+.cola-stats{display:flex;gap:8px;margin-bottom:12px;}
+.cola-stat{display:flex;flex-direction:column;align-items:center;background:var(--bg3);border:1px solid var(--bd);border-radius:11px;padding:10px 6px;flex:1;min-width:0;}
+.cola-stat-n{font-size:1.5rem;font-weight:700;font-family:"JetBrains Mono",monospace;line-height:1;}
+.cola-stat-n.ro{color:var(--rd)}.cola-stat-n.am{color:var(--yw)}.cola-stat-n.ve{color:var(--gn)}.cola-stat-n.total{color:var(--cy)}
+.cola-stat-l{font-size:.56rem;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-top:3px;text-align:center;}
+.cola-card{display:flex;align-items:stretch;background:var(--bg2);border:1px solid var(--bd);border-radius:13px;margin-bottom:8px;overflow:hidden;transition:opacity .3s,border-color .15s,transform .15s;}
+.cola-card.done{opacity:.45;filter:grayscale(.4);}
+.cola-card.vencido{border-color:rgba(255,58,92,.35);animation:none;}
+.cola-card.drag-over{border-color:var(--cy);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,200,240,.2);}
+.cola-card[draggable="true"]{cursor:grab;}.cola-card[draggable="true"]:active{cursor:grabbing;}
+.cola-bar2{width:4px;flex-shrink:0;}
+.cola-bar2.ro{background:var(--rd)}.cola-bar2.am{background:var(--yw)}.cola-bar2.ve{background:var(--gn)}
+.cola-body{flex:1;padding:10px 12px;min-width:0;}
+.cola-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.cola-class{font-size:.7rem;font-family:"JetBrains Mono",monospace;font-weight:700;letter-spacing:1px;}
+.cola-class.ro{color:var(--rd)}.cola-class.am{color:var(--yw)}.cola-class.ve{color:var(--gn)}
+.cola-pt{font-size:.83rem;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cola-mot{font-size:.72rem;color:var(--mu);margin-bottom:6px;}
+.cola-times{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.cola-elapsed{font-size:.66rem;color:var(--mu);font-family:"JetBrains Mono",monospace;}
+.cola-dlchip{font-size:.66rem;font-family:"JetBrains Mono",monospace;font-weight:700;padding:2px 8px;border-radius:8px;}
+.cola-dlchip.ok{color:var(--gn);background:rgba(0,224,122,.1);}
+.cola-dlchip.warn{color:var(--yw);background:rgba(255,184,48,.1);}
+.cola-dlchip.over{color:var(--rd);background:rgba(255,58,92,.12);animation:pulse .8s infinite alternate;}
+.cola-by{font-size:.6rem;color:var(--mu2);margin-top:4px;font-family:"JetBrains Mono",monospace;}
+.cola-actions{padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-left:1px solid var(--bd);flex-shrink:0;}
+.cola-btn{background:var(--cy);color:#000;border:none;border-radius:8px;padding:7px 11px;font-size:.72rem;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap;font-family:"Familjen Grotesk",sans-serif;}
+.cola-btn.done-btn{background:transparent;border:1.5px solid var(--bd);color:var(--mu);font-size:.66rem;}
+.cola-done-lbl{font-size:.6rem;color:var(--gn);font-family:"JetBrains Mono",monospace;text-align:center;max-width:52px;}
+.cola-refresh{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:8px;padding:5px 10px;font-size:.75rem;cursor:pointer;touch-action:manipulation;transition:all .2s;}
+.cola-refresh:hover{border-color:var(--cy);color:var(--cy);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gn);animation:pulse2 1.5s ease-in-out infinite;margin-left:6px;vertical-align:middle;}
+/* SPLASH SCREEN */
+#splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;transition:opacity .5s ease,visibility .5s ease;visibility:visible;}
+#splash.out{opacity:0;visibility:hidden;pointer-events:none;}
+.splash-logo{display:flex;flex-direction:column;align-items:center;gap:10px;animation:splashLogoIn .55s cubic-bezier(.34,1.4,.64,1) both;}
+@keyframes splashLogoIn{from{opacity:0;transform:scale(.82) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.splash-med{font-family:"JetBrains Mono",monospace;font-size:2.6rem;font-weight:700;line-height:1;}
+.splash-med b{background:linear-gradient(90deg,var(--cy),#fff,var(--cy));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 2.5s linear infinite;}
+.splash-med s{color:var(--mu);text-decoration:none;font-style:normal;-webkit-text-fill-color:var(--mu);}
+.splash-sub{font-size:.65rem;color:var(--mu);font-family:"JetBrains Mono",monospace;letter-spacing:3px;text-transform:uppercase;animation:fadeUp .45s .2s ease both;}
+.splash-bar{width:110px;height:2px;background:var(--bd);border-radius:1px;overflow:hidden;animation:fadeUp .45s .35s ease both;}
+.splash-progress{height:100%;width:35%;background:linear-gradient(90deg,transparent,var(--cy),var(--gn),transparent);border-radius:1px;animation:splashScan 1.4s ease-in-out infinite;}
+@keyframes splashScan{0%{transform:translateX(-200%)}100%{transform:translateX(400%)}}
+

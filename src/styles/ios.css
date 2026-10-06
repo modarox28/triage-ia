@@ -1,0 +1,28 @@
+/* ios.css — Ajustes específicos de iOS Safari
+   Parte de los estilos de MedIA Suite (antes dentro de index.html). */
+/* ── iOS SAFARI SPECIFIC FIXES ───────────────────────────────────────────── */
+/* Prevent callout on long-press */
+*{-webkit-touch-callout:none;}
+a,input,button,select,textarea{-webkit-touch-callout:default;}
+/* Prevent selection on UI elements */
+.nb,.opt,.bpri,.bnxt,.bbk,.bsec,.htab,.icon-btn,.hist-flt{-webkit-user-select:none;user-select:none;}
+/* Bottom nav: safe-area handled in main rule — no override needed here */
+/* Momentum scrolling on all scrollable containers */
+.body,.auth-screen,.preh-sheet,.handoff-sheet,.dosp-sheet,.gcs-sheet,.sidebar-nav{-webkit-overflow-scrolling:touch;}
+/* Prevent double-tap zoom on buttons */
+.nb,.opt,.bpri,.bnxt,.bbk,.bsec,.htab,.icon-btn,.hist-flt,.auth-btn,.auth-goo{touch-action:manipulation;}
+/* Bottom sheet handle bar (visual cue for iOS users) */
+.preh-sheet::before,.handoff-sheet::before,.dosp-sheet::before,.gcs-sheet::before,.vitcam-sheet::before,.mci-setup-sheet::before{content:"";display:block;width:36px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px;}
+/* Fix iOS input type=number arrows */
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+/* Fix iOS Safari tap delay */
+html{touch-action:manipulation;}
+/* Smooth font on iOS */
+*{-webkit-font-smoothing:antialiased;}
+/* iOS Safari: select arrow custom */
+select{padding-right:32px;}
+/* -webkit-backdrop-filter already set in main .bottom-nav rule */
+/* Auth screen iOS keyboard push-up fix */
+@supports (-webkit-touch-callout: none){
+  .auth-screen{justify-content:flex-start;padding-top:max(calc(env(safe-area-inset-top,0px) + 20px), 40px);}
+}
