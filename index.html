@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="./src/styles/clinical.css?v=4">
 <link rel="stylesheet" href="./src/styles/queue.css?v=4">
 <link rel="stylesheet" href="./src/styles/ios.css?v=5">
-<link rel="stylesheet" href="./src/styles/tema.css?v=8">
+<link rel="stylesheet" href="./src/styles/tema.css?v=9">
 </head>
 <body>
 
@@ -314,6 +314,7 @@
         <div class="auth-err" id="patientLoginErr" style="text-align:center"></div>
         <button class="bpri" id="patientLoginBtn" style="width:100%;font-size:.95rem" onclick="loginPatientById()">Ingresar</button>
         <button type="button" class="bsec" id="patientRegLink" style="width:100%;font-size:.82rem;margin-top:8px;padding:9px" onclick="_openPatientRegister()">¿Primera vez? Regístrate</button>
+        <button type="button" class="pin-forgot" onclick="_forgotPinInfo()">¿Olvidaste tu PIN?</button>
       </div>
       <hr class="auth-sep" style="animation:fadeUp .4s .2s both">
       <div style="animation:fadeUp .4s .25s both">
@@ -1127,6 +1128,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- Aceptación de la política para cuentas creadas antes de esta versión -->
+<div class="modal" id="pinModal" role="dialog" aria-modal="true">
+  <div class="modal-box" id="pinModalBox" style="max-width:400px"></div>
+</div>
 <div class="modal" id="consentModal" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
   <div class="modal-box" style="max-width:420px">
     <div class="modal-title" id="consentTitle">Política de tratamiento de datos</div>
@@ -1142,26 +1146,27 @@
     </div>
   </div>
 </div>
-<script src="./src/app/00-iconos.js?v=12"></script>
-<script src="./src/app/00-estado.js?v=12"></script>
-<script src="./src/app/01-auth.js?v=12"></script>
-<script src="./src/app/02-voz-notas.js?v=12"></script>
-<script src="./src/app/03-navegacion.js?v=12"></script>
-<script src="./src/app/04-dashboard-historial.js?v=12"></script>
-<script src="./src/app/05-perfil-qr.js?v=12"></script>
-<script src="./src/app/06-pacientes.js?v=12"></script>
-<script src="./src/app/07-pwa.js?v=12"></script>
-<script src="./src/app/08-triage.js?v=12"></script>
-<script src="./src/app/09-medicamentos.js?v=12"></script>
-<script src="./src/app/10-init.js?v=12"></script>
-<script src="./src/app/11-dolor-sintomas.js?v=12"></script>
-<script src="./src/app/12-historia-clinica.js?v=12"></script>
-<script src="./src/app/13-cola.js?v=12"></script>
-<script src="./src/app/14-herramientas.js?v=12"></script>
-<script src="./src/app/15-mci.js?v=12"></script>
-<script src="./src/app/16-glasgow-gestos.js?v=12"></script>
-<script src="./src/app/17-scores-tablero.js?v=12"></script>
-<script src="./src/app/18-demo.js?v=12"></script>
-<script src="./src/app/19-pdf.js?v=12"></script>
+<script src="./src/app/00-iconos.js?v=13"></script>
+<script src="./src/app/00-estado.js?v=13"></script>
+<script src="./src/app/01-auth.js?v=13"></script>
+<script src="./src/app/02-voz-notas.js?v=13"></script>
+<script src="./src/app/03-navegacion.js?v=13"></script>
+<script src="./src/app/04-dashboard-historial.js?v=13"></script>
+<script src="./src/app/05-perfil-qr.js?v=13"></script>
+<script src="./src/app/06-pacientes.js?v=13"></script>
+<script src="./src/app/07-pwa.js?v=13"></script>
+<script src="./src/app/08-triage.js?v=13"></script>
+<script src="./src/app/09-medicamentos.js?v=13"></script>
+<script src="./src/app/10-init.js?v=13"></script>
+<script src="./src/app/11-dolor-sintomas.js?v=13"></script>
+<script src="./src/app/12-historia-clinica.js?v=13"></script>
+<script src="./src/app/13-cola.js?v=13"></script>
+<script src="./src/app/14-herramientas.js?v=13"></script>
+<script src="./src/app/15-mci.js?v=13"></script>
+<script src="./src/app/16-glasgow-gestos.js?v=13"></script>
+<script src="./src/app/17-scores-tablero.js?v=13"></script>
+<script src="./src/app/18-demo.js?v=13"></script>
+<script src="./src/app/19-pdf.js?v=13"></script>
+<script src="./src/app/20-pin.js?v=13"></script>
 </body>
 </html>

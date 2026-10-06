@@ -105,6 +105,10 @@ function initAuth(){
           }
           if(CR==="paciente"){
             _staffLoginRole=null;
+            if(snap.data().mustChangePin){
+              const ok=await _forcePinChange();
+              if(!ok)return;
+            }
             try{_patientHC=await _loadPatientHC(snap.data().doc);}catch(e){_patientHC=null;}
             showApp();
             return;

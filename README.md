@@ -68,7 +68,8 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   │   ├── 16-glasgow-gestos.js
 │   │   ├── 17-scores-tablero.js
 │   │   ├── 18-demo.js         #   Modo demo: Firebase simulado en memoria con datos ficticios
-│   │   └── 19-pdf.js          #   Utilidades de PDF: ajuste de línea, salto de página, pie con número de página
+│   │   ├── 19-pdf.js          #   Utilidades de PDF: ajuste de línea, salto de página, pie con número de página
+│   │   └── 20-pin.js          #   Recuperación de PIN de pacientes (restablecer, aviso y cambio obligatorio)
 │   ├── styles/                # CSS por área: base, auth, layout, components, screens, clinical, queue, ios
 │   │                          #   y tema.css (estilo visual, Inicio y diseño para tablet/escritorio; se carga al final)
 │   ├── clinical/              # Motor de scores clínicos, copiloto y línea de tiempo (módulos ES)
@@ -125,6 +126,13 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
   - aplica un cupo diario: médico 150, admin 300, paciente 20 y modo demo 15 por IP;
   - limita el tamaño de cada consulta y de cada respuesta.
 
+### Recuperación del PIN de pacientes
+
+1. El paciente que olvidó su PIN toca **¿Olvidaste tu PIN?** y se le indica acercarse con su documento.
+2. Un médico o admin abre su historia, confirma que verificó la identidad y toca **Restablecer PIN del paciente**.
+3. El Worker (`/reset-pin`) verifica que quien lo pide es personal aprobado, genera un PIN temporal aleatorio, cambia la contraseña de la cuenta interna con la API de administración de Firebase Auth y marca el perfil con `mustChangePin`. Cada persona puede hacer hasta 20 restablecimientos al día.
+4. El paciente entra con el PIN temporal y la app lo obliga a crear uno nuevo antes de continuar. Cada restablecimiento queda en la auditoría (`pin_reset`).
+
 ## Puesta en marcha
 
 ### Requisitos
@@ -146,6 +154,7 @@ Usa el runner de pruebas incluido en Node. Cubre:
 - **Clasificadores de signos vitales** en sus valores límite.
 - **PDF** de triage, historia clínica y tarjetas demo: con textos muy largos, nombres extensos y símbolos (≥, →, SpO₂, emojis), ningún texto se sale de la hoja y las secciones largas continúan en la página siguiente.
 - **Seguridad del Worker**: tokens falsos, vencidos, alterados o de otro proyecto; cuentas sin acceso; cupos diarios; y que ninguna consulta rechazada llegue a DeepSeek.
+- **Restablecimiento de PIN**: solo el personal aprobado puede hacerlo, la firma de la cuenta de servicio es válida, se marca `mustChangePin` y se respeta el límite diario.
 
 ### Probar en local
 
@@ -167,8 +176,10 @@ npx firebase-tools deploy --only hosting,firestore:rules
 2. **Edit code**: pega `cloudflare-worker/worker.js` y pulsa **Deploy**.
 3. **Settings → Variables and Secrets**: agrega el secreto `DEEPSEEK_KEY`.
 4. **Storage & Databases → KV → Create**: crea un namespace (por ejemplo `triage-ia-limites`). Luego, en el Worker, **Settings → Bindings → Add → KV namespace**, con nombre de variable `LIMITES`. Esto activa los cupos diarios y el modo demo; sin él, la IA solo funciona con sesión iniciada.
-5. Si cambias el dominio de la app, actualiza `ORIGENES_PERMITIDOS` en el Worker; para cambiar los cupos, edita `LIMITE_DIARIO`.
-6. La URL del Worker está en la constante `PROXY` de `src/app/00-estado.js`.
+5. **Recuperación de PIN** (opcional): en la consola de Firebase → **Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada**. Copia todo el contenido del archivo JSON y agrégalo en el Worker como secreto `GOOGLE_SA`. Borra el archivo descargado después. Sin este secreto, el botón responde que la función no está configurada.
+   - Más seguro: en Google Cloud → IAM, crea una cuenta de servicio solo con los roles *Firebase Authentication Admin* y *Cloud Datastore User*, y usa su clave en lugar de la de administrador.
+6. Si cambias el dominio de la app, actualiza `ORIGENES_PERMITIDOS` en el Worker; para cambiar los cupos, edita `LIMITE_DIARIO`.
+7. La URL del Worker está en la constante `PROXY` de `src/app/00-estado.js`.
 
 ### Primer administrador
 

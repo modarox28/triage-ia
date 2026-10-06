@@ -51,7 +51,7 @@ service cloud.firestore {
                  .hasOnly(['role', 'reviewedBy', 'reviewedAt']))
         || (isSelf(userId)
             && !request.resource.data.diff(resource.data).affectedKeys()
-                  .hasAny(['role', 'reviewedBy', 'reviewedAt', 'deletedBy', 'deletedAt']));
+                  .hasAny(['role', 'reviewedBy', 'reviewedAt', 'deletedBy', 'deletedAt', 'pinResetAt', 'pinResetBy']));
       allow delete: if isAdmin();
     }
 

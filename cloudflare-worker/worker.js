@@ -8,8 +8,16 @@
 //  3. Límite diario de consultas por usuario (y por IP en el modo demo),
 //     guardado en Workers KV. Así nadie puede agotar el saldo de DeepSeek.
 //
+// Rutas:
+//  - POST /           → consulta de IA (DeepSeek).
+//  - POST /reset-pin  → el personal de salud genera un PIN temporal para un paciente
+//                       que olvidó el suyo (cambia la contraseña de su cuenta interna).
+//
 // Configuración en el panel de Cloudflare (Settings → Variables and Secrets / Bindings):
 //  - Secreto DEEPSEEK_KEY: API key de DeepSeek.
+//  - Secreto GOOGLE_SA: el archivo JSON completo de una cuenta de servicio de Firebase
+//    (Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada).
+//    Solo lo usa /reset-pin; sin él, esa ruta responde "no configurado".
 //  - Binding de KV con nombre LIMITES: activa los límites diarios y el modo demo.
 //    Sin él, la IA solo funciona con sesión iniciada y sin límites.
 
@@ -136,6 +144,101 @@ async function consumirCupo(env, quien, limite, fallarCerrado) {
   }
 }
 
+// ── Cuenta de servicio de Google (para /reset-pin) ─────────
+const DOMINIO_PACIENTES = "pacientes.media-suite.app";
+const ROLES_PERSONAL = ["medico", "admin", "admin_hosp"];
+const LIMITE_RESETS_DIA = 20;          // por persona del personal
+
+function b64url(bytes) {
+  let bin = ""; for (const b of new Uint8Array(bytes)) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+let saToken = { token: null, expira: 0 };
+async function tokenCuentaServicio(env) {
+  if (saToken.token && Date.now() < saToken.expira) return saToken.token;
+  const sa = JSON.parse(env.GOOGLE_SA);
+  const der = Uint8Array.from(atob(sa.private_key.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "")), c => c.charCodeAt(0));
+  const clave = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const ahora = Math.floor(Date.now() / 1000);
+  const enc = o => b64url(new TextEncoder().encode(JSON.stringify(o)));
+  const sinFirma = `${enc({ alg: "RS256", typ: "JWT" })}.${enc({
+    iss: sa.client_email, scope: "https://www.googleapis.com/auth/cloud-platform",
+    aud: "https://oauth2.googleapis.com/token", iat: ahora, exp: ahora + 3600,
+  })}`;
+  const firma = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", clave, new TextEncoder().encode(sinFirma));
+  const r = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "grant_type=" + encodeURIComponent("urn:ietf:params:oauth:grant-type:jwt-bearer") + "&assertion=" + sinFirma + "." + b64url(firma),
+  });
+  if (!r.ok) throw new Error("No se pudo autenticar la cuenta de servicio (" + r.status + ")");
+  const j = await r.json();
+  saToken = { token: j.access_token, expira: Date.now() + Math.max(60, (j.expires_in || 3600) - 300) * 1000 };
+  return saToken.token;
+}
+function normalizarId(v) { return String(v || "").trim().toLowerCase().replace(/[^0-9a-z-]/g, ""); }
+function pinAleatorio() {
+  const n = crypto.getRandomValues(new Uint32Array(1))[0] % 1000000;
+  return String(n).padStart(6, "0");
+}
+
+// Identifica al usuario a partir del token de Firebase. Devuelve {uid, rol} o una Response de error.
+async function identificar(request, origen) {
+  const auth = request.headers.get("Authorization") || "";
+  if (!auth.startsWith("Bearer ")) return null;
+  const token = auth.slice(7).trim();
+  let payload;
+  try { payload = await verificarTokenFirebase(token); }
+  catch (e) { return responder({ error: "Sesión inválida o vencida. Vuelve a iniciar sesión.", code: "auth_invalid" }, 401, origen); }
+  try { return { uid: payload.sub, rol: await rolDeUsuario(payload.sub, token) }; }
+  catch (e) { return responder({ error: "No se pudo verificar tu cuenta. Intenta de nuevo.", code: "role_unavailable" }, 503, origen); }
+}
+
+async function resetPin(request, env, origen) {
+  const quien = await identificar(request, origen);
+  if (!quien) return responder({ error: "Inicia sesión para continuar.", code: "auth_required" }, 401, origen);
+  if (quien instanceof Response) return quien;
+  if (!ROLES_PERSONAL.includes(quien.rol)) {
+    return responder({ error: "Solo el personal de salud puede restablecer un PIN.", code: "role_forbidden" }, 403, origen);
+  }
+  if (!env.GOOGLE_SA) {
+    return responder({ error: "El restablecimiento de PIN no está configurado en el servidor.", code: "reset_not_configured" }, 501, origen);
+  }
+  let datos; try { datos = await request.json(); } catch { datos = {}; }
+  const id = normalizarId(datos.doc);
+  if (!id || id.length > 30) return responder({ error: "Número de identificación inválido." }, 400, origen);
+  const cupo = await consumirCupo(env, "reset:" + quien.uid, LIMITE_RESETS_DIA, true);
+  if (!cupo.ok) return responder({ error: "Alcanzaste el límite diario de restablecimientos.", code: "quota_exceeded" }, 429, origen);
+
+  try {
+    const at = await tokenCuentaServicio(env);
+    const H = { "Authorization": "Bearer " + at, "Content-Type": "application/json" };
+    const IT = `https://identitytoolkit.googleapis.com/v1/projects/${PROJECT_ID}/accounts`;
+    // 1) Buscar la cuenta interna del paciente
+    const lk = await fetch(`${IT}:lookup`, { method: "POST", headers: H, body: JSON.stringify({ email: [`${id}@${DOMINIO_PACIENTES}`] }) });
+    if (!lk.ok) throw new Error("lookup " + lk.status);
+    const uid = (await lk.json()).users?.[0]?.localId;
+    if (!uid) return responder({ error: "Este paciente aún no tiene cuenta. Debe registrarse con \"¿Primera vez?\" en la pantalla de acceso.", code: "patient_not_found" }, 404, origen);
+    // 2) Nuevo PIN temporal (la contraseña se deriva del PIN, igual que en la app)
+    const pin = pinAleatorio();
+    const up = await fetch(`${IT}:update`, { method: "POST", headers: H, body: JSON.stringify({ localId: uid, password: "ms-pin-" + pin }) });
+    if (!up.ok) throw new Error("update " + up.status);
+    // 3) Marcar que debe cambiarlo al entrar (solo si el perfil existe)
+    const campos = ["mustChangePin", "pinResetAt", "pinResetBy"].map(c => "updateMask.fieldPaths=" + c).join("&");
+    await fetch(`${FIRESTORE}/users/${encodeURIComponent(uid)}?${campos}&currentDocument.exists=true`, {
+      method: "PATCH", headers: H,
+      body: JSON.stringify({ fields: {
+        mustChangePin: { booleanValue: true },
+        pinResetAt: { timestampValue: new Date().toISOString() },
+        pinResetBy: { stringValue: quien.uid },
+      } }),
+    });
+    return responder({ pin }, 200, origen);
+  } catch (e) {
+    return responder({ error: "No se pudo restablecer el PIN. Intenta de nuevo.", code: "reset_failed" }, 502, origen);
+  }
+}
+
 // ── Worker ──────────────────────────────────────────────────
 export default {
   async fetch(request, env) {
@@ -148,6 +251,9 @@ export default {
     }
     if (request.method !== "POST") {
       return responder({ error: "Método no permitido" }, 405, origen);
+    }
+    if (new URL(request.url).pathname === "/reset-pin") {
+      return resetPin(request, env, origen);
     }
     if (!env.DEEPSEEK_KEY) {
       return responder({ error: "API key no configurada" }, 500, origen);

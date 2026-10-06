@@ -240,6 +240,7 @@ function _renderHCDetail(el, id, d){
     ${alers?`<div class="card" style="animation:fadeUp .3s .1s both"><div class="clabel">Alergias</div><div style="display:flex;flex-wrap:wrap;gap:6px">${alers}</div></div>`:''}
     ${meds?`<div class="card" style="animation:fadeUp .3s .15s both"><div class="clabel">Medicación actual</div><div style="display:flex;flex-wrap:wrap;gap:6px">${meds}</div></div>`:''}
     ${d.notes?`<div class="card" style="animation:fadeUp .3s .2s both"><div class="clabel">Notas</div><div style="font-size:.84rem;line-height:1.55">${_esc(d.notes)}</div></div>`:''}
+    ${typeof _resetPinCard==="function"?_resetPinCard(d):''}
   `;
 }
 

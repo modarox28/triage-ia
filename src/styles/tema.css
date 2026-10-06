@@ -149,3 +149,13 @@ button.stat-card{font:inherit;color:inherit;width:100%;text-align:left;display:f
 .consent-row a,.auth-legal a{color:var(--cy);}
 .auth-legal{text-align:center;font-size:.76rem;margin:0 0 12px;}
 .ai-note{font-size:.76rem;color:var(--mu);background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;margin:0 0 10px;line-height:1.45;}
+
+/* ── Recuperación de PIN ── */
+.pin-forgot{display:block;margin:10px auto 0;background:none;border:none;color:var(--cy);font-family:var(--font-ui);font-size:.82rem;font-weight:600;cursor:pointer;padding:6px 10px;}
+.pin-txt{font-size:.86rem;color:var(--mu);line-height:1.55;margin:6px 0 12px;}
+.pin-txt b{color:var(--tx);}
+.pin-steps{text-align:left;font-size:.86rem;line-height:1.55;color:var(--tx);margin:0 0 14px;padding-left:22px;}
+.pin-steps li{margin-bottom:6px;}
+.pin-mono{font-family:var(--font-num);color:var(--tx);}
+.pin-code{font-family:var(--font-num);font-size:2.4rem;font-weight:700;letter-spacing:8px;color:var(--cy);background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:14px 8px 14px 16px;margin:10px 0 12px;user-select:all;}
+.pin-in{width:100%;box-sizing:border-box;margin-bottom:10px;text-align:center;font-size:1.1rem;letter-spacing:6px;font-family:var(--font-num);}
