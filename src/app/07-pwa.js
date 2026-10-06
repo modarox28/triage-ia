@@ -79,7 +79,7 @@ async function seedDemoPatients(){
     for(const p of DEMO_PATIENTS){
       const q=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",p.doc),FB.limit(1)));
       if(q.empty){
-        await FB.addDoc(FB.collection(FB.db,"historias"),{...p,createdAt:FB.serverTimestamp(),userId:CU.uid,userEmail:CU.email||""});
+        await FB.addDoc(FB.collection(FB.db,"historias"),{...p,searchKeys:_searchKeys(p.name,p.doc),createdAt:FB.serverTimestamp(),userId:CU.uid,userEmail:CU.email||""});
         seeded++;
       }
     }

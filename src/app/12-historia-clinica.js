@@ -5,7 +5,7 @@
 // HISTORIA CLINICA
 // ══════════════════════════════════════
 let hcAnts=[], hcAlers=[], hcMedActs=[], hcPhoto=null;
-let _hcUnsub=null, _hcCache={}; // {docId: docData} — avoids re-fetching on every tab visit
+let _hcUnsub=null, _hcCache={}, _hcRecentIds=[]; // {docId: docData} — avoids re-fetching on every tab visit
 
 function toggleAnt(val,btn){
   if(hcAnts.includes(val)){
@@ -99,6 +99,7 @@ async function saveHC(){
     createdAt:FB?FB.serverTimestamp():new Date().toISOString(),
     userId:CU?.uid||'',userEmail:CU?.email||''
   };
+  hcData.searchKeys=_searchKeys(hcData.name,hcData.doc);
   try{
     if(FB&&CU){await FB.addDoc(FB.collection(FB.db,'historias'),hcData);}
     toast('Historia clinica guardada');
@@ -180,6 +181,8 @@ async function deleteHC(id, name){
     await FB.deleteDoc(FB.doc(FB.db,'historias',id));
     toast(`Historia de "${name}" eliminada`);
     logAudit('hc_deleted',{name,id});
+    delete _hcCache[id];
+    if(_hcSearchQ)_runHCSearch();
   }catch(e){toast('Error al eliminar: '+e.message);}
 }
 
@@ -188,13 +191,14 @@ function loadHC(){
   if(!el)return;
   if(!FB||!CU){el.innerHTML=`<div class="empty"><div class="etx">Sin sesión activa</div></div>`;return;}
   // Show skeletons immediately — instant perceived load
-  if(!Object.keys(_hcCache).length) el.innerHTML=_hcSkeleton(3);
+  if(!_hcRecentIds.length) el.innerHTML=_hcSkeleton(3);
   else _refreshHCList(el); // re-render from cache with no delay
   // Subscribe once; re-use on subsequent tab visits
   if(_hcUnsub)return;
   const q=FB.query(FB.collection(FB.db,'historias'),FB.orderBy('createdAt','desc'),FB.limit(30));
   _hcUnsub=FB.onSnapshot(q,(snap)=>{
-    _hcCache={};
+    // Se fusiona (no se borra) para no perder las historias abiertas desde una búsqueda
+    _hcRecentIds=snap.docs.map(d=>d.id);
     snap.docs.forEach(d=>{_hcCache[d.id]=d.data();});
     const listEl=document.getElementById('hcList');
     if(listEl)_refreshHCList(listEl);
@@ -205,7 +209,8 @@ function loadHC(){
 }
 
 function _refreshHCList(el){
-  const ids=Object.keys(_hcCache);
+  if(_hcSearchQ)return; // hay una búsqueda en pantalla: no se reemplaza por la lista reciente
+  const ids=_hcRecentIds.filter(id=>_hcCache[id]);
   if(!ids.length){el.innerHTML=`<div class="empty"><div class="eic">🗂️</div><div class="etx">Sin historias clínicas aún.<br>Crea la primera arriba.</div></div>`;return;}
   el.innerHTML=ids.map(id=>_renderHCItem(id,_hcCache[id])).join('');
 }
@@ -365,3 +370,70 @@ function _doExportHCPDF(d){
   }catch(e){toast("Error PDF: "+e.message);console.error("[HC-PDF]",e);}
 }
 
+
+// ── BÚSQUEDA DE PACIENTES (nombre o documento) ──
+// Ver src/app/00-busqueda.js. Las historias antiguas sin searchKeys se preparan
+// con el botón "Preparar búsqueda" del panel de admin; mientras tanto, el
+// documento exacto también se busca por el campo doc.
+let _hcSearchQ="",_hcSearchTimer=null,_hcSearchSeq=0;
+function _onHCSearch(v){
+  _hcSearchQ=v.trim();
+  document.getElementById("hcSearchX").style.display=_hcSearchQ?"":"none";
+  clearTimeout(_hcSearchTimer);
+  if(!_hcSearchQ){_hcSearchSeq++;const el=document.getElementById("hcList");if(el)_refreshHCList(el);return;}
+  _hcSearchTimer=setTimeout(_runHCSearch,250);
+}
+function _clearHCSearch(){
+  const i=document.getElementById("hcSearch");i.value="";_onHCSearch("");i.focus();
+}
+async function _runHCSearch(){
+  const el=document.getElementById("hcList");if(!el)return;
+  const parsed=_parseSearch(_hcSearchQ);
+  if(!parsed){
+    el.innerHTML=`<div class="empty"><div class="etx">Escribe al menos ${/^\d/.test(_hcSearchQ)?SEARCH_MIN_DOC+" dígitos":SEARCH_MIN+" letras"} para buscar.</div></div>`;
+    return;
+  }
+  const seq=++_hcSearchSeq;
+  el.innerHTML=_hcSkeleton(2);
+  try{
+    const col=FB.collection(FB.db,"historias");
+    const consultas=[FB.getDocs(FB.query(col,FB.where("searchKeys","array-contains",parsed.key),FB.limit(50)))];
+    if(parsed.tipo==="doc")consultas.push(FB.getDocs(FB.query(col,FB.where("doc","==",_hcSearchQ.trim()),FB.limit(5))));
+    const snaps=await Promise.all(consultas);
+    if(seq!==_hcSearchSeq)return; // llegó una búsqueda más nueva
+    const res=new Map();
+    snaps.forEach(s=>s.docs.forEach(d=>{const v=d.data();if(_matchesSearch(v,parsed)||parsed.tipo==="doc")res.set(d.id,v);}));
+    const ts=v=>v.createdAt?.toMillis?.()||Date.parse(v.createdAt)||0;
+    const ids=[...res.keys()].sort((a,b)=>ts(res.get(b))-ts(res.get(a)));
+    ids.forEach(id=>{_hcCache[id]=res.get(id);}); // para abrir el detalle al instante
+    if(!ids.length){
+      el.innerHTML=`<div class="empty"><div class="etx">Sin resultados para "${_esc(_hcSearchQ)}".<br><span style="font-size:.8rem">Revisa la ortografía o busca por documento.</span></div></div>`;
+      return;
+    }
+    el.innerHTML=`<div class="hc-search-count">${ids.length===1?"1 paciente":ids.length+" pacientes"}${ids.length>=50?" (se muestran los primeros 50; escribe más para afinar)":""}</div>`
+      +ids.map(id=>_renderHCItem(id,res.get(id))).join("");
+  }catch(e){
+    if(seq===_hcSearchSeq)el.innerHTML=`<div class="empty"><div class="etx">Error al buscar: ${_esc(e.message)}</div></div>`;
+  }
+}
+
+// Admin: agrega searchKeys a las historias creadas antes de la búsqueda
+async function prepareHCSearch(btn){
+  if(!FB||!CU){toast("Sin sesión activa");return;}
+  const txt=btn?.textContent;if(btn){btn.disabled=true;btn.textContent="Preparando…";}
+  try{
+    const snap=await FB.getDocs(FB.collection(FB.db,"historias"));
+    let n=0;
+    for(const d of snap.docs){
+      const v=d.data();
+      const keys=_searchKeys(v.name,v.doc);
+      const actuales=Array.isArray(v.searchKeys)?v.searchKeys:[];
+      if(actuales.length===keys.length&&keys.every(k=>actuales.includes(k)))continue;
+      await FB.updateDoc(FB.doc(FB.db,"historias",d.id),{searchKeys:keys});
+      n++;
+    }
+    logAudit("search_index",{updated:n,total:snap.size});
+    toast(n?`${n} de ${snap.size} historias preparadas para la búsqueda`:`Las ${snap.size} historias ya estaban listas`);
+  }catch(e){toast("Error: "+e.message);}
+  finally{if(btn){btn.disabled=false;btn.textContent=txt;}}
+}

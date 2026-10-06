@@ -118,7 +118,7 @@ function _demoSeed(uid){
   };
   const historias={};
   (typeof DEMO_PATIENTS!=="undefined"?DEMO_PATIENTS:[]).forEach((p,i)=>{
-    historias["demo-hc-"+i]={...p,userId:uid,telefono:"+57 300 000 "+String(1000+i),createdAt:ts(60*24*(i+1))};
+    historias["demo-hc-"+i]={...p,searchKeys:_searchKeys(p.name,p.doc),userId:uid,telefono:"+57 300 000 "+String(1000+i),createdAt:ts(60*24*(i+1))};
   });
   const T=(m,o)=>({userId:"demo-med-1",userName:"Dra. Laura Gómez",userRole:"medico",userEmail:"laura.gomez@hospital.demo",
     tipo:"adulto",dolor:0,notas:"",atendido:false,createdAt:ts(m),...o});

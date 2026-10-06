@@ -251,7 +251,7 @@ async function registerPatient(){
     let hc=await _loadPatientHC(id);
     if(!hc){
       const age=Math.floor((Date.now()-new Date(dob).getTime())/(365.25*24*3600000));
-      const data={doc:id,name,age,sex,dob,telefono:phone,antecedentes:[],alergias:[],medicacion:[],notes:"",userId:uid,createdAt:FB.serverTimestamp()};
+      const data={doc:id,name,age,sex,dob,telefono:phone,antecedentes:[],alergias:[],medicacion:[],notes:"",userId:uid,createdAt:FB.serverTimestamp(),searchKeys:_searchKeys(name,id)};
       const ref=await FB.addDoc(FB.collection(FB.db,"historias"),data);
       hc={id:ref.id,...data};
     }

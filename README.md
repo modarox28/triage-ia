@@ -68,6 +68,7 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   │   ├── 16-glasgow-gestos.js
 │   │   ├── 17-scores-tablero.js
 │   │   ├── 18-demo.js         #   Modo demo: Firebase simulado en memoria con datos ficticios
+│   │   ├── 00-busqueda.js     #   Búsqueda de pacientes: claves de búsqueda por nombre y documento
 │   │   ├── 19-pdf.js          #   Utilidades de PDF: ajuste de línea, salto de página, pie con número de página
 │   │   └── 20-pin.js          #   Recuperación de PIN de pacientes (restablecer, aviso y cambio obligatorio)
 │   ├── styles/                # CSS por área: base, auth, layout, components, screens, clinical, queue, ios
@@ -126,6 +127,12 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
   - aplica un cupo diario: médico 150, admin 300, paciente 20 y modo demo 15 por IP;
   - limita el tamaño de cada consulta y de cada respuesta.
 
+### Búsqueda de pacientes
+
+En **Pacientes**, la caja de búsqueda encuentra historias por nombre o documento: sin importar tildes ni mayúsculas, por partes de palabra ("rodri" → Rodríguez) y en cualquier orden ("mendez carlos"). Si se escriben solo números, busca por documento (completo o parcial, con o sin puntos).
+
+Como Firestore no busca texto parcial, cada historia guarda `searchKeys`: los prefijos de cada palabra del nombre y del documento (`src/app/00-busqueda.js`). Las historias nuevas los guardan solas; las creadas antes de esta función se preparan una vez desde **Ajustes → Acciones de administrador → Preparar búsqueda de pacientes antiguos**.
+
 ### Recuperación del PIN de pacientes
 
 1. El paciente que olvidó su PIN toca **¿Olvidaste tu PIN?** y se le indica acercarse con su documento.
@@ -154,6 +161,7 @@ Usa el runner de pruebas incluido en Node. Cubre:
 - **Clasificadores de signos vitales** en sus valores límite.
 - **PDF** de triage, historia clínica y tarjetas demo: con textos muy largos, nombres extensos y símbolos (≥, →, SpO₂, emojis), ningún texto se sale de la hoja y las secciones largas continúan en la página siguiente.
 - **Seguridad del Worker**: tokens falsos, vencidos, alterados o de otro proyecto; cuentas sin acceso; cupos diarios; y que ninguna consulta rechazada llegue a DeepSeek.
+- **Búsqueda de pacientes**: tildes, mayúsculas, partes de palabra, orden de los términos y documentos con puntos o letras.
 - **Restablecimiento de PIN**: solo el personal aprobado puede hacerlo, la firma de la cuenta de servicio es válida, se marca `mustChangePin` y se respeta el límite diario.
 
 ### Probar en local

@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="./src/styles/clinical.css?v=4">
 <link rel="stylesheet" href="./src/styles/queue.css?v=4">
 <link rel="stylesheet" href="./src/styles/ios.css?v=5">
-<link rel="stylesheet" href="./src/styles/tema.css?v=9">
+<link rel="stylesheet" href="./src/styles/tema.css?v=10">
 </head>
 <body>
 
@@ -611,6 +611,9 @@
             <button class="bsec" style="font-size:.8rem;display:flex;align-items:center;gap:8px;justify-content:center" onclick="downloadPatientsPDF()">
               <span>📄</span> Descargar PDF de IDs pacientes demo
             </button>
+            <button class="bsec" style="font-size:.8rem;display:flex;align-items:center;gap:8px;justify-content:center" onclick="prepareHCSearch(this)">
+              <span>🔍</span> Preparar búsqueda de pacientes antiguos
+            </button>
           </div>
         </div>
       </div>
@@ -711,6 +714,12 @@
   <div style="display:flex;gap:8px;margin-bottom:12px">
     <button class="bpri" style="flex:1" onclick="showNewHC()">+ Nueva historia</button>
     <button onclick="reloadHC()" style="flex:0 0 auto;width:auto;padding:9px 16px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:9px;color:var(--tx);font-size:1rem;cursor:pointer;transition:all .2s;touch-action:manipulation" title="Recargar">🔄</button>
+  </div>
+  <div class="hc-search">
+    <span class="hc-search-ic" aria-hidden="true">🔍</span>
+    <input class="fi" id="hcSearch" type="search" placeholder="Buscar por nombre o documento" autocomplete="off" enterkeyhint="search"
+           oninput="_onHCSearch(this.value)" aria-label="Buscar paciente por nombre o documento">
+    <button type="button" class="hc-search-x" id="hcSearchX" onclick="_clearHCSearch()" aria-label="Limpiar búsqueda" style="display:none">✕</button>
   </div>
   <div id="hcList"><div class="ldg"><div class="sp"></div>${t('loading')||'Cargando...'}</div></div>
 </div>
@@ -1146,27 +1155,28 @@
     </div>
   </div>
 </div>
-<script src="./src/app/00-iconos.js?v=13"></script>
-<script src="./src/app/00-estado.js?v=13"></script>
-<script src="./src/app/01-auth.js?v=13"></script>
-<script src="./src/app/02-voz-notas.js?v=13"></script>
-<script src="./src/app/03-navegacion.js?v=13"></script>
-<script src="./src/app/04-dashboard-historial.js?v=13"></script>
-<script src="./src/app/05-perfil-qr.js?v=13"></script>
-<script src="./src/app/06-pacientes.js?v=13"></script>
-<script src="./src/app/07-pwa.js?v=13"></script>
-<script src="./src/app/08-triage.js?v=13"></script>
-<script src="./src/app/09-medicamentos.js?v=13"></script>
-<script src="./src/app/10-init.js?v=13"></script>
-<script src="./src/app/11-dolor-sintomas.js?v=13"></script>
-<script src="./src/app/12-historia-clinica.js?v=13"></script>
-<script src="./src/app/13-cola.js?v=13"></script>
-<script src="./src/app/14-herramientas.js?v=13"></script>
-<script src="./src/app/15-mci.js?v=13"></script>
-<script src="./src/app/16-glasgow-gestos.js?v=13"></script>
-<script src="./src/app/17-scores-tablero.js?v=13"></script>
-<script src="./src/app/18-demo.js?v=13"></script>
-<script src="./src/app/19-pdf.js?v=13"></script>
-<script src="./src/app/20-pin.js?v=13"></script>
+<script src="./src/app/00-iconos.js?v=14"></script>
+<script src="./src/app/00-busqueda.js?v=14"></script>
+<script src="./src/app/00-estado.js?v=14"></script>
+<script src="./src/app/01-auth.js?v=14"></script>
+<script src="./src/app/02-voz-notas.js?v=14"></script>
+<script src="./src/app/03-navegacion.js?v=14"></script>
+<script src="./src/app/04-dashboard-historial.js?v=14"></script>
+<script src="./src/app/05-perfil-qr.js?v=14"></script>
+<script src="./src/app/06-pacientes.js?v=14"></script>
+<script src="./src/app/07-pwa.js?v=14"></script>
+<script src="./src/app/08-triage.js?v=14"></script>
+<script src="./src/app/09-medicamentos.js?v=14"></script>
+<script src="./src/app/10-init.js?v=14"></script>
+<script src="./src/app/11-dolor-sintomas.js?v=14"></script>
+<script src="./src/app/12-historia-clinica.js?v=14"></script>
+<script src="./src/app/13-cola.js?v=14"></script>
+<script src="./src/app/14-herramientas.js?v=14"></script>
+<script src="./src/app/15-mci.js?v=14"></script>
+<script src="./src/app/16-glasgow-gestos.js?v=14"></script>
+<script src="./src/app/17-scores-tablero.js?v=14"></script>
+<script src="./src/app/18-demo.js?v=14"></script>
+<script src="./src/app/19-pdf.js?v=14"></script>
+<script src="./src/app/20-pin.js?v=14"></script>
 </body>
 </html>

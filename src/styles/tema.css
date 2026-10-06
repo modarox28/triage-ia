@@ -159,3 +159,12 @@ button.stat-card{font:inherit;color:inherit;width:100%;text-align:left;display:f
 .pin-mono{font-family:var(--font-num);color:var(--tx);}
 .pin-code{font-family:var(--font-num);font-size:2.4rem;font-weight:700;letter-spacing:8px;color:var(--cy);background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:14px 8px 14px 16px;margin:10px 0 12px;user-select:all;}
 .pin-in{width:100%;box-sizing:border-box;margin-bottom:10px;text-align:center;font-size:1.1rem;letter-spacing:6px;font-family:var(--font-num);}
+
+/* ── Búsqueda de pacientes ── */
+.hc-search{position:relative;margin-bottom:12px;}
+.hc-search .fi{width:100%;box-sizing:border-box;padding-left:40px;padding-right:40px;min-height:46px;font-size:.95rem;margin:0;}
+.hc-search .fi::-webkit-search-cancel-button{display:none;}
+.hc-search-ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none;display:flex;}
+.hc-search-x{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;background:none;color:var(--mu);font-size:1rem;cursor:pointer;border-radius:8px;}
+.hc-search-x:hover{color:var(--tx);background:var(--bg3);}
+.hc-search-count{font-size:.78rem;color:var(--mu);margin:0 0 8px;grid-column:1/-1;}
