@@ -85,3 +85,15 @@ function _pdfFooter(pdf,{left,margin,pageW=210,y=290,size=7,color=[130,130,130]}
     if(left)pdf.text(_pdfFit(pdf,left,pageW-margin*2-rw-6,size),margin,y);
   }
 }
+
+// Logo "Pulso M" (el trazo de electrocardiograma que forma la M).
+// x, y = esquina superior izquierda; h = alto en mm. Devuelve el ancho dibujado.
+function _pdfLogo(pdf,x,y,h,color=[0,200,240]){
+  const P=[[6,62],[26,62],[36,30],[50,68],[64,30],[74,62],[94,62]];   // mismo trazo que la app
+  const k=h/38,ox=x-6*k,oy=y-30*k;                                     // el trazo ocupa y 30–68
+  pdf.setDrawColor(...color);pdf.setLineWidth(Math.max(.5,h*.16));
+  if(pdf.setLineCap)pdf.setLineCap("round");if(pdf.setLineJoin)pdf.setLineJoin("round");
+  for(let i=1;i<P.length;i++)pdf.line(ox+P[i-1][0]*k,oy+P[i-1][1]*k,ox+P[i][0]*k,oy+P[i][1]*k);
+  pdf.setLineWidth(.2);if(pdf.setLineCap)pdf.setLineCap("butt");if(pdf.setLineJoin)pdf.setLineJoin("miter");
+  return 88*k;
+}

@@ -112,7 +112,9 @@ function downloadPatientsPDF(){
   pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");
   // Header
   pdf.setFontSize(18);pdf.setTextColor(0,200,240);pdf.setFont(undefined,"bold");
-  pdf.text("MedIA Suite",M,y);
+  const lw=_pdfLogo(pdf,M,y-5.5,6.5);
+  pdf.setFontSize(18);pdf.setTextColor(0,200,240);pdf.setFont(undefined,"bold");
+  pdf.text("MedIA Suite",M+lw+3,y);
   pdf.setFontSize(9);pdf.setTextColor(150,160,180);pdf.setFont(undefined,"normal");
   pdf.text("Tarjetas de acceso — Pacientes demo",M,y+7);
   pdf.setFontSize(7);pdf.text(`Generado: ${new Date().toLocaleDateString("es-ES")}`,M,y+13);

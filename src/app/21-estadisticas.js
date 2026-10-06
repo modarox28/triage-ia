@@ -188,8 +188,9 @@ function _buildStatsPDF(r,{quien="",fecha=new Date()}={}){
 
   // Encabezado
   pdf.setFillColor(11,17,32);pdf.rect(0,0,W,30,"F");
+  const lw=_pdfLogo(pdf,M,7.5,6);
   _pdfFont(pdf,16,"bold",[255,255,255]);
-  pdf.text("MedIA Suite — Reporte de estadísticas",M,13);
+  pdf.text("MedIA Suite — Reporte de estadísticas",M+lw+3,13);
   _pdfFont(pdf,9,"normal",[170,190,210]);
   const rango=r.periodo==="day"?fmt(r.hasta):`${fmt(r.desde)} a ${fmt(r.hasta)}`;
   pdf.text(_pdfFit(pdf,`${_EST_PERIODOS[r.periodo]} (${rango})`,cw,9),M,20);

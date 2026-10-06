@@ -286,7 +286,8 @@ function _buildHCPDF(d){
   fondo();
   // Encabezado
   pdf.setFillColor(0,50,80);pdf.rect(0,0,W,28,"F");
-  _pdfFont(pdf,14,"bold",[0,200,240]);pdf.text("MedIA Suite",M,12);
+  const lw=_pdfLogo(pdf,M,7,5.5);
+  _pdfFont(pdf,14,"bold",[0,200,240]);pdf.text("MedIA Suite",M+lw+2.5,12);
   _pdfFont(pdf,8,"normal",[140,160,190]);pdf.text("Historia Clínica — Documento confidencial",M,19);
   _pdfFont(pdf,7,"normal",[140,160,190]);pdf.text(`Generado: ${new Date().toLocaleString("es-ES")}`,M,25);
   y=36;

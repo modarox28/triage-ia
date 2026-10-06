@@ -372,8 +372,9 @@ function _buildTriagePDF(r){
 
   // Encabezado
   pdf.setFillColor(11,17,32);pdf.rect(0,0,W,28,"F");
+  const lw=_pdfLogo(pdf,margin,7.5,6);
   _pdfFont(pdf,16,"bold",[255,255,255]);
-  pdf.text("MedIA Suite — Resultado de Triage",margin,13);
+  pdf.text("MedIA Suite — Resultado de Triage",margin+lw+3,13);
   _pdfFont(pdf,9,"normal",[160,180,200]);
   pdf.text(new Date().toLocaleString("es-ES"),margin,21);
 

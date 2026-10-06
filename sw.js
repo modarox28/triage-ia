@@ -1,10 +1,13 @@
-const CACHE = 'media-suite-v42';
+const CACHE = 'media-suite-v43';
 const ASSETS = [
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './apple-touch-icon.png'
+  './apple-touch-icon.png',
+  './icon.svg',
+  './favicon-32.png',
+  './icon-maskable-512.png'
 ];
 
 self.addEventListener('install', e => {
