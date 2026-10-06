@@ -13,26 +13,29 @@ async function loadDash(){
   const adminSec=document.getElementById("lbUserMgmtSec");if(adminSec)adminSec.style.display=(CR==="admin"||CR==="admin_hosp")?"block":"none";
   try{
     const isAdmin=CR==="admin"||CR==="admin_hosp";
-    const snapQ=isAdmin
-      ? FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(50))
-      : FB.query(FB.collection(FB.db,"triages"),FB.orderBy("createdAt","desc"),FB.limit(50));
-    const snap=await FB.getDocs(snapQ);
+    // Triages de los últimos 30 días (alimentan el resumen de hoy, la actividad y las estadísticas)
+    const hace30=new Date(Date.now()-30*864e5);
+    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"triages"),
+      FB.where("createdAt",">=",hace30),FB.orderBy("createdAt","desc"),FB.limit(400)));
     const myDocs=isAdmin?snap.docs:snap.docs.filter(d=>d.data().userId===CU.uid);
-    const ro=myDocs.filter(d=>d.data().clasificacion==="ROJO").length;
-    const am=myDocs.filter(d=>d.data().clasificacion==="AMARILLO").length;
-    const ve=myDocs.filter(d=>d.data().clasificacion==="VERDE").length;
-    const mci=myDocs.filter(d=>d.data().esMCI===true).length;
+    // Las cifras de las tarjetas son solo de HOY (desde las 00:00)
+    const inicioHoy=new Date();inicioHoy.setHours(0,0,0,0);
+    const hoy=myDocs.filter(d=>{const ms=d.data().createdAt?.toMillis?.();return !ms||ms>=inicioHoy.getTime();});
+    const ro=hoy.filter(d=>d.data().clasificacion==="ROJO").length;
+    const am=hoy.filter(d=>d.data().clasificacion==="AMARILLO").length;
+    const ve=hoy.filter(d=>d.data().clasificacion==="VERDE").length;
+    const mci=hoy.filter(d=>d.data().esMCI===true).length;
     // Load prehospital notifications count
     let prehCount=0;
     try{
       const prehQ=isAdmin
-        ? FB.query(FB.collection(FB.db,"prehospital"),FB.orderBy("createdAt","desc"),FB.limit(50))
-        : FB.query(FB.collection(FB.db,"prehospital"),FB.where("userId","==",CU.uid),FB.orderBy("createdAt","desc"),FB.limit(50));
+        ? FB.query(FB.collection(FB.db,"prehospital"),FB.orderBy("createdAt","desc"),FB.limit(100))
+        : FB.query(FB.collection(FB.db,"prehospital"),FB.where("userId","==",CU.uid),FB.orderBy("createdAt","desc"),FB.limit(100));
       const prehSnap=await FB.getDocs(prehQ);
-      prehCount=prehSnap.size;
       _dashPrehDocs=prehSnap.docs.map(d=>({_id:d.id,...d.data()}));
+      prehCount=_dashPrehDocs.filter(d=>{const ms=d.createdAt?.toMillis?.();return !ms||ms>=inicioHoy.getTime();}).length;
     }catch(e){_dashPrehDocs=[];}
-    _renderDashSummary(myDocs,{ro,am,ve,mci,prehCount});
+    _renderDashSummary(myDocs,hoy,{ro,am,ve,mci,prehCount});
     _dashAllDocs=myDocs.map(d=>({_id:d.id,...d.data()}));
     _dashShown=5;
     _renderDashRecent();
@@ -254,7 +257,7 @@ function _openHistDetail(idx){
 // ── DASHBOARD RECENT ACTIVITY ──
 function _dashFilteredDocs(){
   const now=new Date();
-  const cuts={day:new Date(now.getFullYear(),now.getMonth(),now.getDate()),week:new Date(Date.now()-7*24*3600000),month:new Date(now.getFullYear(),now.getMonth(),1)};
+  const cuts={day:new Date(now.getFullYear(),now.getMonth(),now.getDate()),week:new Date(Date.now()-7*864e5),month:new Date(Date.now()-30*864e5)};
   const cut=cuts[_dashPeriod]||new Date(0);
   return _dashAllDocs.filter(d=>{const ts=d.createdAt?.toDate?.();return !ts||ts>=cut;});
 }
@@ -270,7 +273,7 @@ function _renderDashHello(){
   const he=document.getElementById("dashHello");if(he)he.textContent=nombre?`Hola, ${nombre}`:"Inicio";
   const nt=document.getElementById("dashNewTriage");if(nt)nt.style.display=(CR==="admin"||CR==="medico")?"":"none";
 }
-function _renderDashSummary(docs,{ro,am,ve,mci,prehCount}){
+function _renderDashSummary(docs,hoy,{ro,am,ve,mci,prehCount}){
   // Críticos en espera y cuántos superan su tiempo objetivo (mismos límites que la cola)
   const lim=(window.COLA_DEADLINE&&COLA_DEADLINE.ROJO)||15;
   const rojos=docs.map(d=>d.data()).filter(d=>d.clasificacion==="ROJO"&&!d.atendido);
@@ -293,8 +296,9 @@ function _renderDashSummary(docs,{ro,am,ve,mci,prehCount}){
     card(am,t("statUrgent")||"Urgentes","#ffc451","goToHistWithFilter('AMARILLO')","Ver urgentes")+
     card(ve,t("statStable")||"Estables","#3ee68f","goToHistWithFilter('VERDE')","Ver estables")+
     card(prehCount,"Prehospital","#c39bff","","Notificaciones prehospitalarias")+
-    card(docs.length,t("statTotal")||"Total hoy","var(--cy)","goToHistWithFilter('all')","Ver todos")+
+    card(hoy.length,"Total hoy","var(--cy)","goToHistWithFilter('all')","Ver todos")+
     (mci?card(mci,"MCI","#ff9a7a","goToHistWithFilter('MCI')","Ver incidentes de múltiples víctimas"):"");
+  document.getElementById("statGrid").style.setProperty("--n",mci?5:4);
 }
 
 function _renderDashRecent(){

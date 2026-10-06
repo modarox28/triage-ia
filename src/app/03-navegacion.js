@@ -132,71 +132,8 @@ function updateUI(){
   if(CR==="paciente"&&_patientHC?.doc){const d=document.getElementById("patientIdDisplay");if(d)d.textContent=_patientHC.doc;}
 }
 
-// CHART
-let _chartInst=null,_chartPer="day",_chartType="color",_chartData=[];
+// Estadísticas del inicio: ver src/app/21-estadisticas.js
 let _dashAllDocs=[],_dashPeriod="day",_dashShown=5,_dashPrehDocs=[];
-
-function setChartPeriod(p,btn){
-  _chartPer=p;
-  document.querySelectorAll('[id^="chartPer-"]').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  buildChart();
-}
-
-function setChartType(tp,btn){
-  _chartType=tp;
-  document.querySelectorAll('[id^="chartType-"]').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  buildChart();
-}
-
-function buildChart(){
-  const card=document.getElementById('chartCard');
-  if(!card||!window.Chart)return;
-  card.style.display="block";
-  const now=new Date();
-  const cutoff=new Date(now);
-  if(_chartPer==="day")cutoff.setHours(0,0,0,0);
-  else if(_chartPer==="week")cutoff.setDate(now.getDate()-7);
-  else cutoff.setMonth(now.getMonth()-1);
-  const filtered=_chartData.filter(d=>d.createdAt?.toDate&&d.createdAt.toDate()>=cutoff);
-  const canvas=document.getElementById("mainChart");
-  const isDarkMode=document.body.classList.contains("dark")||!document.body.classList.contains("light");
-  const textC=isDarkMode?"rgba(255,255,255,.65)":"rgba(0,0,0,.55)";
-  const gridC=isDarkMode?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)";
-  if(_chartInst){_chartInst.destroy();_chartInst=null;}
-  let cfg={};
-  if(_chartType==="color"){
-    const ro=filtered.filter(d=>d.clasificacion==="ROJO").length;
-    const am=filtered.filter(d=>d.clasificacion==="AMARILLO").length;
-    const ve=filtered.filter(d=>d.clasificacion==="VERDE").length;
-    const rdC="#ff3a5c",ywC="#ffb830",gnC="#00e07a";
-    cfg={type:"doughnut",data:{labels:[t("legendCritical")||"ROJO",t("legendUrgent")||"AMARILLO",t("legendStable")||"VERDE"],datasets:[{data:[ro,am,ve],backgroundColor:[rdC,ywC,gnC],borderColor:[rdC,ywC,gnC],borderWidth:2,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{position:"bottom",labels:{color:textC,font:{size:10.5},boxWidth:12,padding:14}}},animation:{animateRotate:true,duration:600}}};
-  }else if(_chartType==="type"){
-    const tipos=["adulto","adulto_mayor","nino","adolescente","embarazada","movilidad"];
-    const lbs=[t("tAdulto"),t("tMayor"),t("tNino"),t("tAdol"),t("tEmbar"),t("tMovil")];
-    const vals=tipos.map(tp=>filtered.filter(d=>d.tipo===tp).length);
-    const clrs2=["#00c8f0","#a855f7","#00e07a","#ffb830","#ff7043","#94a3b8"];
-    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs2.map(c=>c+"bb"),borderColor:clrs2,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
-  }else if(_chartType==="motivo"){
-    const mots=["dolor_pecho","disnea","trauma","abdominal","neuro","fiebre","otro"];
-    const lbs=[t("mPecho"),t("mDisnea"),t("mTrauma"),t("mAbdominal"),t("mNeuro"),t("mFiebre"),t("mOtro")];
-    const clrs=["#ff3a5c","#00c8f0","#ffb830","#a855f7","#00e07a","#ff7043","#94a3b8"];
-    const vals=mots.map(m=>filtered.filter(d=>d.motivo===m).length);
-    cfg={type:"bar",data:{labels:lbs,datasets:[{data:vals,backgroundColor:clrs.map(c=>c+"cc"),borderColor:clrs,borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:9}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
-  }else if(_chartType==="mci"){
-    const normalN=filtered.filter(d=>!d.esMCI).length;
-    const mciN=filtered.filter(d=>d.esMCI===true).length;
-    const prehN=(_dashPrehDocs||[]).length;
-    cfg={type:"doughnut",data:{labels:["Triage Normal","MCI","Pre-hospitalario"],datasets:[{data:[normalN,mciN,prehN],backgroundColor:["#00c8f055","#ff806055","#a855f755"],borderColor:["#00c8f0","#ff8060","#a855f7"],borderWidth:2,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{position:"bottom",labels:{color:textC,font:{size:10.5},boxWidth:12,padding:14}}},animation:{animateRotate:true,duration:600}}};
-  }else{
-    const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
-    const days={};for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const k=d.toLocaleDateString(loc,{day:"2-digit",month:"short"});days[k]=0;}
-    filtered.forEach(d=>{const k=d.createdAt.toDate().toLocaleDateString(loc,{day:"2-digit",month:"short"});if(k in days)days[k]++;});
-    cfg={type:"line",data:{labels:Object.keys(days),datasets:[{data:Object.values(days),borderColor:"#00c8f0",backgroundColor:"rgba(0,200,240,.10)",tension:.4,fill:true,pointBackgroundColor:"#00c8f0",pointBorderColor:"#fff",pointBorderWidth:2,pointRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:{size:10}},grid:{color:gridC}},y:{ticks:{color:textC,stepSize:1},grid:{color:gridC}}}}};
-  }
-  _chartInst=new Chart(canvas,cfg);
-}
 
 // NEARBY
 let _nearbyMap=null;

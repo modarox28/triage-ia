@@ -6,7 +6,7 @@ import{getFirestore,enableIndexedDbPersistence,doc,setDoc,getDoc,collection,addD
 import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT,calcHEART,calcROSIER}from"../clinical/engine.js?v=4";
 import{getCopilotHints,renderCopilotCard}from"../clinical/copilot.js?v=4";
 import{buildTriageTimeline}from"../clinical/timeline.js?v=4";
-import{L}from"../i18n/index.js?v=4";
+import{L}from"../i18n/index.js?v=5";
 import{chkPA,chkFC,chkSat,chkT,chkFR}from"../utils/clinical.js?v=4";
 import{COLA_DEADLINE,INACT_MS,WARN_MS}from"../config/constants.js?v=4";
 import{getSteps as _getStepsModule}from"../triage/steps.js?v=4";

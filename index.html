@@ -14,7 +14,7 @@
 <meta name="theme-color" content="#0b1120">
 <link rel="icon" type="image/png" href="./icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script type="module" src="./src/app/firebase-init.js?v=4"></script>
+<script type="module" src="./src/app/firebase-init.js?v=5"></script>
 <link rel="stylesheet" href="./src/styles/base.css?v=5">
 <link rel="stylesheet" href="./src/styles/auth.css?v=4">
 <link rel="stylesheet" href="./src/styles/layout.css?v=5">
@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="./src/styles/clinical.css?v=4">
 <link rel="stylesheet" href="./src/styles/queue.css?v=4">
 <link rel="stylesheet" href="./src/styles/ios.css?v=5">
-<link rel="stylesheet" href="./src/styles/tema.css?v=10">
+<link rel="stylesheet" href="./src/styles/tema.css?v=11">
 </head>
 <body>
 
@@ -548,8 +548,8 @@
               <h2 class="clabel" style="margin:0">Actividad reciente</h2>
               <div style="display:flex;gap:5px">
                 <button class="hist-flt on" id="dashPer-day" onclick="_setDashPeriod('day',this)">Hoy</button>
-                <button class="hist-flt" id="dashPer-week" onclick="_setDashPeriod('week',this)">Sem.</button>
-                <button class="hist-flt" id="dashPer-month" onclick="_setDashPeriod('month',this)">Mes</button>
+                <button class="hist-flt" id="dashPer-week" onclick="_setDashPeriod('week',this)">7 días</button>
+                <button class="hist-flt" id="dashPer-month" onclick="_setDashPeriod('month',this)">30 días</button>
               </div>
             </div>
             <div class="card dash-recent">
@@ -560,24 +560,32 @@
             </div>
           </section>
         </div>
-        <div class="card" id="chartCard" style="display:none">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div class="clabel" style="margin:0" id="lbChartTitle">Estadisticas</div>
-            <div style="display:flex;gap:6px">
+        <div class="card est-card" id="chartCard" style="display:none">
+          <div class="est-head">
+            <div>
+              <h2 class="clabel" style="margin:0" id="lbChartTitle">Estadísticas</h2>
+              <div class="est-sub" id="chartSub"></div>
+            </div>
+            <button type="button" class="est-pdf" onclick="exportStatsPDF()" title="Descargar reporte en PDF">📄 <span>PDF</span></button>
+          </div>
+          <div class="est-filtros">
+            <div class="est-seg" role="group" aria-label="Período">
               <button class="hist-flt on" id="chartPer-day" onclick="setChartPeriod('day',this)">Hoy</button>
-              <button class="hist-flt" id="chartPer-week" onclick="setChartPeriod('week',this)">Sem.</button>
-              <button class="hist-flt" id="chartPer-month" onclick="setChartPeriod('month',this)">Mes</button>
+              <button class="hist-flt" id="chartPer-week" onclick="setChartPeriod('week',this)">7 días</button>
+              <button class="hist-flt" id="chartPer-month" onclick="setChartPeriod('month',this)">30 días</button>
+            </div>
+            <div class="est-seg" role="group" aria-label="Ver por">
+              <button class="hist-flt on" id="chartType-color" onclick="setChartType('color',this)">Prioridad</button>
+              <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)">Motivo</button>
+              <button class="hist-flt" id="chartType-type" onclick="setChartType('type',this)">Tipo</button>
+              <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)">Tendencia</button>
+              <button class="hist-flt" id="chartType-mci" onclick="setChartType('mci',this)">Origen</button>
             </div>
           </div>
-          <div style="display:flex;justify-content:center;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-            <button class="hist-flt on" id="chartType-color" onclick="setChartType('color',this)" title="Por clasificación">Prioridad</button>
-            <button class="hist-flt" id="chartType-type" onclick="setChartType('type',this)" title="Por tipo de paciente">Tipo</button>
-            <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)" title="Por motivo">Motivo</button>
-            <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)" title="Tendencia">Tendencia</button>
-            <button class="hist-flt" id="chartType-mci" onclick="setChartType('mci',this)" title="MCI vs Normal vs Pre-hosp">MCI</button>
-          </div>
-          <div style="position:relative;height:260px;width:100%;overflow:hidden">
-            <canvas id="mainChart"></canvas>
+          <div class="est-empty" id="chartEmpty" style="display:none">Sin triages en este período. Prueba con 7 o 30 días.</div>
+          <div class="est-body" id="chartBody">
+            <div class="est-canvas"><canvas id="mainChart" aria-label="Gráfico de estadísticas" role="img"></canvas></div>
+            <div class="est-summary" id="chartSummary"></div>
           </div>
         </div>
         <div class="card" id="nearbyCard" style="display:none">
@@ -1155,28 +1163,29 @@
     </div>
   </div>
 </div>
-<script src="./src/app/00-iconos.js?v=14"></script>
-<script src="./src/app/00-busqueda.js?v=14"></script>
-<script src="./src/app/00-estado.js?v=14"></script>
-<script src="./src/app/01-auth.js?v=14"></script>
-<script src="./src/app/02-voz-notas.js?v=14"></script>
-<script src="./src/app/03-navegacion.js?v=14"></script>
-<script src="./src/app/04-dashboard-historial.js?v=14"></script>
-<script src="./src/app/05-perfil-qr.js?v=14"></script>
-<script src="./src/app/06-pacientes.js?v=14"></script>
-<script src="./src/app/07-pwa.js?v=14"></script>
-<script src="./src/app/08-triage.js?v=14"></script>
-<script src="./src/app/09-medicamentos.js?v=14"></script>
-<script src="./src/app/10-init.js?v=14"></script>
-<script src="./src/app/11-dolor-sintomas.js?v=14"></script>
-<script src="./src/app/12-historia-clinica.js?v=14"></script>
-<script src="./src/app/13-cola.js?v=14"></script>
-<script src="./src/app/14-herramientas.js?v=14"></script>
-<script src="./src/app/15-mci.js?v=14"></script>
-<script src="./src/app/16-glasgow-gestos.js?v=14"></script>
-<script src="./src/app/17-scores-tablero.js?v=14"></script>
-<script src="./src/app/18-demo.js?v=14"></script>
-<script src="./src/app/19-pdf.js?v=14"></script>
-<script src="./src/app/20-pin.js?v=14"></script>
+<script src="./src/app/00-iconos.js?v=15"></script>
+<script src="./src/app/00-busqueda.js?v=15"></script>
+<script src="./src/app/00-estado.js?v=15"></script>
+<script src="./src/app/01-auth.js?v=15"></script>
+<script src="./src/app/02-voz-notas.js?v=15"></script>
+<script src="./src/app/03-navegacion.js?v=15"></script>
+<script src="./src/app/04-dashboard-historial.js?v=15"></script>
+<script src="./src/app/05-perfil-qr.js?v=15"></script>
+<script src="./src/app/06-pacientes.js?v=15"></script>
+<script src="./src/app/07-pwa.js?v=15"></script>
+<script src="./src/app/08-triage.js?v=15"></script>
+<script src="./src/app/09-medicamentos.js?v=15"></script>
+<script src="./src/app/10-init.js?v=15"></script>
+<script src="./src/app/11-dolor-sintomas.js?v=15"></script>
+<script src="./src/app/12-historia-clinica.js?v=15"></script>
+<script src="./src/app/13-cola.js?v=15"></script>
+<script src="./src/app/14-herramientas.js?v=15"></script>
+<script src="./src/app/15-mci.js?v=15"></script>
+<script src="./src/app/16-glasgow-gestos.js?v=15"></script>
+<script src="./src/app/17-scores-tablero.js?v=15"></script>
+<script src="./src/app/18-demo.js?v=15"></script>
+<script src="./src/app/19-pdf.js?v=15"></script>
+<script src="./src/app/20-pin.js?v=15"></script>
+<script src="./src/app/21-estadisticas.js?v=15"></script>
 </body>
 </html>

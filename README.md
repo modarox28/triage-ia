@@ -70,7 +70,8 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   │   ├── 18-demo.js         #   Modo demo: Firebase simulado en memoria con datos ficticios
 │   │   ├── 00-busqueda.js     #   Búsqueda de pacientes: claves de búsqueda por nombre y documento
 │   │   ├── 19-pdf.js          #   Utilidades de PDF: ajuste de línea, salto de página, pie con número de página
-│   │   └── 20-pin.js          #   Recuperación de PIN de pacientes (restablecer, aviso y cambio obligatorio)
+│   │   ├── 20-pin.js          #   Recuperación de PIN de pacientes (restablecer, aviso y cambio obligatorio)
+│   │   └── 21-estadisticas.js #   Estadísticas del inicio: gráfico, tabla con porcentajes y reporte PDF
 │   ├── styles/                # CSS por área: base, auth, layout, components, screens, clinical, queue, ios
 │   │                          #   y tema.css (estilo visual, Inicio y diseño para tablet/escritorio; se carga al final)
 │   ├── clinical/              # Motor de scores clínicos, copiloto y línea de tiempo (módulos ES)
@@ -161,6 +162,7 @@ Usa el runner de pruebas incluido en Node. Cubre:
 - **Clasificadores de signos vitales** en sus valores límite.
 - **PDF** de triage, historia clínica y tarjetas demo: con textos muy largos, nombres extensos y símbolos (≥, →, SpO₂, emojis), ningún texto se sale de la hoja y las secciones largas continúan en la página siguiente.
 - **Seguridad del Worker**: tokens falsos, vencidos, alterados o de otro proyecto; cuentas sin acceso; cupos diarios; y que ninguna consulta rechazada llegue a DeepSeek.
+- **Estadísticas**: conteos por período (hoy, 7 y 30 días), tendencia y que el reporte PDF no se salga de la hoja.
 - **Búsqueda de pacientes**: tildes, mayúsculas, partes de palabra, orden de los términos y documentos con puntos o letras.
 - **Restablecimiento de PIN**: solo el personal aprobado puede hacerlo, la firma de la cuenta de servicio es válida, se marca `mustChangePin` y se respeta el límite diario.
 
