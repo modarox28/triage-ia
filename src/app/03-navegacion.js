@@ -76,7 +76,8 @@ function _markActiveNav(id){
   const snb=document.getElementById("snb-"+id);if(snb)snb.classList.add("on");
   const ind=document.getElementById("nind");
   const on=document.querySelector(".nb.on");
-  if(ind&&on){ind.style.width=on.offsetWidth+"px";ind.style.left=on.offsetLeft+"px";ind.style.opacity="1";}
+  // El resaltado cubre solo el botón (no el espacio de la barrita de inicio del iPhone)
+  if(ind&&on){ind.style.width=on.offsetWidth+"px";ind.style.left=on.offsetLeft+"px";ind.style.top=on.offsetTop+"px";ind.style.height=on.offsetHeight+"px";ind.style.opacity="1";}
   else if(ind)ind.style.opacity="0";
 }
 
@@ -331,3 +332,19 @@ function renderNearby(lat,lon,elements){
   }).join("");
 }
 
+
+
+// iOS 26 instalado como app: a veces el área visible termina antes del borde inferior.
+// Si pasa, se marca <html class="vp-short"> para no sumar otra vez el espacio inferior.
+function _checkIOSViewport(){
+  const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  if(!standalone||!ios){document.documentElement.classList.remove("vp-short");return;}
+  const landscape=window.innerWidth>window.innerHeight;
+  const screenH=landscape?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height);
+  document.documentElement.classList.toggle("vp-short",screenH-window.innerHeight>20);
+  const on=document.querySelector(".nb.on");if(on&&typeof _curTab!=="undefined"&&_curTab)_markActiveNav(_curTab);
+}
+_checkIOSViewport();
+window.addEventListener("resize",()=>setTimeout(_checkIOSViewport,60));
+window.addEventListener("orientationchange",()=>setTimeout(_checkIOSViewport,300));

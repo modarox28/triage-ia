@@ -1,6 +1,11 @@
 /* base.css — Variables de tema, reset, animaciones y utilidades
    Parte de los estilos de MedIA Suite (antes dentro de index.html). */
-:root{--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#8b9ec0;--mu2:#6a80a8;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);--zoom:1;--nav-h:70px;}
+:root{--nav-safe:min(env(safe-area-inset-bottom,0px),34px);--bg:#0b1120;--bg2:#111827;--bg3:#1a2438;--bd:#1e2d45;--tx:#e8eef8;--mu:#8b9ec0;--mu2:#6a80a8;--cy:#00c8f0;--gn:#00e07a;--rd:#ff3a5c;--yw:#ffb830;--pu:#a855f7;--cy-a:rgba(0,200,240,.08);--gn-a:rgba(0,224,122,.08);--rd-a:rgba(255,58,92,.08);--yw-a:rgba(255,184,48,.08);--shadow:0 4px 24px rgba(0,0,0,.3);--zoom:1;--nav-h:70px;}
+/* Espacio de la barrita de inicio del iPhone bajo la barra inferior.
+   iOS 26 instalado como app a veces reporta un valor inflado al abrir: se limita a 34px
+   (la altura real). Si el área visible ni siquiera llega al borde inferior (otro fallo de
+   iOS 26), ese espacio ya queda fuera de la pantalla útil y no se suma de nuevo. */
+html.vp-short{--nav-safe:6px;}
 .light{--bg:#f0f4f8;--bg2:#fff;--bg3:#e8edf5;--bd:#d0dae8;--tx:#0f1923;--mu:#55678c;--mu2:#6f82a2;--cy:#0099bb;--gn:#00a855;--rd:#d42042;--yw:#c97a00;--cy-a:rgba(0,153,187,.08);--gn-a:rgba(0,168,85,.08);--rd-a:rgba(212,32,66,.08);--yw-a:rgba(201,122,0,.08);--shadow:0 4px 24px rgba(0,0,0,.08);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;touch-action:manipulation;}
 html{font-size:calc(16px * var(--zoom));-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation;}

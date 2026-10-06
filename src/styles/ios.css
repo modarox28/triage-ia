@@ -26,3 +26,9 @@ select{padding-right:32px;}
 @supports (-webkit-touch-callout: none){
   .auth-screen{justify-content:flex-start;padding-top:max(calc(env(safe-area-inset-top,0px) + 20px), 40px);}
 }
+
+/* iOS instalado como app: 100vh sí incluye la zona inferior de la pantalla,
+   así el documento llega hasta el borde (los vh dinámicos la omiten en WebKit). */
+@supports (-webkit-touch-callout:none){
+  html,body{height:100vh;}
+}

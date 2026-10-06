@@ -39,16 +39,16 @@
 
 /* BODY + SCREENS */
 .main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0;}
-.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + var(--nav-safe));-webkit-overflow-scrolling:touch;width:100%;overscroll-behavior-y:contain;}
 .body::-webkit-scrollbar{width:3px;}
 .body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
 .sc{display:none;padding:14px;width:100%;box-sizing:border-box;}
 .sc.on{display:block;animation:pageSlideIn .3s cubic-bezier(.34,1.4,.64,1);}
 
 /* BOTTOM NAV — floating pill, flush to safe area */
-.bottom-nav{display:flex;background:rgba(13,19,33,0.88);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.3);position:fixed;bottom:0;left:0;right:0;z-index:50;border-radius:26px 26px 0 0;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,20px);}
+.bottom-nav{display:flex;background:rgba(13,19,33,0.88);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.3);position:fixed;bottom:0;left:0;right:0;z-index:50;border-radius:26px 26px 0 0;overflow:hidden;padding-bottom:var(--nav-safe);border-bottom:none;}
 .light .bottom-nav{background:rgba(240,244,248,.92);border:1px solid rgba(0,0,0,.1);box-shadow:0 8px 32px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.07);}
-.nb{flex:1;min-width:44px;display:flex;flex-direction:column;align-items:center;padding:11px 8px 12px;gap:3px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;position:relative;z-index:1;}
+.nb{flex:1;min-width:44px;display:flex;flex-direction:column;align-items:center;padding:10px 8px 9px;gap:3px;background:none;border:none;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;position:relative;z-index:1;}
 .nb .ni{display:flex;align-items:center;justify-content:center;height:26px;color:var(--mu);transition:transform .25s cubic-bezier(.34,1.56,.64,1),color .2s;}
 .nb.on .ni{color:var(--cy);}
 .nb.on .ni{transform:scale(1.08);}
@@ -56,14 +56,14 @@
 .nb.on .nl{color:var(--cy);}
 .nb:active{opacity:.6;}
 /* Active tab indicator */
-.nind{position:absolute;top:5px;bottom:5px;left:0;background:rgba(255,255,255,.08);border-radius:20px;transition:left .28s cubic-bezier(.34,1.4,.64,1),width .28s cubic-bezier(.34,1.4,.64,1);pointer-events:none;z-index:0;}
+.nind{position:absolute;top:6px;height:0;left:0;background:rgba(255,255,255,.08);border-radius:20px;transition:left .28s cubic-bezier(.34,1.4,.64,1),width .28s cubic-bezier(.34,1.4,.64,1);pointer-events:none;z-index:0;}
 .light .nind{background:rgba(0,0,0,.06);}
 
 
 /* MENÚ "MÁS" — hoja inferior con las secciones que no caben en la barra */
 .more-sheet{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,0);pointer-events:none;transition:background .2s;}
 .more-sheet.on{background:rgba(0,0,0,.45);pointer-events:auto;}
-.more-panel{position:absolute;left:0;right:0;bottom:0;background:var(--bg2);border:1px solid var(--bd);border-bottom:none;border-radius:22px 22px 0 0;padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateY(100%);transition:transform .25s cubic-bezier(.34,1.2,.64,1);}
+.more-panel{position:absolute;left:0;right:0;bottom:0;background:var(--bg2);border:1px solid var(--bd);border-bottom:none;border-radius:22px 22px 0 0;padding:8px 12px calc(var(--nav-safe) + 14px);transform:translateY(100%);transition:transform .25s cubic-bezier(.34,1.2,.64,1);}
 .more-sheet.on .more-panel{transform:translateY(0);}
 .more-handle{width:40px;height:4px;border-radius:2px;background:var(--bd);margin:4px auto 10px;}
 .more-item{display:flex;align-items:center;gap:14px;width:100%;padding:14px 12px;background:none;border:none;border-radius:12px;color:var(--tx);font-family:"Familjen Grotesk",sans-serif;font-size:1rem;font-weight:600;cursor:pointer;text-align:left;}
