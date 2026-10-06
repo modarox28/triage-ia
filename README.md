@@ -69,6 +69,7 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   │   ├── 18-demo.js         #   Modo demo: Firebase simulado en memoria con datos ficticios
 │   │   └── 19-pdf.js          #   Utilidades de PDF: ajuste de línea, salto de página, pie con número de página
 │   ├── styles/                # CSS por área: base, auth, layout, components, screens, clinical, queue, ios
+│   │                          #   y tema.css (estilo visual, Inicio y diseño para tablet/escritorio; se carga al final)
 │   ├── clinical/              # Motor de scores clínicos, copiloto y línea de tiempo (módulos ES)
 │   ├── ai/                    # Construcción del prompt para la IA
 │   ├── triage/                # Definición de los pasos del triage

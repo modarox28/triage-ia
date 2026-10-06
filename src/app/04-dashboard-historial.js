@@ -7,6 +7,7 @@ async function loadDash(){
   // Role header
   const roleLabels={admin:"👑 Panel de Administrador",admin_hosp:"🏥 Panel Hospitalario",medico:"👨‍⚕️ Mi Panel"};
   const rl=document.getElementById("dashRoleLabel");if(rl)rl.textContent=roleLabels[CR]||"Dashboard";
+  _renderDashHello();
   const rb=document.getElementById("dashRoleBadge");if(rb)rb.innerHTML=`<span style="font-size:.62rem;padding:3px 9px;border-radius:10px;background:var(--cy-a);color:var(--cy);font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.5px">${(CR||"").toUpperCase()}</span>`;
   // Show/hide admin section
   const adminSec=document.getElementById("lbUserMgmtSec");if(adminSec)adminSec.style.display=(CR==="admin"||CR==="admin_hosp")?"block":"none";
@@ -31,13 +32,7 @@ async function loadDash(){
       prehCount=prehSnap.size;
       _dashPrehDocs=prehSnap.docs.map(d=>({_id:d.id,...d.data()}));
     }catch(e){_dashPrehDocs=[];}
-    document.getElementById("statGrid").innerHTML=`
-      <div class="stat-card" onclick="goToHistWithFilter('all')" title="Ver todos"><div class="stat-num">${myDocs.length}</div><div class="stat-lbl">${t("statTotal")||"Total"}</div></div>
-      <div class="stat-card" onclick="goToHistWithFilter('ROJO')" title="Ver críticos"><div class="stat-num" style="color:var(--rd)">${ro}</div><div class="stat-lbl">🔴 ${t("statCritical")||"Criticos"}</div></div>
-      <div class="stat-card" onclick="goToHistWithFilter('AMARILLO')" title="Ver urgentes"><div class="stat-num" style="color:var(--yw)">${am}</div><div class="stat-lbl">🟡 ${t("statUrgent")||"Urgentes"}</div></div>
-      <div class="stat-card" onclick="goToHistWithFilter('VERDE')" title="Ver estables"><div class="stat-num" style="color:var(--gn)">${ve}</div><div class="stat-lbl">🟢 ${t("statStable")||"Estables"}</div></div>
-      <div class="stat-card" onclick="goToHistWithFilter('MCI')" title="Ver MCI"><div class="stat-num" style="color:#ff8060">${mci}</div><div class="stat-lbl">⚠️ MCI</div></div>
-      <div class="stat-card" title="Notificaciones prehospital"><div class="stat-num" style="color:var(--pu)">${prehCount}</div><div class="stat-lbl">🚑 Pre-hosp</div></div>`;
+    _renderDashSummary(myDocs,{ro,am,ve,mci,prehCount});
     _dashAllDocs=myDocs.map(d=>({_id:d.id,...d.data()}));
     _dashShown=5;
     _renderDashRecent();
@@ -263,6 +258,45 @@ function _dashFilteredDocs(){
   const cut=cuts[_dashPeriod]||new Date(0);
   return _dashAllDocs.filter(d=>{const ts=d.createdAt?.toDate?.();return !ts||ts>=cut;});
 }
+// ── Inicio (estilo A) ──
+const _DASH_CLS={ROJO:{dot:"var(--rd)",txt:"#ff8fa3"},AMARILLO:{dot:"var(--yw)",txt:"#ffc451"},VERDE:{dot:"var(--gn)",txt:"#3ee68f"}};
+function _renderDashHello(){
+  const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
+  const now=new Date(),h=now.getHours();
+  const turno=h>=6&&h<14?"Turno mañana":h>=14&&h<22?"Turno tarde":"Turno noche";
+  const fecha=now.toLocaleDateString(loc,{weekday:"long",day:"numeric",month:"long"});
+  const sh=document.getElementById("dashShift");if(sh)sh.textContent=`${turno} · ${fecha}`;
+  const nombre=(uName()||"").split(" ").filter(w=>!/^(dr|dra)\.?$/i.test(w))[0]||"";
+  const he=document.getElementById("dashHello");if(he)he.textContent=nombre?`Hola, ${nombre}`:"Inicio";
+  const nt=document.getElementById("dashNewTriage");if(nt)nt.style.display=(CR==="admin"||CR==="medico")?"":"none";
+}
+function _renderDashSummary(docs,{ro,am,ve,mci,prehCount}){
+  // Críticos en espera y cuántos superan su tiempo objetivo (mismos límites que la cola)
+  const lim=(window.COLA_DEADLINE&&COLA_DEADLINE.ROJO)||15;
+  const rojos=docs.map(d=>d.data()).filter(d=>d.clasificacion==="ROJO"&&!d.atendido);
+  const vencidos=rojos.filter(d=>{const t=d.createdAt?.toMillis?.();return t&&Date.now()-t>lim*60000;}).length;
+  const crit=document.getElementById("dashCritical");
+  if(crit){
+    const sub=!rojos.length?(ro?`${ro} hoy, todos atendidos`:"Sin pacientes críticos"):
+      vencidos?`${vencidos} ${vencidos===1?"supera":"superan"} su tiempo objetivo (${lim} min)`:`Dentro del tiempo objetivo (${lim} min)`;
+    crit.classList.toggle("calm",!rojos.length);
+    crit.innerHTML=`<div class="dash-crit-info">
+        <div class="dash-crit-lbl">Críticos en espera</div>
+        <div class="dash-crit-num">${rojos.length}</div>
+        <div class="dash-crit-sub">${_esc(sub)}</div>
+      </div>
+      <button type="button" class="dash-crit-btn" onclick="navigateTo('cola')">Ver cola</button>`;
+  }
+  const card=(n,lbl,color,onclick,title)=>`<button type="button" class="stat-card" ${onclick?`onclick="${onclick}"`:""} title="${title}">
+      <div class="stat-num" style="color:${color}">${n}</div><div class="stat-lbl">${lbl}</div></button>`;
+  document.getElementById("statGrid").innerHTML=
+    card(am,t("statUrgent")||"Urgentes","#ffc451","goToHistWithFilter('AMARILLO')","Ver urgentes")+
+    card(ve,t("statStable")||"Estables","#3ee68f","goToHistWithFilter('VERDE')","Ver estables")+
+    card(prehCount,"Prehospital","#c39bff","","Notificaciones prehospitalarias")+
+    card(docs.length,t("statTotal")||"Total hoy","var(--cy)","goToHistWithFilter('all')","Ver todos")+
+    (mci?card(mci,"MCI","#ff9a7a","goToHistWithFilter('MCI')","Ver incidentes de múltiples víctimas"):"");
+}
+
 function _renderDashRecent(){
   const filtered=_dashFilteredDocs();
   window._dashFiltered=filtered;
@@ -276,10 +310,17 @@ function _renderDashRecent(){
   const loc={es:"es-CO",en:"en-US",pt:"pt-BR",fr:"fr-FR",de:"de-DE",ja:"ja-JP"}[CL]||"es-CO";
   const mMD={dolor_pecho:t("mPecho"),disnea:t("mDisnea"),trauma:t("mTrauma"),abdominal:t("mAbdominal"),neuro:t("mNeuro"),fiebre:t("mFiebre"),otro:t("mOtro")};
   el.innerHTML=filtered.slice(0,_dashShown).map((dt,i)=>{
-    const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
-    const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
-    const quien=dt.userName?`<span style="font-size:.62rem;color:var(--cy);margin-left:4px">· ${_esc(dt.userName)}</span>`:"";
-    return`<div class="hist-row" style="cursor:pointer" onclick="_openTriageDetail(${i})"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600">${_esc(mMD[dt.motivo]||dt.motivo||"—")}</div><div style="font-size:.69rem;color:var(--mu)">${_esc(_tipoLabel(dt.tipo))} · ${_esc(date)}${quien}</div></div><button onclick="event.stopPropagation();_exportDashPDF(${i})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.7rem;padding:3px 6px;cursor:pointer;margin-left:4px;touch-action:manipulation" title="PDF">📄</button><span style="color:var(--mu);font-size:.95rem;flex-shrink:0;margin-left:4px">›</span></div>`;
+    const cls=_DASH_CLS[dt.clasificacion]||_DASH_CLS.VERDE;
+    const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleString(loc,{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}):"—";
+    const meta=[_tipoLabel(dt.tipo),date,dt.userName].filter(Boolean).map(_esc).join(" · ");
+    return`<div class="dash-row" role="button" tabindex="0" onclick="_openTriageDetail(${i})" onkeydown="if(event.key==='Enter')_openTriageDetail(${i})">
+      <span class="dash-dot" style="background:${cls.dot}"></span>
+      <div class="dash-row-body"><div class="dash-row-title">${_esc(mMD[dt.motivo]||dt.motivo||"—")}</div><div class="dash-row-meta">${meta}</div></div>
+      <span class="dash-row-cls" style="color:${cls.txt}">${_esc(dt.clasificacion||"")}</span>
+      <button type="button" class="dash-row-pdf" aria-label="Exportar PDF" title="Exportar PDF" onclick="event.stopPropagation();_exportDashPDF(${i})">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+      </button>
+    </div>`;
   }).join("");
   const hasMore=filtered.length>_dashShown;
   if(moreEl){

@@ -15,14 +15,15 @@
 <link rel="icon" type="image/png" href="./icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script type="module" src="./src/app/firebase-init.js?v=4"></script>
-<link rel="stylesheet" href="./src/styles/base.css?v=3">
-<link rel="stylesheet" href="./src/styles/auth.css?v=3">
-<link rel="stylesheet" href="./src/styles/layout.css?v=3">
-<link rel="stylesheet" href="./src/styles/components.css?v=3">
-<link rel="stylesheet" href="./src/styles/screens.css?v=3">
-<link rel="stylesheet" href="./src/styles/clinical.css?v=3">
-<link rel="stylesheet" href="./src/styles/queue.css?v=3">
-<link rel="stylesheet" href="./src/styles/ios.css?v=3">
+<link rel="stylesheet" href="./src/styles/base.css?v=4">
+<link rel="stylesheet" href="./src/styles/auth.css?v=4">
+<link rel="stylesheet" href="./src/styles/layout.css?v=4">
+<link rel="stylesheet" href="./src/styles/components.css?v=4">
+<link rel="stylesheet" href="./src/styles/screens.css?v=4">
+<link rel="stylesheet" href="./src/styles/clinical.css?v=4">
+<link rel="stylesheet" href="./src/styles/queue.css?v=4">
+<link rel="stylesheet" href="./src/styles/ios.css?v=4">
+<link rel="stylesheet" href="./src/styles/tema.css?v=5">
 </head>
 <body>
 
@@ -516,26 +517,38 @@
     <div class="body" id="mainBody">
       <!-- DASHBOARD -->
       <div class="sc" id="sc-dash">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div id="dashRoleLabel" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;color:var(--tx)"></div>
-          <span id="dashRoleBadge"></span>
-        </div>
-        <div class="clabel">Estadísticas del turno</div>
-        <div class="stat-grid" id="statGrid"></div>
-        <button class="bsec" id="handoffBtn" style="width:100%;margin-bottom:14px;font-size:.82rem" onclick="openHandoff()">📋 <span id="handoffBtnTxt">Resumen de turno</span></button>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div class="clabel" style="margin:0">Actividad reciente</div>
-          <div style="display:flex;gap:5px">
-            <button class="hist-flt on" id="dashPer-day" onclick="_setDashPeriod('day',this)">Hoy</button>
-            <button class="hist-flt" id="dashPer-week" onclick="_setDashPeriod('week',this)">Sem.</button>
-            <button class="hist-flt" id="dashPer-month" onclick="_setDashPeriod('month',this)">Mes</button>
+        <!-- Inicio (estilo A): en pantallas anchas, resumen a la izquierda y actividad a la derecha -->
+        <div class="dash-grid">
+          <div class="dash-main">
+            <div class="dash-hello">
+              <div class="dash-shift" id="dashShift"></div>
+              <h1 class="dash-title" id="dashHello">Inicio</h1>
+            </div>
+            <div id="dashRoleLabel" hidden></div><span id="dashRoleBadge" hidden></span>
+            <section class="dash-crit" id="dashCritical" aria-label="Pacientes críticos"></section>
+            <div class="stat-grid dash-stats" id="statGrid"></div>
+            <button type="button" class="dash-new" id="dashNewTriage" onclick="navigateTo('triage')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+              Nuevo triage
+            </button>
+            <button class="bsec" id="handoffBtn" style="width:100%;margin:0;font-size:.85rem" onclick="openHandoff()"><span id="handoffBtnTxt">Resumen de turno</span></button>
           </div>
-        </div>
-        <div class="card">
-          <div id="recentT"></div>
-          <div id="recentMore" style="display:none;margin-top:8px">
-            <button class="bsec" style="width:100%;font-size:.82rem" onclick="_dashMore()">Mostrar más</button>
-          </div>
+          <section class="dash-side" aria-label="Actividad reciente">
+            <div class="dash-side-head">
+              <h2 class="clabel" style="margin:0">Actividad reciente</h2>
+              <div style="display:flex;gap:5px">
+                <button class="hist-flt on" id="dashPer-day" onclick="_setDashPeriod('day',this)">Hoy</button>
+                <button class="hist-flt" id="dashPer-week" onclick="_setDashPeriod('week',this)">Sem.</button>
+                <button class="hist-flt" id="dashPer-month" onclick="_setDashPeriod('month',this)">Mes</button>
+              </div>
+            </div>
+            <div class="card dash-recent">
+              <div id="recentT"></div>
+              <div id="recentMore" style="display:none;margin-top:8px">
+                <button class="bsec" style="width:100%;font-size:.82rem" onclick="_dashMore()">Mostrar más</button>
+              </div>
+            </div>
+          </section>
         </div>
         <div class="card" id="chartCard" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -547,11 +560,11 @@
             </div>
           </div>
           <div style="display:flex;justify-content:center;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-            <button class="hist-flt on" id="chartType-color" onclick="setChartType('color',this)" title="Por clasificación">🎨</button>
-            <button class="hist-flt" id="chartType-type" onclick="setChartType('type',this)" title="Por tipo de paciente">👤</button>
-            <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)" title="Por motivo">🔬</button>
-            <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)" title="Tendencia">📈</button>
-            <button class="hist-flt" id="chartType-mci" onclick="setChartType('mci',this)" title="MCI vs Normal vs Pre-hosp">⚠️</button>
+            <button class="hist-flt on" id="chartType-color" onclick="setChartType('color',this)" title="Por clasificación">Prioridad</button>
+            <button class="hist-flt" id="chartType-type" onclick="setChartType('type',this)" title="Por tipo de paciente">Tipo</button>
+            <button class="hist-flt" id="chartType-motivo" onclick="setChartType('motivo',this)" title="Por motivo">Motivo</button>
+            <button class="hist-flt" id="chartType-trend" onclick="setChartType('trend',this)" title="Tendencia">Tendencia</button>
+            <button class="hist-flt" id="chartType-mci" onclick="setChartType('mci',this)" title="MCI vs Normal vs Pre-hosp">MCI</button>
           </div>
           <div style="position:relative;height:260px;width:100%;overflow:hidden">
             <canvas id="mainChart"></canvas>
@@ -1099,25 +1112,25 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="./src/app/00-estado.js?v=8"></script>
-<script src="./src/app/01-auth.js?v=8"></script>
-<script src="./src/app/02-voz-notas.js?v=8"></script>
-<script src="./src/app/03-navegacion.js?v=8"></script>
-<script src="./src/app/04-dashboard-historial.js?v=8"></script>
-<script src="./src/app/05-perfil-qr.js?v=8"></script>
-<script src="./src/app/06-pacientes.js?v=8"></script>
-<script src="./src/app/07-pwa.js?v=8"></script>
-<script src="./src/app/08-triage.js?v=8"></script>
-<script src="./src/app/09-medicamentos.js?v=8"></script>
-<script src="./src/app/10-init.js?v=8"></script>
-<script src="./src/app/11-dolor-sintomas.js?v=8"></script>
-<script src="./src/app/12-historia-clinica.js?v=8"></script>
-<script src="./src/app/13-cola.js?v=8"></script>
-<script src="./src/app/14-herramientas.js?v=8"></script>
-<script src="./src/app/15-mci.js?v=8"></script>
-<script src="./src/app/16-glasgow-gestos.js?v=8"></script>
-<script src="./src/app/17-scores-tablero.js?v=8"></script>
-<script src="./src/app/18-demo.js?v=8"></script>
-<script src="./src/app/19-pdf.js?v=2"></script>
+<script src="./src/app/00-estado.js?v=9"></script>
+<script src="./src/app/01-auth.js?v=9"></script>
+<script src="./src/app/02-voz-notas.js?v=9"></script>
+<script src="./src/app/03-navegacion.js?v=9"></script>
+<script src="./src/app/04-dashboard-historial.js?v=9"></script>
+<script src="./src/app/05-perfil-qr.js?v=9"></script>
+<script src="./src/app/06-pacientes.js?v=9"></script>
+<script src="./src/app/07-pwa.js?v=9"></script>
+<script src="./src/app/08-triage.js?v=9"></script>
+<script src="./src/app/09-medicamentos.js?v=9"></script>
+<script src="./src/app/10-init.js?v=9"></script>
+<script src="./src/app/11-dolor-sintomas.js?v=9"></script>
+<script src="./src/app/12-historia-clinica.js?v=9"></script>
+<script src="./src/app/13-cola.js?v=9"></script>
+<script src="./src/app/14-herramientas.js?v=9"></script>
+<script src="./src/app/15-mci.js?v=9"></script>
+<script src="./src/app/16-glasgow-gestos.js?v=9"></script>
+<script src="./src/app/17-scores-tablero.js?v=9"></script>
+<script src="./src/app/18-demo.js?v=9"></script>
+<script src="./src/app/19-pdf.js?v=9"></script>
 </body>
 </html>
