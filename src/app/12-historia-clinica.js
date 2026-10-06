@@ -271,65 +271,76 @@ function _buildHCPDF(d){
   if(typeof window.jspdf==="undefined")return null;
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({unit:"mm",format:"a4"});
-  const W=210,M=16,CW=W-M*2;
-  let y=M;
+  const W=210,PH=297,M=16,CW=W-M*2,BOTTOM=PH-14;
+  const fondo=()=>{pdf.setFillColor(11,17,32);pdf.rect(0,0,W,PH,"F");};
+  let y;
+  const nuevaPagina=()=>{pdf.addPage();fondo();y=M;};
 
-  // Background
-  pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");
-
-  // Header bar
+  fondo();
+  // Encabezado
   pdf.setFillColor(0,50,80);pdf.rect(0,0,W,28,"F");
-  pdf.setFontSize(14);pdf.setTextColor(0,200,240);pdf.setFont(undefined,"bold");
-  pdf.text("MedIA Suite",M,12);
-  pdf.setFontSize(8);pdf.setTextColor(140,160,190);pdf.setFont(undefined,"normal");
-  pdf.text("Historia Clínica — Documento confidencial",M,19);
-  pdf.setFontSize(7);pdf.text(`Generado: ${new Date().toLocaleString("es-ES")}`,M,25);
+  _pdfFont(pdf,14,"bold",[0,200,240]);pdf.text("MedIA Suite",M,12);
+  _pdfFont(pdf,8,"normal",[140,160,190]);pdf.text("Historia Clínica — Documento confidencial",M,19);
+  _pdfFont(pdf,7,"normal",[140,160,190]);pdf.text(`Generado: ${new Date().toLocaleString("es-ES")}`,M,25);
   y=36;
 
-  // Patient name + avatar block
-  const av=(d.name||"?")[0].toUpperCase();
+  // Bloque del paciente (nombre y datos recortados para que nunca se salgan)
+  const av=_pdfSafe((d.name||"?").trim()[0]||"?").toUpperCase()||"?";
   pdf.setFillColor(17,25,44);pdf.setDrawColor(0,200,240);pdf.roundedRect(M,y,CW,22,4,4,"FD");
   pdf.setFillColor(0,200,240);pdf.circle(M+11,y+11,8,"F");
-  pdf.setFontSize(11);pdf.setTextColor(11,17,32);pdf.setFont(undefined,"bold");pdf.text(av,M+8.5,y+14);
-  pdf.setFontSize(13);pdf.setTextColor(230,240,255);pdf.setFont(undefined,"bold");
-  pdf.text(d.name||"Sin nombre",M+22,y+9);
-  pdf.setFontSize(8.5);pdf.setTextColor(140,160,190);pdf.setFont(undefined,"normal");
+  _pdfFont(pdf,11,"bold",[11,17,32]);pdf.text(av,M+11,y+14.5,{align:"center"});
+  const textX=M+22,textW=CW-26;
+  _pdfFont(pdf,13,"bold",[230,240,255]);
+  pdf.text(_pdfFit(pdf,d.name||"Sin nombre",textW,13,"bold"),textX,y+9);
   const sexLabel=d.sex==="M"?"Masculino":d.sex==="F"?"Femenino":"Otro";
-  pdf.text(`${d.age?d.age+" años  ·  ":""}${sexLabel}${d.doc?"  ·  ID: "+d.doc:""}`,M+22,y+16);
+  _pdfFont(pdf,8.5,"normal",[140,160,190]);
+  pdf.text(_pdfFit(pdf,`${d.age?d.age+" años  ·  ":""}${sexLabel}${d.doc?"  ·  ID: "+d.doc:""}`,textW,8.5),textX,y+16);
   y+=30;
 
+  // Sección en caja; si no cabe, continúa en la página siguiente con "(cont.)"
   function sectionBox(title,color,items,notes){
     if(!items?.length&&!notes)return;
-    const rows=notes?[notes]:items;
-    const lineH=5.5;
-    const textW=CW-14;
+    const lineH=4.6,size=8.5,textW=CW-14;
     let lines=[];
-    rows.forEach(r=>{
-      const wrapped=pdf.splitTextToSize(r,textW);
-      lines=[...lines,...wrapped];
+    if(notes)lines=_pdfLines(pdf,notes,textW,size);
+    else items.forEach(it=>{
+      const w=_pdfLines(pdf,it,textW-4,size);
+      w.forEach((l,i)=>lines.push({bullet:i===0,text:l}));
     });
-    const boxH=12+lines.length*lineH+4;
-    if(y+boxH>280){pdf.addPage();pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");y=M;}
+    lines=lines.map(l=>typeof l==="string"?{bullet:false,text:l}:l);
     const [r,g,b]=color;
-    pdf.setFillColor(17,25,44);pdf.setDrawColor(r,g,b);
-    pdf.roundedRect(M,y,CW,boxH,3,3,"FD");
-    pdf.setFillColor(r,g,b);pdf.roundedRect(M,y,4,boxH,2,2,"F");
-    pdf.setFontSize(7);pdf.setTextColor(r,g,b);pdf.setFont(undefined,"bold");
-    pdf.text(title.toUpperCase(),M+7,y+6);
-    pdf.setFontSize(8.5);pdf.setTextColor(200,215,235);pdf.setFont(undefined,"normal");
-    lines.forEach((l,i)=>pdf.text(l,M+7,y+11+i*lineH));
-    y+=boxH+4;
+    let i=0,primera=true;
+    while(i<lines.length){
+      const libres=Math.floor((BOTTOM-y-12-4)/lineH);
+      // Empezar en página nueva si apenas cabe el título y una o dos líneas
+      if(libres<1||(primera&&libres<Math.min(3,lines.length))){nuevaPagina();continue;}
+      const trozo=lines.slice(i,i+libres);
+      const boxH=12+trozo.length*lineH+3;
+      pdf.setFillColor(17,25,44);pdf.setDrawColor(r,g,b);
+      pdf.roundedRect(M,y,CW,boxH,3,3,"FD");
+      pdf.setFillColor(r,g,b);pdf.roundedRect(M,y,4,boxH,2,2,"F");
+      _pdfFont(pdf,7,"bold",[r,g,b]);
+      pdf.text(_pdfSafe(title.toUpperCase())+(primera?"":" (CONT.)"),M+7,y+6);
+      _pdfFont(pdf,size,"normal",[200,215,235]);
+      trozo.forEach((l,k)=>{
+        const ly=y+11.5+k*lineH;
+        if(notes)pdf.text(l.text,M+7,ly);
+        else{if(l.bullet)pdf.text("•",M+7,ly);pdf.text(l.text,M+11,ly);}
+      });
+      y+=boxH+4;i+=trozo.length;primera=false;
+      if(i<lines.length)nuevaPagina();
+    }
   }
 
   sectionBox("Antecedentes patológicos",[0,200,240],d.antecedentes||[]);
   sectionBox("Alergias conocidas",[255,80,80],d.alergias||[]);
   sectionBox("Medicación actual",[80,220,160],d.medicacion||[]);
-  if(d.notes){sectionBox("Notas clínicas",[180,160,255],null,d.notes);}
+  if(d.notes)sectionBox("Notas clínicas",[180,160,255],null,d.notes);
 
-  // Footer
-  pdf.setFontSize(6.5);pdf.setTextColor(60,75,100);pdf.setFont(undefined,"normal");
-  pdf.text("MedIA Suite — Documento de uso interno exclusivo del personal autorizado",M,291);
-  pdf.text(`${d.name||"Paciente"}  ·  ${d.doc||""}  ·  ${new Date().toLocaleDateString("es-ES")}`,W-M,291,{align:"right"});
+  _pdfFooter(pdf,{
+    left:`${d.name||"Paciente"}${d.doc?"  ·  ID "+d.doc:""}  ·  Uso interno exclusivo del personal autorizado`,
+    margin:M,y:291,size:6.5,color:[90,105,130],
+  });
   return pdf;
 }
 

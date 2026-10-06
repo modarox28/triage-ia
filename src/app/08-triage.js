@@ -358,95 +358,94 @@ function shareResult(){
   }
 }
 function _buildTriagePDF(r){
-  const {jsPDF}=window.jspdf;
+  const {jsPDF}=window.jspdf||{};
   if(!jsPDF)return null;
   const pdf=new jsPDF({unit:"mm",format:"a4"});
   const W=210,PH=297,margin=18,cw=W-margin*2;
-  let y=margin;
-  const newPage=()=>{pdf.addPage();pdf.setFillColor(255,255,255);y=margin;};
-  const chk=(need=10)=>{if(y+need>PH-15)newPage();};
-  const ln=(txt,sz,bold,col)=>{
-    chk(sz?sz*0.5+3:8);
-    pdf.setFontSize(sz||11);pdf.setFont("helvetica",bold?"bold":"normal");
-    if(col)pdf.setTextColor(...col);else pdf.setTextColor(30,30,30);
-    pdf.text(txt,margin,y);y+=sz?sz*0.45+2:7;
-  };
-  const rule=(col=[200,200,200])=>{chk(6);pdf.setDrawColor(...col);pdf.line(margin,y,W-margin,y);y+=4;};
+  const GRIS=[100,120,150],TEXTO=[30,30,30];
+  const f=_pdfFlow(pdf,{top:margin+4,bottom:PH-18});
+  const heading=t=>{f.ensure(14);f.para(t,{x:margin,width:cw,size:8,style:"bold",color:GRIS,after:1});};
+  const rule=(col=[210,210,210])=>{f.ensure(6);pdf.setDrawColor(...col);pdf.line(margin,f.y-1,W-margin,f.y-1);f.y+=4;};
   const colorMap={ROJO:[220,38,38],AMARILLO:[202,138,4],VERDE:[21,128,61]};
   const clr=colorMap[r.clasificacion]||[80,80,80];
 
+  // Encabezado
   pdf.setFillColor(11,17,32);pdf.rect(0,0,W,28,"F");
-  pdf.setFontSize(16);pdf.setFont("helvetica","bold");pdf.setTextColor(255,255,255);
+  _pdfFont(pdf,16,"bold",[255,255,255]);
   pdf.text("MedIA Suite — Resultado de Triage",margin,13);
-  pdf.setFontSize(9);pdf.setFont("helvetica","normal");pdf.setTextColor(160,180,200);
+  _pdfFont(pdf,9,"normal",[160,180,200]);
   pdf.text(new Date().toLocaleString("es-ES"),margin,21);
-  y=36;
 
-  pdf.setFillColor(...clr);pdf.roundedRect(margin,y,cw,14,3,3,"F");
-  pdf.setFontSize(14);pdf.setFont("helvetica","bold");pdf.setTextColor(255,255,255);
-  pdf.text(`${r.clasificacion}  —  ${r.tiempo_atencion||""}`,margin+4,y+9);
-  y+=20;
+  // Banda de clasificación: alto según el texto del tiempo de atención
+  const tiempo=r.tiempo_atencion?_pdfLines(pdf,r.tiempo_atencion,cw-8,10):[];
+  const bandH=12+tiempo.length*4.5+(tiempo.length?2:0);
+  let y=36;
+  pdf.setFillColor(...clr);pdf.roundedRect(margin,y,cw,bandH,3,3,"F");
+  _pdfFont(pdf,14,"bold",[255,255,255]);
+  pdf.text(_pdfFit(pdf,r.clasificacion||"—",cw-8,14,"bold"),margin+4,y+8.5);
+  _pdfFont(pdf,10,"normal",[255,255,255]);
+  tiempo.forEach((l,i)=>pdf.text(l,margin+4,y+14+i*4.5));
+  f.y=y+bandH+9;
 
   const tMl={adulto:"Adulto",adulto_mayor:"Adulto mayor",embarazada:"Embarazada",nino:"Pediatrico",adolescente:"Adolescente",MCI:"MCI"};
   const mMl={dolor_pecho:"Dolor en el pecho",disnea:"Dificultad respiratoria",trauma:"Trauma/herida",abdominal:"Dolor abdominal",neuro:"Neurologico",fiebre:"Fiebre alta",otro:"Otro"};
-  ln("PACIENTE",8,true,[100,120,150]);y-=1;
-  ln(`Tipo: ${tMl[r.tipo]||r.tipo||"—"}   Motivo: ${mMl[r.motivo]||r.motivo||"—"}`);
-  if(r.dolor!=null)ln(`Dolor: ${r.dolor}/10`);
-  if(r.userName)ln(`Atendido por: ${r.userName}`);
-  if(r.pacienteNombre)ln(`Paciente: ${r.pacienteNombre}`);
+  const dato=t=>f.para(t,{x:margin,width:cw,size:11,color:TEXTO,lineH:5.5});
+
+  heading("PACIENTE");
+  if(r.pacienteNombre)dato(`Paciente: ${r.pacienteNombre}`);
+  dato(`Tipo: ${tMl[r.tipo]||r.tipo||"—"}    Motivo: ${mMl[r.motivo]||r.motivo||"—"}`);
+  if(r.dolor!=null)dato(`Dolor: ${r.dolor}/10`);
+  if(r.userName)dato(`Atendido por: ${r.userName}`);
   rule();
 
-  const _rvit=r.vit||r.vitals||{};
-  if(Object.keys(_rvit).some(k=>_rvit[k])){
-    ln("SIGNOS VITALES",8,true,[100,120,150]);y-=1;
-    const vlbl={fc:"FC",ps:"P.Sistolica",pd:"P.Diastolica",sat:"SpO2",tem:"Temperatura",fr:"FR",gcs:"Glasgow"};
-    const vun={fc:"lpm",ps:"mmHg",pd:"mmHg",sat:"%",tem:"C",fr:"rpm",gcs:""};
-    Object.entries(_rvit).forEach(([k,v])=>{if(v)ln(`${vlbl[k]||k}: ${v} ${vun[k]||""}`,10,false);});
+  const vit=r.vit||r.vitals||{};
+  if(Object.keys(vit).some(k=>vit[k])){
+    heading("SIGNOS VITALES");
+    const vlbl={fc:"FC",ps:"P. sistolica",pd:"P. diastolica",sat:"SpO2",tem:"Temperatura",fr:"FR",gcs:"Glasgow"};
+    const vun={fc:"lpm",ps:"mmHg",pd:"mmHg",sat:"%",tem:"°C",fr:"rpm",gcs:""};
+    const items=Object.entries(vit).filter(([,v])=>v).map(([k,v])=>`${vlbl[k]||k}: ${v} ${vun[k]||""}`.trim());
+    // Dos columnas para que la sección no ocupe tanto
+    const colW=cw/2;
+    for(let i=0;i<items.length;i+=2){
+      f.ensure(5.5);_pdfFont(pdf,10,"normal",TEXTO);
+      pdf.text(_pdfFit(pdf,items[i],colW-4,10),margin,f.y);
+      if(items[i+1])pdf.text(_pdfFit(pdf,items[i+1],colW-4,10),margin+colW,f.y);
+      f.y+=5.5;
+    }
     rule();
   }
 
   if(r.justificacion){
-    ln("ANALISIS IA",8,true,[100,120,150]);y-=1;
-    const just=pdf.splitTextToSize(r.justificacion||"",cw);
-    const lineH=5;
-    for(let i=0;i<just.length;i++){
-      chk(lineH+2);
-      pdf.setFontSize(11);pdf.setFont("helvetica","normal");pdf.setTextColor(30,30,30);
-      pdf.text(just[i],margin,y);y+=lineH;
-    }
-    y+=3;rule();
+    heading("ANALISIS IA");
+    f.para(r.justificacion,{x:margin,width:cw,size:11,color:TEXTO,lineH:5.2,after:2});
+    rule();
   }
 
-  if(r.acciones&&r.acciones.length){
-    ln("ACCIONES PRIORITARIAS",8,true,[100,120,150]);y-=1;
+  if(r.acciones?.length){
+    heading("ACCIONES PRIORITARIAS");
     r.acciones.forEach((a,i)=>{
-      const lines=pdf.splitTextToSize(`${i+1}. ${a}`,cw);
-      const lineH=5;
-      for(let j=0;j<lines.length;j++){
-        chk(lineH+2);
-        pdf.setFontSize(11);pdf.setFont("helvetica","normal");pdf.setTextColor(30,30,30);
-        pdf.text(lines[j],margin,y);y+=lineH;
-      }
-      y+=2;
+      // Sangría francesa: el número queda a la izquierda y el texto alineado
+      const num=`${i+1}.`;
+      const lines=_pdfLines(pdf,a,cw-8,11);
+      lines.forEach((l,j)=>{
+        f.ensure(5.2);_pdfFont(pdf,11,"normal",TEXTO);
+        if(j===0)pdf.text(num,margin,f.y);
+        pdf.text(l,margin+8,f.y);f.y+=5.2;
+      });
+      f.y+=1.5;
     });
-    y+=2;rule([220,220,220]);
+    f.y+=1;rule([220,220,220]);
   }
 
   if(r.notas){
-    chk(20);ln("NOTAS CLINICAS",8,true,[100,120,150]);y-=1;
-    const nlines=pdf.splitTextToSize(r.notas,cw);
-    const lineH=5;
-    for(let i=0;i<nlines.length;i++){
-      chk(lineH+2);
-      pdf.setFontSize(10);pdf.setFont("helvetica","normal");pdf.setTextColor(60,60,60);
-      pdf.text(nlines[i],margin,y);y+=lineH;
-    }
-    y+=3;rule([220,220,220]);
+    heading("NOTAS CLINICAS");
+    f.para(r.notas,{x:margin,width:cw,size:10,color:[60,60,60],lineH:5,after:2});
+    rule([220,220,220]);
   }
 
-  chk(8);
-  pdf.setFontSize(8);pdf.setFont("helvetica","italic");pdf.setTextColor(130,130,130);
-  pdf.text("Generado con MedIA Suite. Solo para uso clinico de apoyo — no reemplaza criterio medico.",margin,y);
+  f.para("Generado con MedIA Suite. Solo para uso clinico de apoyo — no reemplaza el criterio medico.",
+    {x:margin,width:cw,size:8,style:"italic",color:[130,130,130],lineH:4});
+  _pdfFooter(pdf,{left:"MedIA Suite — Resultado de triage",margin});
   return pdf;
 }
 

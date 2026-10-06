@@ -13,5 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Scores clínicos, signos vitales y Worker de IA
+          cache: npm
+      - run: npm ci
+      - name: Scores clínicos, signos vitales, PDF y Worker de IA
         run: npm test

@@ -27,7 +27,7 @@ El modo demo entra como administrador con pacientes, triages, cola y solicitudes
 - **Cloud Firestore**: base de datos en tiempo real, protegida con reglas por rol
 - **Firebase Hosting**: plan gratuito (Spark)
 - **Cloudflare Worker + KV**: proxy hacia la API de DeepSeek que verifica la sesión y aplica límites diarios; la clave nunca llega al navegador
-- **Pruebas**: `node:test` (sin dependencias) y GitHub Actions en cada push
+- **Pruebas**: `node:test` y GitHub Actions en cada push
 - **PWA**: instalable en Android, iOS y escritorio (manifest + service worker)
 
 ## Arquitectura
@@ -66,7 +66,8 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   │   ├── 15-mci.js
 │   │   ├── 16-glasgow-gestos.js
 │   │   ├── 17-scores-tablero.js
-│   │   └── 18-demo.js         #   Modo demo: Firebase simulado en memoria con datos ficticios
+│   │   ├── 18-demo.js         #   Modo demo: Firebase simulado en memoria con datos ficticios
+│   │   └── 19-pdf.js          #   Utilidades de PDF: ajuste de línea, salto de página, pie con número de página
 │   ├── styles/                # CSS por área: base, auth, layout, components, screens, clinical, queue, ios
 │   ├── clinical/              # Motor de scores clínicos, copiloto y línea de tiempo (módulos ES)
 │   ├── ai/                    # Construcción del prompt para la IA
@@ -133,13 +134,15 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 ### Pruebas automáticas
 
 ```bash
+npm install   # solo la primera vez (instala jsPDF para las pruebas de PDF)
 npm test
 ```
 
-No requiere instalar nada (usa el runner de pruebas incluido en Node). Cubre:
+Usa el runner de pruebas incluido en Node. Cubre:
 
 - **Scores clínicos** contra sus criterios publicados: qSOFA (Sepsis-3), NEWS2 (RCP 2017), CURB-65, HEART, ROSIER (Nor et al. 2005), Wells TVP (Wells 1997), índice de shock y alertas de vitales.
 - **Clasificadores de signos vitales** en sus valores límite.
+- **PDF** de triage, historia clínica y tarjetas demo: con textos muy largos, nombres extensos y símbolos (≥, →, SpO₂, emojis), ningún texto se sale de la hoja y las secciones largas continúan en la página siguiente.
 - **Seguridad del Worker**: tokens falsos, vencidos, alterados o de otro proyecto; cuentas sin acceso; cupos diarios; y que ninguna consulta rechazada llegue a DeepSeek.
 
 ### Probar en local

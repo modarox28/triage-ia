@@ -8,5 +8,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "jspdf": "2.5.1"
   }
 }

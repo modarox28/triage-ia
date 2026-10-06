@@ -117,44 +117,40 @@ function downloadPatientsPDF(){
   pdf.text("Tarjetas de acceso — Pacientes demo",M,y+7);
   pdf.setFontSize(7);pdf.text(`Generado: ${new Date().toLocaleDateString("es-ES")}`,M,y+13);
   y+=24;
+  const fondo=()=>{pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");};
   DEMO_PATIENTS.forEach((p,i)=>{
-    if(y>250){pdf.addPage();pdf.setFillColor(11,17,32);pdf.rect(0,0,W,297,"F");y=M;}
-    const hex=palette[i]||"#00c8f0";
+    const hex=palette[i%palette.length]||"#00c8f0";
     const [r,g,b]=hex.replace("#","").match(/.{2}/g).map(x=>parseInt(x,16));
-    // Card background
-    pdf.setFillColor(17,25,44);pdf.setDrawColor(40,50,70);pdf.roundedRect(M,y,CW,60,4,4,"FD");
-    // Accent left bar
-    pdf.setFillColor(r,g,b);pdf.roundedRect(M,y,4,60,2,2,"F");
-    // Name
-    pdf.setFontSize(13);pdf.setTextColor(240,245,255);pdf.setFont(undefined,"bold");
-    pdf.text(p.name,M+8,y+10);
-    // ID chip
+    // Filas con etiqueta y texto ajustado al ancho; la tarjeta crece según el contenido
+    const labelW=26,valX=M+8+labelW,valW=CW-12-labelW;
+    const filas=[];
+    if(p.antecedentes?.length)filas.push(["Antecedentes:",[r,g,b],[180,190,210],p.antecedentes.join(", ")]);
+    if(p.alergias?.length)filas.push(["Alergias:",[255,100,100],[255,140,140],p.alergias.join(", ")]);
+    filas.push(["Medicación:",[150,200,240],[150,190,220],p.medicacion?.join(", ")||"Ninguna"]);
+    filas.forEach(fl=>fl.push(_pdfLines(pdf,fl[3],valW,7.5)));
+    const lineH=3.8;
+    const cardH=33+filas.reduce((h,fl)=>h+fl[4].length*lineH+2,0)+3;
+    if(y+cardH>285){pdf.addPage();fondo();y=M;}
+    pdf.setFillColor(17,25,44);pdf.setDrawColor(40,50,70);pdf.roundedRect(M,y,CW,cardH,4,4,"FD");
+    pdf.setFillColor(r,g,b);pdf.roundedRect(M,y,4,cardH,2,2,"F");
+    _pdfFont(pdf,13,"bold",[240,245,255]);
+    pdf.text(_pdfFit(pdf,p.name,CW-14,13,"bold"),M+8,y+10);
     pdf.setFillColor(r,g,b);pdf.roundedRect(M+8,y+13,CW-12,8,2,2,"F");
-    pdf.setFontSize(11);pdf.setTextColor(11,17,32);pdf.setFont(undefined,"bold");
+    _pdfFont(pdf,11,"bold",[11,17,32]);
     pdf.text(`ID DE ACCESO: ${p.doc}`,M+10,y+19);
-    // Info row
-    y+=26;
-    pdf.setFontSize(7.5);pdf.setTextColor(180,190,210);pdf.setFont(undefined,"normal");
-    pdf.text(`Edad: ${p.age} años  ·  ${p.sex==="M"?"Masculino":"Femenino"}`,M+8,y);y+=6;
-    if(p.antecedentes.length){
-      pdf.setFont(undefined,"bold");pdf.setTextColor(r,g,b);pdf.text("Antecedentes:",M+8,y);
-      pdf.setFont(undefined,"normal");pdf.setTextColor(180,190,210);
-      pdf.text(p.antecedentes.join(", "),M+38,y);y+=6;
-    }
-    if(p.alergias.length){
-      pdf.setFont(undefined,"bold");pdf.setTextColor(255,100,100);pdf.text("Alergias:",M+8,y);
-      pdf.setFont(undefined,"normal");pdf.setTextColor(255,140,140);
-      pdf.text(p.alergias.join(", "),M+28,y);y+=6;
-    }
-    pdf.setFont(undefined,"bold");pdf.setTextColor(150,200,240);pdf.text("Medicación:",M+8,y);
-    pdf.setFont(undefined,"normal");pdf.setTextColor(150,190,220);
-    const mLine=pdf.splitTextToSize(p.medicacion.join(", ")||"Ninguna",CW-35);
-    pdf.text(mLine,M+32,y);y+=mLine.length*4+4;
-    y+=6;
+    _pdfFont(pdf,7.5,"normal",[180,190,210]);
+    pdf.text(`Edad: ${p.age} años  ·  ${p.sex==="M"?"Masculino":"Femenino"}`,M+8,y+27);
+    let fy=y+33;
+    filas.forEach(([lbl,cLbl,cVal,,lines])=>{
+      _pdfFont(pdf,7.5,"bold",cLbl);pdf.text(lbl,M+8,fy);
+      _pdfFont(pdf,7.5,"normal",cVal);
+      lines.forEach((l,k)=>pdf.text(l,valX,fy+k*lineH));
+      fy+=lines.length*lineH+2;
+    });
+    y+=cardH+6;
   });
   // Footer
-  pdf.setFontSize(7);pdf.setTextColor(80,90,110);pdf.setFont(undefined,"normal");
-  pdf.text("MedIA Suite — Documento confidencial de uso interno",M,288);
+  _pdfFooter(pdf,{left:"MedIA Suite — Documento confidencial de uso interno",margin:M,y:290,color:[80,90,110]});
   pdf.save("pacientes-demo-mediasuite.pdf");
 }
 
