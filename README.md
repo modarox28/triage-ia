@@ -2,7 +2,10 @@
 
 PWA médica para clasificación de urgencias (triage) y gestión de medicamentos, con asistente de inteligencia artificial.
 
-**Demo:** https://media-suite-6f432.web.app
+**App:** https://media-suite-6f432.web.app
+**Probar sin registro:** https://media-suite-6f432.web.app/?demo=1 (o el botón "Probar demo" en la pantalla de inicio)
+
+El modo demo entra como administrador con pacientes, triages, cola y solicitudes de acceso ficticias. Funciona con una base de datos en memoria (`src/app/18-demo.js`): no toca Firestore, no gasta cuota y todo se reinicia al salir.
 
 ## Módulos
 
@@ -56,7 +59,8 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   │   ├── 14-herramientas.js #   Vitales por imagen, offline, prehospital, turno, dosis pediátrica
 │   │   ├── 15-mci.js
 │   │   ├── 16-glasgow-gestos.js
-│   │   └── 17-scores-tablero.js
+│   │   ├── 17-scores-tablero.js
+│   │   └── 18-demo.js         #   Modo demo: Firebase simulado en memoria con datos ficticios
 │   ├── styles/                # CSS por área: base, auth, layout, components, screens, clinical, queue, ios
 │   ├── clinical/              # Motor de scores clínicos, copiloto y línea de tiempo (módulos ES)
 │   ├── ai/                    # Construcción del prompt para la IA
@@ -102,6 +106,7 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 - El admin puede cambiar cualquier rol (incluido volver a `pendiente` para repetir pruebas) o eliminar una cuenta con 🗑. Una cuenta eliminada ve el aviso "Cuenta eliminada", pierde todo acceso y no puede volver a registrarse con el mismo correo; se restaura cambiando su rol en el selector. Para borrar también el correo de inicio de sesión, usa la consola de Firebase → Authentication. El admin no puede cambiar ni borrar su propia cuenta.
 - Los nombres y correos se escapan antes de mostrarse en el panel, para que nadie pueda inyectar código con su nombre de usuario.
 - Cada paciente tiene una cuenta interna `<ID>@pacientes.media-suite.app` cuya contraseña se deriva de su PIN; las reglas usan ese correo para limitar el acceso a su historia.
+- Todo texto que viene de usuarios, pacientes o de la IA se escapa con `_esc()` antes de insertarse como HTML, y los botones de las listas usan índices en lugar de texto, para evitar inyección de código.
 - La API key de DeepSeek solo existe como secreto en Cloudflare. El Worker acepta peticiones únicamente desde el dominio de la app y limita el tamaño de cada respuesta.
 
 ## Puesta en marcha

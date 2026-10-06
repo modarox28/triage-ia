@@ -76,8 +76,10 @@ function authTab(m){
 }
 
 // FIREBASE
-window.addEventListener("fbready",()=>{FB=window._fb;L=window.L;initAuth();_initOfflineDetection();setLang(CL);});
-setTimeout(()=>{if(!FB&&window._fb){FB=window._fb;initAuth();_initOfflineDetection();}},2000);
+// Con ?demo=1 la app arranca en modo demo (18-demo.js) y no se conecta a Firebase real
+const _DEMO_URL=new URLSearchParams(window.location.search).has("demo");
+window.addEventListener("fbready",()=>{L=window.L;if(_DEMO_URL||window._demoMode){setLang(CL);return;}FB=window._fb;initAuth();_initOfflineDetection();setLang(CL);});
+setTimeout(()=>{if(!FB&&window._fb&&!_DEMO_URL&&!window._demoMode){FB=window._fb;initAuth();_initOfflineDetection();}},2000);
 
 function initAuth(){
   FB.onAuthStateChanged(FB.auth,async user=>{
