@@ -21,6 +21,7 @@ function _clearRoleError(){
 }
 function showPatientView(){
   _clearRoleError();
+  const pdv=document.getElementById("authPendingView");if(pdv)pdv.style.display="none";
   const pv=document.getElementById("authPatientView");
   const sv=document.getElementById("authStaffView");
   const rv=document.getElementById("patientRegisterView");
@@ -33,6 +34,7 @@ function showPatientView(){
 }
 function showStaffLogin(role){
   _clearRoleError();
+  const pdv=document.getElementById("authPendingView");if(pdv)pdv.style.display="none";
   _staffLoginRole=role||"medico";
   const pv=document.getElementById("authPatientView");
   const sv=document.getElementById("authStaffView");
@@ -86,7 +88,13 @@ function initAuth(){
         const snap=await FB.getDoc(FB.doc(FB.db,"users",user.uid));
         if(snap.exists()){
           CR=snap.data().role;CUName=snap.data().name||null;CUPhoto=snap.data().photoBase64||null;
+          try{localStorage.setItem("ms_role_"+user.uid,CR||"");}catch(_){}
           if(CUPhoto)localStorage.setItem("ms_photo_"+user.uid,CUPhoto);
+          if(CR==="pendiente"||CR==="rechazado"){
+            _staffLoginRole=null;
+            _showPendingView(CR==="rechazado");
+            return;
+          }
           if(CR==="paciente"){
             _staffLoginRole=null;
             try{_patientHC=await _loadPatientHC(snap.data().doc);}catch(e){_patientHC=null;}
@@ -111,8 +119,8 @@ function initAuth(){
           }
           _staffLoginRole=null;
         }else{
-          // Cuenta nueva (p. ej. Google): siempre entra como médico.
-          // El rol de administrador solo lo asigna otro admin.
+          // Cuenta nueva de personal (p. ej. Google): queda pendiente hasta que
+          // un administrador la apruebe. Nadie puede asignarse un rol.
           const autoName=user.displayName||user.email.split("@")[0];
           CUName=autoName;
           if((user.email||"").endsWith("@"+PATIENT_DOMAIN)){
@@ -122,11 +130,25 @@ function initAuth(){
             try{_patientHC=await _loadPatientHC(autoName);}catch(e){_patientHC=null;}
             _staffLoginRole=null;showApp();return;
           }
-          CR="medico";
-          await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:autoName,email:user.email,role:CR,createdAt:FB.serverTimestamp()});
+          CR="pendiente";
+          // merge: no borra teléfono/especialidad si doAuth() ya guardó el perfil
+          await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:autoName,email:user.email,role:CR,createdAt:FB.serverTimestamp()},{merge:true});
           _staffLoginRole=null;
+          _showPendingView(false);
+          return;
         }
-      }catch(e){CR="medico";_staffLoginRole=null;}
+      }catch(e){
+        // Sin conexión: se usa el último rol conocido en este dispositivo (las reglas de
+        // Firestore siguen protegiendo los datos). Si no hay ninguno, no se asume un rol.
+        _staffLoginRole=null;
+        let cached="";try{cached=localStorage.getItem("ms_role_"+user.uid)||"";}catch(_){}
+        if(cached==="medico"||cached==="admin"||cached==="admin_hosp"){CR=cached;}
+        else{
+          toast("No se pudo verificar tu cuenta. Revisa tu conexión e intenta de nuevo.");
+          try{await FB.signOut(FB.auth);}catch(_){}
+          return;
+        }
+      }
       showApp();
       logAudit("login",{method:user.providerData?.[0]?.providerId||"unknown"});
     }else{showAuthScreen();}
@@ -154,7 +176,7 @@ async function doAuth(){
       if(_staffLoginRole==="medico"&&!specialty){err.className="auth-err er";err.textContent="La especialidad es obligatoria";return;}
       if(_staffLoginRole==="admin"){err.className="auth-err er";err.textContent="Las cuentas de administrador las crea otro administrador. Regístrate como médico.";return;}
       const cred=await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
-      const regRole="medico";
+      const regRole="pendiente";
       const userData={name,email,role:regRole,phone,createdAt:FB.serverTimestamp()};
       if(specialty)userData.especialidad=specialty;
       await FB.setDoc(FB.doc(FB.db,"users",cred.user.uid),userData);
@@ -256,6 +278,36 @@ function showAuthScreen(){
   // Pre-fill email if saved
   const saved=localStorage.getItem("ms_remember_email");
   if(saved){document.getElementById("aEmail").value=saved;_rememberOn=true;document.getElementById("rememberCheck").classList.add("on");}
+}
+
+// ── CUENTA EN REVISIÓN ──
+// El personal nuevo entra con rol "pendiente" y espera aprobación de un admin.
+function _showPendingView(rejected){
+  dismissSplash();
+  document.getElementById("authScreen").style.display="flex";
+  document.getElementById("mainApp").classList.remove("on");
+  ["authPatientView","authStaffView","patientRegisterView"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display="none";});
+  const v=document.getElementById("authPendingView");if(!v)return;
+  v.style.display="";
+  document.getElementById("pendIcon").textContent=rejected?"🚫":"⏳";
+  document.getElementById("pendTitle").textContent=rejected?"Solicitud rechazada":"Cuenta en revisión";
+  document.getElementById("pendMsg").textContent=rejected
+    ?"Un administrador rechazó el acceso de esta cuenta. Si crees que es un error, contacta al administrador de tu hospital."
+    :"Tu cuenta ("+(CU?.email||"")+") fue creada. Un administrador debe aprobarla antes de que puedas ver pacientes y triages.";
+  const retry=document.getElementById("pendRetryBtn");if(retry)retry.style.display=rejected?"none":"";
+}
+async function _recheckPending(){
+  if(!FB||!CU)return;
+  const btn=document.getElementById("pendRetryBtn");
+  if(btn){btn.disabled=true;btn.textContent="Revisando...";}
+  try{
+    const snap=await FB.getDoc(FB.doc(FB.db,"users",CU.uid));
+    const role=snap.exists()?snap.data().role:null;
+    if(role&&role!=="pendiente"&&role!=="rechazado"){window.location.reload();return;}
+    if(role==="rechazado"){CR=role;_showPendingView(true);return;}
+    toast("Tu cuenta sigue pendiente de aprobación");
+  }catch(e){toast("Error: "+e.message);}
+  finally{if(btn){btn.disabled=false;btn.textContent="Revisar de nuevo";}}
 }
 
 // ── REMEMBER ME ──

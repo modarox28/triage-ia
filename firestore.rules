@@ -36,15 +36,22 @@ service cloud.firestore {
     }
 
     // ── Usuarios ──────────────────────────────────────────────
-    // Nadie puede asignarse un rol de administrador. Los roles admin y
-    // admin_hosp solo los asigna un admin desde el panel (o desde la consola).
+    // El personal nuevo se registra como "pendiente" y no ve ningún dato
+    // hasta que un admin (o admin de hospital) lo aprueba como médico.
+    // Nadie puede cambiar su propio rol.
     match /users/{userId} {
       allow read: if isSelf(userId) || isStaffAdmin();
       allow create: if isSelf(userId)
-        && request.resource.data.role in ['medico', 'paciente'];
+        && request.resource.data.role in ['pendiente', 'paciente'];
       allow update: if isAdmin()
+        || (isStaffAdmin()                       // admin de hospital: solo revisa solicitudes
+            && resource.data.role == 'pendiente'
+            && request.resource.data.role in ['medico', 'rechazado']
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['role', 'reviewedBy', 'reviewedAt']))
         || (isSelf(userId)
-            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+            && !request.resource.data.diff(resource.data).affectedKeys()
+                  .hasAny(['role', 'reviewedBy', 'reviewedAt']));
       allow delete: if isAdmin();
     }
 
@@ -59,7 +66,7 @@ service cloud.firestore {
     // ── Triages ───────────────────────────────────────────────
     match /triages/{docId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isClinician());
-      allow create: if signedIn() && ownsNew();
+      allow create: if isClinician() && ownsNew();
       allow update: if isClinician();   // marcar como atendido desde la cola
       allow delete: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
     }
@@ -67,7 +74,7 @@ service cloud.firestore {
     // ── Notificaciones prehospitalarias ───────────────────────
     match /prehospital/{docId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
-      allow create: if signedIn() && ownsNew();
+      allow create: if isClinician() && ownsNew();
       allow update, delete: if isStaffAdmin();
     }
 

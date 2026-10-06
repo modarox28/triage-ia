@@ -90,11 +90,15 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 | Rol | Cómo se obtiene | Qué puede ver |
 |-----|-----------------|---------------|
 | `paciente` | Se registra con su número de ID + PIN de 6 dígitos | Solo su propia historia clínica |
-| `medico` | Se registra con correo o Google | Triages, historias y cola |
-| `admin_hosp` | Lo asigna un admin | Lo anterior + usuarios y prehospital |
+| `pendiente` | Todo registro nuevo de personal (correo o Google) | Nada: ve una pantalla de "cuenta en revisión" |
+| `medico` | Un admin o admin de hospital aprueba la solicitud | Triages, historias y cola |
+| `rechazado` | Un admin o admin de hospital rechaza la solicitud | Nada |
+| `admin_hosp` | Lo asigna un admin | Lo anterior + usuarios, aprobación de solicitudes y prehospital |
 | `admin` | Lo asigna otro admin (el primero, desde la consola de Firebase) | Todo, incluida la auditoría |
 
 - Nadie puede asignarse un rol a sí mismo; `firestore.rules` lo impide aunque se manipule el navegador.
+- Las solicitudes de acceso aparecen arriba en **Gestión de usuarios** (panel de admin) con botones de Aprobar y Rechazar.
+- Los nombres y correos se escapan antes de mostrarse en el panel, para que nadie pueda inyectar código con su nombre de usuario.
 - Cada paciente tiene una cuenta interna `<ID>@pacientes.media-suite.app` cuya contraseña se deriva de su PIN; las reglas usan ese correo para limitar el acceso a su historia.
 - La API key de DeepSeek solo existe como secreto en Cloudflare. El Worker acepta peticiones únicamente desde el dominio de la app y limita el tamaño de cada respuesta.
 

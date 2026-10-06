@@ -3,6 +3,9 @@
 // que se cargan en orden numérico desde index.html.
 
 const PROXY="https://triage-ia-proxy.mdq2804.workers.dev/";
+// Escapa texto antes de insertarlo con innerHTML (evita inyección de HTML/JS
+// con nombres o correos escritos por los usuarios).
+function _esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 const QR_SECRET=btoa("media-patient-2025");
 
 // DEMO PATIENTS — use these IDs in the patient login screen

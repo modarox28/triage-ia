@@ -43,29 +43,43 @@ async function loadDash(){
     _renderDashRecent();
     _chartData=myDocs.map(d=>d.data());
     buildChart();
-    if(CR==="admin"||CR==="medico"||CR==="admin_hosp"){
+    if(CR==="admin"||CR==="admin_hosp"){
+      const umc=document.getElementById("userMgmtCard");if(umc)umc.style.display="";
       const users=await FB.getDocs(FB.collection(FB.db,"users"));
-      const RL={admin:"Admin",admin_hosp:"Adm.Hospital",medico:"Médico",paciente:"Paciente"};
-      const roleIc={admin:"👑",admin_hosp:"🏥",medico:"👨‍⚕️",paciente:"🙋"};
-      const roleColors={admin:"var(--yw)",admin_hosp:"var(--pu)",medico:"var(--cy)",paciente:"var(--gn)"};
+      const RL={admin:"Admin",admin_hosp:"Adm.Hospital",medico:"Médico",paciente:"Paciente",pendiente:"Pendiente",rechazado:"Rechazado"};
+      const roleIc={admin:"👑",admin_hosp:"🏥",medico:"👨‍⚕️",paciente:"🙋",pendiente:"⏳",rechazado:"🚫"};
+      const roleColors={admin:"var(--yw)",admin_hosp:"var(--pu)",medico:"var(--cy)",paciente:"var(--gn)",pendiente:"var(--yw)",rechazado:"var(--rd)"};
       const cols=["#00c8f0","#00e07a","#a855f7","#ffb830","#ff3a5c"];
-      const groups={admin:[],admin_hosp:[],medico:[],paciente:[]};
-      users.docs.forEach(u=>{const ud=u.data();const r=ud.role||"medico";(groups[r]||groups.medico).push({u,ud});});
+      const ORDER=["pendiente","admin","admin_hosp","medico","paciente","rechazado"];
+      const groups={};ORDER.forEach(r=>groups[r]=[]);
+      users.docs.forEach(u=>{const ud=u.data();const r=ud.role||"pendiente";(groups[r]||groups.pendiente).push({u,ud});});
+      const btn=(bg,fg)=>`padding:4px 9px;border-radius:7px;font-size:.7rem;font-weight:600;cursor:pointer;border:1px solid ${fg};background:${bg};color:${fg}`;
       let html="";
-      ["admin","admin_hosp","medico","paciente"].forEach(role=>{
+      ORDER.forEach(role=>{
         if(!groups[role].length)return;
-        html+=`<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:${roleColors[role]};padding:10px 0 5px;display:flex;align-items:center;gap:5px">${roleIc[role]} ${RL[role]}s <span style="background:var(--bg3);color:var(--mu);border-radius:10px;padding:1px 7px;font-size:.6rem;font-weight:600;margin-left:3px">${groups[role].length}</span></div>`;
+        const title=role==="pendiente"?"⏳ Solicitudes pendientes":`${roleIc[role]} ${RL[role]}s`;
+        html+=`<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:${roleColors[role]};padding:10px 0 5px;display:flex;align-items:center;gap:5px">${title} <span style="background:var(--bg3);color:var(--mu);border-radius:10px;padding:1px 7px;font-size:.6rem;font-weight:600;margin-left:3px">${groups[role].length}</span></div>`;
         html+=groups[role].map(({u,ud})=>{
-          const av=(ud.name||ud.email||"?")[0].toUpperCase();const col=cols[ud.email?.charCodeAt(0)%cols.length]||"#00c8f0";
+          const av=_esc((ud.name||ud.email||"?")[0].toUpperCase());const col=cols[ud.email?.charCodeAt(0)%cols.length]||"#00c8f0";
           const photoSrc=localStorage.getItem("ms_photo_"+u.id);
-          const avEl=`<div class="uav" style="background:${col};overflow:hidden">${photoSrc?`<img src="${photoSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:av}</div>`;
-          const roleCtrl=CR==="admin"?
-            `<select onchange="changeRole('${u.id}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${["admin","medico","admin_hosp","paciente"].map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select>`:
-            `<span style="font-size:.68rem;font-family:'JetBrains Mono',monospace;color:${roleColors[ud.role]||"var(--mu)"};padding:3px 8px;background:var(--bg3);border-radius:6px">${roleIc[ud.role]||""} ${RL[ud.role]||ud.role||""}</span>`;
-          return`<div class="user-row">${avEl}<div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ud.name||"—"}</div><div style="font-size:.69rem;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ud.email||""}</div></div>${roleCtrl}</div>`;
+          const avEl=`<div class="uav" style="background:${col};overflow:hidden">${photoSrc?`<img src="${_esc(photoSrc)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:av}</div>`;
+          const uid=_esc(u.id);
+          let roleCtrl;
+          if(ud.role==="pendiente"){
+            // admin y admin de hospital pueden revisar solicitudes
+            roleCtrl=`<div style="display:flex;gap:6px;flex-shrink:0"><button type="button" onclick="reviewStaff('${uid}',true)" style="${btn("var(--gn-a)","var(--gn)")}">Aprobar</button><button type="button" onclick="reviewStaff('${uid}',false)" style="${btn("var(--rd-a)","var(--rd)")}">Rechazar</button></div>`;
+          }else if(CR==="admin"){
+            const opts=["admin","admin_hosp","medico","paciente","rechazado"];
+            roleCtrl=`<select onchange="changeRole('${uid}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${opts.map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select>`;
+          }else{
+            roleCtrl=`<span style="font-size:.68rem;font-family:'JetBrains Mono',monospace;color:${roleColors[ud.role]||"var(--mu)"};padding:3px 8px;background:var(--bg3);border-radius:6px">${roleIc[ud.role]||""} ${_esc(RL[ud.role]||ud.role||"")}</span>`;
+          }
+          const extra=ud.especialidad?` · ${_esc(ud.especialidad)}`:"";
+          return`<div class="user-row">${avEl}<div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esc(ud.name||"—")}</div><div style="font-size:.69rem;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esc(ud.email||"")}${extra}</div></div>${roleCtrl}</div>`;
         }).join("");
       });
       document.getElementById("userList").innerHTML=html||"<div class='empty' style='padding:12px'><div class='etx'>Sin usuarios registrados</div></div>";
+      if(groups.pendiente.length&&!_pendingToastShown){_pendingToastShown=true;toast(`⏳ ${groups.pendiente.length} solicitud(es) de acceso por revisar`);}
       const adminAct=document.getElementById("adminActionsCard");if(adminAct)adminAct.style.display="block";
     }else{document.getElementById("userMgmtCard").style.display="none";}
     // Show/hide meds patient lookup (only for staff roles)
@@ -115,7 +129,22 @@ async function loadDash(){
   }catch(e){console.error(e);}
 }
 
-async function changeRole(uid,role){await FB.updateDoc(FB.doc(FB.db,"users",uid),{role});toast("Rol actualizado");}
+async function changeRole(uid,role){
+  try{await FB.updateDoc(FB.doc(FB.db,"users",uid),{role});toast("Rol actualizado");}
+  catch(e){toast("No se pudo cambiar el rol: "+e.message);}
+}
+// Aprobar o rechazar una cuenta de personal pendiente
+let _pendingToastShown=false;
+async function reviewStaff(uid,approve){
+  const ok=approve||confirm("¿Rechazar esta solicitud de acceso?");
+  if(!ok)return;
+  try{
+    await FB.updateDoc(FB.doc(FB.db,"users",uid),{role:approve?"medico":"rechazado",reviewedBy:CU.uid,reviewedAt:FB.serverTimestamp()});
+    logAudit(approve?"staff_approved":"staff_rejected",{uid});
+    toast(approve?"Cuenta aprobada como médico ✓":"Solicitud rechazada");
+    loadDash();
+  }catch(e){toast("Error: "+e.message);}
+}
 
 // HISTORY LEGEND
 let _histLegendOpen=false;
