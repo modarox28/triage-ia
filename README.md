@@ -98,6 +98,7 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 
 - Nadie puede asignarse un rol a sí mismo; `firestore.rules` lo impide aunque se manipule el navegador.
 - Las solicitudes de acceso aparecen arriba en **Gestión de usuarios** (panel de admin) con botones de Aprobar y Rechazar.
+- El admin puede cambiar cualquier rol (incluido volver a `pendiente`) o eliminar un perfil con 🗑. Eliminar borra el perfil y el rol, no el correo: si esa persona vuelve a entrar, queda como cuenta nueva pendiente. Para borrar también el correo, usa la consola de Firebase → Authentication. El admin no puede cambiar ni borrar su propia cuenta.
 - Los nombres y correos se escapan antes de mostrarse en el panel, para que nadie pueda inyectar código con su nombre de usuario.
 - Cada paciente tiene una cuenta interna `<ID>@pacientes.media-suite.app` cuya contraseña se deriva de su PIN; las reglas usan ese correo para limitar el acceso a su historia.
 - La API key de DeepSeek solo existe como secreto en Cloudflare. El Worker acepta peticiones únicamente desde el dominio de la app y limita el tamaño de cada respuesta.

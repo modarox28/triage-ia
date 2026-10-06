@@ -82,6 +82,7 @@ service cloud.firestore {
     match /presence/{userId} {
       allow read: if isClinician();
       allow write: if isSelf(userId);
+      allow delete: if isAdmin();          // al eliminar un perfil desde el panel
     }
 
     // ── Auditoría: solo se agregan registros, nunca se editan ─
