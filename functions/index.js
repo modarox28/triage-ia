@@ -1,7 +1,9 @@
 const functions = require("firebase-functions");
 const fetch = require("node-fetch");
 
-exports.aiProxy = functions.https.onRequest(async (req, res) => {
+exports.aiProxy = functions
+  .runWith({ secrets: ["DEEPSEEK_KEY"] })
+  .https.onRequest(async (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") { res.status(204).send(""); return; }
