@@ -1,6 +1,15 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "functions/**", "cloudflare-worker/**"]
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "functions/**",
+      "cloudflare-worker/**"
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

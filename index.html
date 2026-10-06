@@ -1105,8 +1105,14 @@ select{padding-right:32px;}
         <input class="fi" id="patientIdInput" type="text" inputmode="numeric"
                placeholder="N.º de identificación"
                style="width:100%;box-sizing:border-box;margin-bottom:10px;text-align:center;font-size:1.1rem;letter-spacing:3px;font-family:'JetBrains Mono',monospace"
+               onkeydown="if(event.key==='Enter')document.getElementById('patientPinInput').focus()">
+        <input class="fi" id="patientPinInput" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password"
+               placeholder="PIN de 6 dígitos"
+               style="width:100%;box-sizing:border-box;margin-bottom:10px;text-align:center;font-size:1.1rem;letter-spacing:6px;font-family:'JetBrains Mono',monospace"
                onkeydown="if(event.key==='Enter')loginPatientById()">
+        <div class="auth-err" id="patientLoginErr" style="text-align:center"></div>
         <button class="bpri" id="patientLoginBtn" style="width:100%;font-size:.95rem" onclick="loginPatientById()">Ingresar</button>
+        <button type="button" class="bsec" id="patientRegLink" style="width:100%;font-size:.82rem;margin-top:8px;padding:9px" onclick="_openPatientRegister()">¿Primera vez? Regístrate</button>
       </div>
       <hr class="auth-sep" style="animation:fadeUp .4s .2s both">
       <div style="animation:fadeUp .4s .25s both">
@@ -1154,6 +1160,17 @@ select{padding-right:32px;}
           <label class="auth-fl">Teléfono / Contacto de emergencia <span style="color:var(--rd)">*</span></label>
           <input class="auth-fi" id="pRegPhone" type="tel" placeholder="+57 300 000 0000" autocomplete="tel" required>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="auth-fg">
+            <label class="auth-fl">PIN (6 dígitos) <span style="color:var(--rd)">*</span></label>
+            <input class="auth-fi" id="pRegPin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" required>
+          </div>
+          <div class="auth-fg">
+            <label class="auth-fl">Repite el PIN <span style="color:var(--rd)">*</span></label>
+            <input class="auth-fi" id="pRegPin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" required>
+          </div>
+        </div>
+        <div style="font-size:.7rem;color:var(--mu);margin:-4px 0 8px">Con tu número de ID y este PIN entrarás a tu historia clínica. No lo compartas.</div>
         <div class="auth-err" id="pRegErr"></div>
         <button type="submit" class="auth-btn" id="pRegBtn" style="margin-top:6px">Completar registro</button>
       </form>
@@ -1969,6 +1986,21 @@ const DEMO_PATIENTS=[
    notes:"Paciente anciana con secuela motora del ACV (hemiparesia izquierda residual) y Parkinson avanzado con temblor de reposo y rigidez marcada. Disfagia moderada — dieta triturada + espesante; RIESGO ALTO DE BRONCOASPIRACIÓN. Desnutrición severa BMI 17.1. Anticoagulada por FA permanente — verificar última dosis antes de cualquier procedimiento invasivo. Vive con hija, usa andador. Estado cognitivo: orientada en persona, desorientada en tiempo/lugar."}
 ];
 let _patientHC=null,_triageLookupDone=false,_triageLookupResult=null;
+// Acceso de pacientes: cada paciente tiene una cuenta de Firebase Auth "interna"
+// (<ID>@pacientes.media-suite.app) cuya contraseña se deriva de su PIN.
+// Las reglas de Firestore usan ese correo para que solo vea su propia historia.
+const PATIENT_DOMAIN="pacientes.media-suite.app";
+const PIN_RE=/^\d{6}$/;
+let _patientAuthBusy=false;
+function _normId(id){return String(id||"").trim().toLowerCase().replace(/[^0-9a-z-]/g,"");}
+function _patientEmail(id){return _normId(id)+"@"+PATIENT_DOMAIN;}
+function _patientPwd(pin){return "ms-pin-"+pin;}
+async function _loadPatientHC(docId){
+  const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",docId),FB.limit(1)));
+  if(snap.empty)return null;
+  const d=snap.docs[0];
+  return{id:d.id,...d.data()};
+}
 
 // STATE
 let TS=0,TD={},TM=[],MEDS=JSON.parse(localStorage.getItem("ms_meds")||"[]"),INT=[],ALM={},REC={},recog=null;
@@ -2265,12 +2297,19 @@ setTimeout(()=>{if(!FB&&window._fb){FB=window._fb;initAuth();_initOfflineDetecti
 function initAuth(){
   FB.onAuthStateChanged(FB.auth,async user=>{
     if(user){
+      if(_patientAuthBusy)return; // registerPatient() termina el flujo por su cuenta
       CU=user;
       try{
         const snap=await FB.getDoc(FB.doc(FB.db,"users",user.uid));
         if(snap.exists()){
           CR=snap.data().role;CUName=snap.data().name||null;CUPhoto=snap.data().photoBase64||null;
           if(CUPhoto)localStorage.setItem("ms_photo_"+user.uid,CUPhoto);
+          if(CR==="paciente"){
+            _staffLoginRole=null;
+            try{_patientHC=await _loadPatientHC(snap.data().doc);}catch(e){_patientHC=null;}
+            showApp();
+            return;
+          }
           // Role enforcement: only when user explicitly used a staff login button
           if(_staffLoginRole!==null){
             const allowed=_staffLoginRole==="admin"?["admin","admin_hosp"]:["medico"];
@@ -2289,10 +2328,18 @@ function initAuth(){
           }
           _staffLoginRole=null;
         }else{
-          const all=await FB.getDocs(FB.collection(FB.db,"users"));
-          CR=all.empty?"admin":"medico";
+          // Cuenta nueva (p. ej. Google): siempre entra como médico.
+          // El rol de administrador solo lo asigna otro admin.
           const autoName=user.displayName||user.email.split("@")[0];
           CUName=autoName;
+          if((user.email||"").endsWith("@"+PATIENT_DOMAIN)){
+            // Registro de paciente que se interrumpió: se completa como paciente, nunca como médico
+            CR="paciente";
+            await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:autoName,role:"paciente",doc:autoName,createdAt:FB.serverTimestamp()});
+            try{_patientHC=await _loadPatientHC(autoName);}catch(e){_patientHC=null;}
+            _staffLoginRole=null;showApp();return;
+          }
+          CR="medico";
           await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:autoName,email:user.email,role:CR,createdAt:FB.serverTimestamp()});
           _staffLoginRole=null;
         }
@@ -2322,8 +2369,9 @@ async function doAuth(){
       if(!name){err.className="auth-err er";err.textContent="El nombre es obligatorio";return;}
       if(!phone){err.className="auth-err er";err.textContent="El teléfono es obligatorio";return;}
       if(_staffLoginRole==="medico"&&!specialty){err.className="auth-err er";err.textContent="La especialidad es obligatoria";return;}
+      if(_staffLoginRole==="admin"){err.className="auth-err er";err.textContent="Las cuentas de administrador las crea otro administrador. Regístrate como médico.";return;}
       const cred=await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
-      const regRole=_staffLoginRole||"medico";
+      const regRole="medico";
       const userData={name,email,role:regRole,phone,createdAt:FB.serverTimestamp()};
       if(specialty)userData.especialidad=specialty;
       await FB.setDoc(FB.doc(FB.db,"users",cred.user.uid),userData);
@@ -2387,14 +2435,9 @@ async function onEmailBlur(){
   if(!FB)return;
   hint.textContent="Verificando...";hint.className="email-hint mu";
   try{
-    // fetchSignInMethodsForEmail está deprecado — verificamos directamente en Firestore
-    const snap=await FB.getDocs(FB.collection(FB.db,"users"));
-    const exists=snap.docs.some(d=>(d.data().email||"").toLowerCase()===email.toLowerCase());
-    if(exists){
-      hint.textContent="Este correo ya tiene una cuenta registrada";hint.className="email-hint er";
-    }else{
-      hint.textContent="Correo disponible ✓";hint.className="email-hint ok";
-    }
+    // Por privacidad no se consulta la lista de usuarios: si el correo ya existe,
+    // Firebase Auth lo indica al registrar (auth/email-already-in-use).
+    hint.textContent="";hint.className="email-hint";
   }catch(e){hint.textContent="";hint.className="email-hint";}
 }
 
@@ -2408,7 +2451,7 @@ async function doSignOut(){
   _lastDrugInfo=null;
   ["dr","ir"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML="";});
   if(_hcUnsub){_hcUnsub();_hcUnsub=null;}_hcCache={};
-  if(CR==="paciente"){CR=null;CU=null;showAuthScreen();return;}
+  if(CR==="paciente"){CR=null;CU=null;try{await FB.signOut(FB.auth);}catch(e){}showAuthScreen();return;}
   await logAudit("logout");
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
 }
@@ -3775,29 +3818,35 @@ function _skipPatientLookup(){
 
 async function loginPatientById(){
   const inp=document.getElementById("patientIdInput");
-  const id=(inp?.value||"").trim();
-  if(!id){toast("Ingresa tu número de identificación");return;}
-  if(!FB){toast("Sin conexión a la base de datos");return;}
+  const pinInp=document.getElementById("patientPinInput");
+  const err=document.getElementById("patientLoginErr");
+  const id=_normId(inp?.value);
+  const pin=(pinInp?.value||"").trim();
+  if(err){err.textContent="";err.className="auth-err";}
+  const fail=msg=>{if(err){err.className="auth-err er";err.textContent=msg;}else toast(msg);};
+  if(!id){fail("Ingresa tu número de identificación");return;}
+  if(!PIN_RE.test(pin)){fail("El PIN debe tener 6 dígitos");return;}
+  if(!FB){fail("Sin conexión a la base de datos");return;}
   const btn=document.getElementById("patientLoginBtn");
   if(btn){btn.disabled=true;btn.textContent=t("loading")||"...";}
   try{
-    const snap=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",id),FB.limit(1)));
-    if(snap.empty){
-      if(btn){btn.disabled=false;btn.textContent=t("patientEnter")||"Ingresar";}
-      _showPatientRegisterForm(id);
-      return;
-    }
-    const docSnap=snap.docs[0];
-    _patientHC={id:docSnap.id,...docSnap.data()};
-    CR="paciente";
-    CU={uid:"patient-"+docSnap.id,email:_patientHC.email||"paciente@local",displayName:_patientHC.name||"Paciente"};
-    showApp();
+    // initAuth() detecta el rol "paciente", carga la historia y abre la app
+    await FB.signInWithEmailAndPassword(FB.auth,_patientEmail(id),_patientPwd(pin));
+    if(pinInp)pinInp.value="";
   }catch(e){
-    toast("Error al verificar: "+e.message);
+    const bad=["auth/invalid-credential","auth/user-not-found","auth/wrong-password","auth/invalid-login-credentials"];
+    if(bad.includes(e.code))fail("ID o PIN incorrectos. Si es tu primera vez, regístrate.");
+    else if(e.code==="auth/too-many-requests")fail("Demasiados intentos. Espera unos minutos.");
+    else fail("Error al ingresar: "+e.message);
+  }finally{
     if(btn){btn.disabled=false;btn.textContent=t("patientEnter")||"Ingresar";}
   }
 }
-
+function _openPatientRegister(){
+  const id=_normId(document.getElementById("patientIdInput")?.value);
+  if(!id){const err=document.getElementById("patientLoginErr");if(err){err.className="auth-err er";err.textContent="Escribe primero tu número de identificación";}return;}
+  _showPatientRegisterForm(id);
+}
 function _showPatientRegisterForm(patId){
   const pv=document.getElementById("authPatientView");
   const rv=document.getElementById("patientRegisterView");
@@ -3806,7 +3855,7 @@ function _showPatientRegisterForm(patId){
     rv.style.display="";
     const disp=document.getElementById("pRegIdDisplay");if(disp)disp.textContent=patId;
     const hid=document.getElementById("pRegId");if(hid)hid.value=patId;
-    const sub=document.getElementById("pRegSubtitle");if(sub)sub.textContent="ID "+patId+" no encontrado — completa tu registro";
+    const sub=document.getElementById("pRegSubtitle");if(sub)sub.textContent="Crea tu cuenta de paciente con el ID "+patId;
     rv.classList.remove("auth-slide-right","auth-slide-left");
     void rv.offsetWidth;
     rv.classList.add("auth-slide-right");
@@ -3820,37 +3869,43 @@ function _cancelPatientRegister(){
   const inp=document.getElementById("patientIdInput");if(inp)inp.value="";
 }
 async function registerPatient(){
-  const id=document.getElementById("pRegId").value.trim();
+  const id=_normId(document.getElementById("pRegId").value);
   const name=document.getElementById("pRegName").value.trim();
   const dob=document.getElementById("pRegDob").value;
   const sex=document.querySelector('input[name="pRegSex"]:checked')?.value;
   const phone=document.getElementById("pRegPhone").value.trim();
+  const pin=document.getElementById("pRegPin").value.trim();
+  const pin2=document.getElementById("pRegPin2").value.trim();
   const err=document.getElementById("pRegErr");
   err.textContent="";err.className="auth-err";
-  if(!name||!dob||!sex||!phone){err.className="auth-err er";err.textContent="Todos los campos son obligatorios";return;}
-  if(!id){err.className="auth-err er";err.textContent="Error: número de ID no encontrado";return;}
+  const fail=msg=>{err.className="auth-err er";err.textContent=msg;};
+  if(!name||!dob||!sex||!phone){fail("Todos los campos son obligatorios");return;}
+  if(!id){fail("Error: número de ID no encontrado");return;}
+  if(!PIN_RE.test(pin)){fail("El PIN debe tener exactamente 6 dígitos");return;}
+  if(pin!==pin2){fail("Los PIN no coinciden");return;}
   const btn=document.getElementById("pRegBtn");
   btn.disabled=true;btn.textContent="Registrando...";
+  _patientAuthBusy=true;
   try{
-    // Double check: don't create duplicate if somehow a concurrent registration happened
-    const existing=await FB.getDocs(FB.query(FB.collection(FB.db,"historias"),FB.where("doc","==",id),FB.limit(1)));
-    if(!existing.empty){
-      const docSnap=existing.docs[0];
-      _patientHC={id:docSnap.id,...docSnap.data()};
-      CR="paciente";CU={uid:"patient-"+docSnap.id,email:_patientHC.email||"paciente@local",displayName:_patientHC.name||"Paciente"};
-      showApp();return;
+    const cred=await FB.createUserWithEmailAndPassword(FB.auth,_patientEmail(id),_patientPwd(pin));
+    const uid=cred.user.uid;
+    await FB.setDoc(FB.doc(FB.db,"users",uid),{name,role:"paciente",doc:id,phone,createdAt:FB.serverTimestamp()});
+    // Si el personal médico ya había creado la historia con este ID, se reutiliza
+    let hc=await _loadPatientHC(id);
+    if(!hc){
+      const age=Math.floor((Date.now()-new Date(dob).getTime())/(365.25*24*3600000));
+      const data={doc:id,name,age,sex,dob,telefono:phone,antecedentes:[],alergias:[],medicacion:[],notes:"",userId:uid,createdAt:FB.serverTimestamp()};
+      const ref=await FB.addDoc(FB.collection(FB.db,"historias"),data);
+      hc={id:ref.id,...data};
     }
-    const age=Math.floor((Date.now()-new Date(dob).getTime())/(365.25*24*3600000));
-    const ref=await FB.addDoc(FB.collection(FB.db,"historias"),{
-      doc:id,name,age,sex,dob,telefono:phone,
-      antecedentes:[],alergias:[],medicacion:[],notes:"",
-      createdAt:FB.serverTimestamp()
-    });
-    _patientHC={id:ref.id,doc:id,name,age,sex,dob,telefono:phone,antecedentes:[],alergias:[],medicacion:[]};
-    CR="paciente";CU={uid:"patient-"+ref.id,email:"paciente@local",displayName:name};
+    _patientHC=hc;
+    CU=cred.user;CR="paciente";CUName=name;
+    _patientAuthBusy=false;
     showApp();
   }catch(e){
-    err.className="auth-err er";err.textContent="Error al registrar: "+e.message;
+    _patientAuthBusy=false;
+    if(e.code==="auth/email-already-in-use")fail("Este ID ya está registrado. Vuelve atrás e ingresa con tu PIN.");
+    else fail("Error al registrar: "+e.message);
     btn.disabled=false;btn.textContent="Completar registro";
   }
 }

@@ -2,33 +2,86 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ── Helpers ───────────────────────────────────────────────
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+    function myRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function hasProfile() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function isAdmin() {
+      return hasProfile() && myRole() == 'admin';
+    }
+    function isStaffAdmin() {          // admin general o de hospital
+      return hasProfile() && myRole() in ['admin', 'admin_hosp'];
+    }
+    function isClinician() {           // personal de salud
+      return hasProfile() && myRole() in ['medico', 'admin', 'admin_hosp'];
+    }
+    function ownsNew() {               // el documento nuevo pertenece a quien lo crea
+      return request.resource.data.userId == request.auth.uid;
+    }
+    // Los pacientes inician sesión con una cuenta interna <ID>@pacientes.media-suite.app
+    // (ID + PIN). Así solo pueden ver la historia cuyo campo "doc" es su propio ID.
+    function isPatientOf(data) {
+      return signedIn()
+        && request.auth.token.email != null
+        && request.auth.token.email == data.doc + '@pacientes.media-suite.app';
+    }
+
+    // ── Usuarios ──────────────────────────────────────────────
+    // Nadie puede asignarse un rol de administrador. Los roles admin y
+    // admin_hosp solo los asigna un admin desde el panel (o desde la consola).
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isSelf(userId) || isStaffAdmin();
+      allow create: if isSelf(userId)
+        && request.resource.data.role in ['medico', 'paciente'];
+      allow update: if isAdmin()
+        || (isSelf(userId)
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+      allow delete: if isAdmin();
     }
 
+    // ── Historias clínicas ────────────────────────────────────
     match /historias/{docId} {
-      allow read: if request.auth != null && (
-        resource.data.userId == request.auth.uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['medico', 'admin', 'admin_hosp']
-      );
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && (
-        resource.data.userId == request.auth.uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'admin_hosp']
-      );
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid
+                                    || isPatientOf(resource.data) || isClinician());
+      allow create: if signedIn() && ownsNew() && (isClinician() || isPatientOf(request.resource.data));
+      allow update, delete: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
     }
 
+    // ── Triages ───────────────────────────────────────────────
     match /triages/{docId} {
-      allow read: if request.auth != null && (
-        resource.data.userId == request.auth.uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['medico', 'admin', 'admin_hosp']
-      );
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && (
-        resource.data.userId == request.auth.uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'admin_hosp']
-      );
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || isClinician());
+      allow create: if signedIn() && ownsNew();
+      allow update: if isClinician();   // marcar como atendido desde la cola
+      allow delete: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
     }
 
+    // ── Notificaciones prehospitalarias ───────────────────────
+    match /prehospital/{docId} {
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
+      allow create: if signedIn() && ownsNew();
+      allow update, delete: if isStaffAdmin();
+    }
+
+    // ── Presencia (quién está conectado) ──────────────────────
+    match /presence/{userId} {
+      allow read: if isClinician();
+      allow write: if isSelf(userId);
+    }
+
+    // ── Auditoría: solo se agregan registros, nunca se editan ─
+    match /auditLogs/{docId} {
+      allow create: if signedIn() && ownsNew();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
   }
 }
