@@ -1,11 +1,13 @@
 # MedIA Suite — Triage hospitalario con IA
 
+![Pruebas](https://github.com/modarox28/triage-ia/actions/workflows/tests.yml/badge.svg)
+
 PWA médica para clasificación de urgencias (triage) y gestión de medicamentos, con asistente de inteligencia artificial.
 
 **App:** https://media-suite-6f432.web.app
 **Probar sin registro:** https://media-suite-6f432.web.app/?demo=1 (o el botón "Probar demo" en la pantalla de inicio)
 
-El modo demo entra como administrador con pacientes, triages, cola y solicitudes de acceso ficticias. Funciona con una base de datos en memoria (`src/app/18-demo.js`): no toca Firestore, no gasta cuota y todo se reinicia al salir.
+El modo demo entra como administrador con pacientes, triages, cola y solicitudes de acceso ficticias. Funciona con una base de datos en memoria (`src/app/18-demo.js`): no toca Firestore, no gasta cuota y todo se reinicia al salir. La IA sí es real, con un cupo de 15 consultas al día por visitante.
 
 ## Módulos
 
@@ -24,7 +26,8 @@ El modo demo entra como administrador con pacientes, triages, cola y solicitudes
 - **Firebase Auth**: Google, correo/contraseña y acceso de pacientes con ID + PIN
 - **Cloud Firestore**: base de datos en tiempo real, protegida con reglas por rol
 - **Firebase Hosting**: plan gratuito (Spark)
-- **Cloudflare Worker**: proxy hacia la API de DeepSeek; la clave nunca llega al navegador
+- **Cloudflare Worker + KV**: proxy hacia la API de DeepSeek que verifica la sesión y aplica límites diarios; la clave nunca llega al navegador
+- **Pruebas**: `node:test` (sin dependencias) y GitHub Actions en cada push
 - **PWA**: instalable en Android, iOS y escritorio (manifest + service worker)
 
 ## Arquitectura
@@ -33,6 +36,9 @@ El modo demo entra como administrador con pacientes, triages, cola y solicitudes
 Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
        │
        └──────────► Cloudflare Worker ──► DeepSeek  (IA; la API key vive en Cloudflare)
+                     │  1. verifica el token de Firebase (firma de Google)
+                     │  2. lee el rol en Firestore con ese token
+                     └─ 3. cupo diario por usuario en Workers KV
 ```
 
 ## Estructura del proyecto
@@ -71,6 +77,8 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   └── utils/                 # Validación de signos vitales
 ├── cloudflare-worker/
 │   └── worker.js              # Proxy de IA (se pega en el panel de Cloudflare)
+├── tests/                     # Pruebas: scores clínicos, signos vitales y seguridad del Worker
+├── .github/workflows/         # Ejecuta las pruebas en GitHub en cada push
 ├── firestore.rules            # Reglas de seguridad de la base de datos
 ├── firebase.json              # Configuración de Hosting y Firestore
 ├── sw.js                      # Service worker (caché offline)
@@ -107,7 +115,12 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 - Los nombres y correos se escapan antes de mostrarse en el panel, para que nadie pueda inyectar código con su nombre de usuario.
 - Cada paciente tiene una cuenta interna `<ID>@pacientes.media-suite.app` cuya contraseña se deriva de su PIN; las reglas usan ese correo para limitar el acceso a su historia.
 - Todo texto que viene de usuarios, pacientes o de la IA se escapa con `_esc()` antes de insertarse como HTML, y los botones de las listas usan índices en lugar de texto, para evitar inyección de código.
-- La API key de DeepSeek solo existe como secreto en Cloudflare. El Worker acepta peticiones únicamente desde el dominio de la app y limita el tamaño de cada respuesta.
+- La API key de DeepSeek solo existe como secreto en Cloudflare. El Worker:
+  - acepta peticiones solo desde el dominio de la app;
+  - verifica el token de Firebase de cada consulta (firma RS256 de Google, emisor, audiencia y vencimiento);
+  - lee el rol del usuario en Firestore con su propio token: las cuentas pendientes, rechazadas o eliminadas no pueden usar la IA;
+  - aplica un cupo diario: médico 150, admin 300, paciente 20 y modo demo 15 por IP;
+  - limita el tamaño de cada consulta y de cada respuesta.
 
 ## Puesta en marcha
 
@@ -116,6 +129,18 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 - Node.js LTS
 - Firebase CLI: `npm install -g firebase-tools` (o usa `npx firebase-tools` en cada comando)
 - Cuenta gratuita de Cloudflare y una API key de DeepSeek
+
+### Pruebas automáticas
+
+```bash
+npm test
+```
+
+No requiere instalar nada (usa el runner de pruebas incluido en Node). Cubre:
+
+- **Scores clínicos** contra sus criterios publicados: qSOFA (Sepsis-3), NEWS2 (RCP 2017), CURB-65, HEART, ROSIER (Nor et al. 2005), Wells TVP (Wells 1997), índice de shock y alertas de vitales.
+- **Clasificadores de signos vitales** en sus valores límite.
+- **Seguridad del Worker**: tokens falsos, vencidos, alterados o de otro proyecto; cuentas sin acceso; cupos diarios; y que ninguna consulta rechazada llegue a DeepSeek.
 
 ### Probar en local
 
@@ -136,8 +161,9 @@ npx firebase-tools deploy --only hosting,firestore:rules
 1. En dash.cloudflare.com: **Workers & Pages → Create → Create Worker**, nombre `triage-ia-proxy`.
 2. **Edit code**: pega `cloudflare-worker/worker.js` y pulsa **Deploy**.
 3. **Settings → Variables and Secrets**: agrega el secreto `DEEPSEEK_KEY`.
-4. Si cambias el dominio de la app, actualiza `ORIGENES_PERMITIDOS` en el Worker.
-5. La URL del Worker está en la constante `PROXY` de `src/app/00-estado.js`.
+4. **Storage & Databases → KV → Create**: crea un namespace (por ejemplo `triage-ia-limites`). Luego, en el Worker, **Settings → Bindings → Add → KV namespace**, con nombre de variable `LIMITES`. Esto activa los cupos diarios y el modo demo; sin él, la IA solo funciona con sesión iniciada.
+5. Si cambias el dominio de la app, actualiza `ORIGENES_PERMITIDOS` en el Worker; para cambiar los cupos, edita `LIMITE_DIARIO`.
+6. La URL del Worker está en la constante `PROXY` de `src/app/00-estado.js`.
 
 ### Primer administrador
 

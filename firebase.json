@@ -6,7 +6,12 @@
       "**/.*",
       "**/node_modules/**",
       "functions/**",
-      "cloudflare-worker/**"
+      "cloudflare-worker/**",
+      "package.json",
+      "tests/**",
+      "README.md",
+      "firestore.rules",
+      "seed-patients.mjs"
     ]
   },
   "firestore": {

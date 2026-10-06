@@ -54,7 +54,7 @@ function _calcHeartScore(){
 
 function _calcROSIERScore(){
   const cb=id=>!!document.getElementById(id)?.checked;
-  const result=calcROSIER({syncope_seizure:cb('rosier_syncope'),face_weakness:cb('rosier_face'),arm_weakness:cb('rosier_arm'),leg_weakness:cb('rosier_leg'),speech_disturbance:cb('rosier_speech'),visual_field:cb('rosier_visual')});
+  const result=calcROSIER({syncope:cb('rosier_syncope'),seizure:cb('rosier_seizure'),face_weakness:cb('rosier_face'),arm_weakness:cb('rosier_arm'),leg_weakness:cb('rosier_leg'),speech_disturbance:cb('rosier_speech'),visual_field:cb('rosier_visual')});
   const div=document.getElementById('rosier-result');
   if(!div)return;
   div.style.display='block';
@@ -64,7 +64,7 @@ function _calcROSIERScore(){
 
 function _calcWellsScore(){
   const cb=id=>!!document.getElementById(id)?.checked;
-  const result=calcWellsDVT({cancer:cb('wells_cancer'),paralysis:cb('wells_paralysis'),bedridden:cb('wells_bedridden'),tenderness:cb('wells_tenderness'),leg_swollen:cb('wells_swollen'),calf_diff:cb('wells_calf'),pitting:cb('wells_pitting'),collateral:cb('wells_collateral'),alt_diagnosis:cb('wells_alt')});
+  const result=calcWellsDVT({cancer:cb('wells_cancer'),paralysis:cb('wells_paralysis'),bedridden:cb('wells_bedridden'),tenderness:cb('wells_tenderness'),leg_swollen:cb('wells_swollen'),calf_diff:cb('wells_calf'),pitting:cb('wells_pitting'),collateral:cb('wells_collateral'),previous_dvt:cb('wells_prev'),alt_diagnosis:cb('wells_alt')});
   const div=document.getElementById('wells-result');
   if(!div)return;
   div.style.display='block';

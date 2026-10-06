@@ -14,7 +14,7 @@
 <meta name="theme-color" content="#0b1120">
 <link rel="icon" type="image/png" href="./icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script type="module" src="./src/app/firebase-init.js?v=2"></script>
+<script type="module" src="./src/app/firebase-init.js?v=3"></script>
 <link rel="stylesheet" href="./src/styles/base.css?v=2">
 <link rel="stylesheet" href="./src/styles/auth.css?v=2">
 <link rel="stylesheet" href="./src/styles/layout.css?v=2">
@@ -890,7 +890,11 @@
             <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
               <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(255,80,80,.07);padding:8px 10px;border-radius:8px">
                 <input type="checkbox" id="rosier_syncope" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--rd)">
-                <span><b style="color:var(--rd)">−1</b> &nbsp;Pérdida de consciencia o convulsión al inicio</span>
+                <span><b style="color:var(--rd)">−1</b> &nbsp;Pérdida de consciencia o síncope</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(255,80,80,.07);padding:8px 10px;border-radius:8px">
+                <input type="checkbox" id="rosier_seizure" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--rd)">
+                <span><b style="color:var(--rd)">−1</b> &nbsp;Actividad convulsiva</span>
               </label>
               <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(0,200,80,.07);padding:8px 10px;border-radius:8px">
                 <input type="checkbox" id="rosier_face" onchange="_calcROSIERScore()" style="width:16px;height:16px;accent-color:var(--gn)">
@@ -936,6 +940,7 @@
               <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_calf" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Edema asimétrico de pantorrilla &gt; 3 cm</label>
               <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_pitting" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Edema con fóvea (solo en pierna sintomática)</label>
               <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_collateral" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> Venas colaterales superficiales (no varicosas)</label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.82rem"><input type="checkbox" id="wells_prev" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--cy)"> TVP previa documentada</label>
               <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;background:rgba(255,80,80,.07);padding:8px 10px;border-radius:8px"><input type="checkbox" id="wells_alt" onchange="_calcWellsScore()" style="width:15px;height:15px;accent-color:var(--rd)"> <span><b style="color:var(--rd)">−2</b> &nbsp;Diagnóstico alternativo más probable que TVP</span></label>
             </div>
             <div id="wells-result" style="display:none"></div>
@@ -1093,24 +1098,24 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="./src/app/00-estado.js?v=5"></script>
-<script src="./src/app/01-auth.js?v=5"></script>
-<script src="./src/app/02-voz-notas.js?v=5"></script>
-<script src="./src/app/03-navegacion.js?v=5"></script>
-<script src="./src/app/04-dashboard-historial.js?v=5"></script>
-<script src="./src/app/05-perfil-qr.js?v=5"></script>
-<script src="./src/app/06-pacientes.js?v=5"></script>
-<script src="./src/app/07-pwa.js?v=5"></script>
-<script src="./src/app/08-triage.js?v=5"></script>
-<script src="./src/app/09-medicamentos.js?v=5"></script>
-<script src="./src/app/10-init.js?v=2"></script>
-<script src="./src/app/11-dolor-sintomas.js?v=5"></script>
-<script src="./src/app/12-historia-clinica.js?v=5"></script>
-<script src="./src/app/13-cola.js?v=5"></script>
-<script src="./src/app/14-herramientas.js?v=5"></script>
-<script src="./src/app/15-mci.js?v=5"></script>
-<script src="./src/app/16-glasgow-gestos.js?v=5"></script>
-<script src="./src/app/17-scores-tablero.js?v=5"></script>
-<script src="./src/app/18-demo.js?v=1"></script>
+<script src="./src/app/00-estado.js?v=6"></script>
+<script src="./src/app/01-auth.js?v=6"></script>
+<script src="./src/app/02-voz-notas.js?v=6"></script>
+<script src="./src/app/03-navegacion.js?v=6"></script>
+<script src="./src/app/04-dashboard-historial.js?v=6"></script>
+<script src="./src/app/05-perfil-qr.js?v=6"></script>
+<script src="./src/app/06-pacientes.js?v=6"></script>
+<script src="./src/app/07-pwa.js?v=6"></script>
+<script src="./src/app/08-triage.js?v=6"></script>
+<script src="./src/app/09-medicamentos.js?v=6"></script>
+<script src="./src/app/10-init.js?v=6"></script>
+<script src="./src/app/11-dolor-sintomas.js?v=6"></script>
+<script src="./src/app/12-historia-clinica.js?v=6"></script>
+<script src="./src/app/13-cola.js?v=6"></script>
+<script src="./src/app/14-herramientas.js?v=6"></script>
+<script src="./src/app/15-mci.js?v=6"></script>
+<script src="./src/app/16-glasgow-gestos.js?v=6"></script>
+<script src="./src/app/17-scores-tablero.js?v=6"></script>
+<script src="./src/app/18-demo.js?v=6"></script>
 </body>
 </html>

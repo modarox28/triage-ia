@@ -36,7 +36,12 @@ export function calcQSOFA(vitals,consciousness){
   return{score,details,risk:score>=2?"high":"low"};
 }
 
-/** NEWS2 — National Early Warning Score 2 (0-17). */
+/**
+ * NEWS2 — National Early Warning Score 2 (0-17), escala 1 de SpO₂.
+ * Riesgo según RCP (2017): 0-4 bajo; un parámetro con 3 puntos = bajo-medio
+ * (respuesta urgente en sala); 5-6 medio; ≥ 7 alto.
+ * No incluye el punto por oxígeno suplementario (la app no registra ese dato).
+ */
 export function calcNEWS2(vitals,consc){
   const{sys,rr,spo2,hr,temp}=vitals;
   let score=0,components=[];
@@ -49,10 +54,11 @@ export function calcNEWS2(vitals,consc){
   if(consc&&consc!=="alerta"){score+=3;components.push({l:"Consciencia",v:"Alterada",pts:3});}
   const anyThree=components.some(c=>c.pts>=3);
   let risk,riskLabel,riskColor;
-  if(score>=7||anyThree){risk="high";riskLabel="Alto — Respuesta de emergencia";riskColor="var(--rd)";}
+  if(score>=7){risk="high";riskLabel="Alto — Respuesta de emergencia";riskColor="var(--rd)";}
   else if(score>=5){risk="medium";riskLabel="Medio — Respuesta urgente";riskColor="var(--yw)";}
+  else if(anyThree){risk="medium";riskLabel="Bajo-medio — Un parámetro en 3: respuesta urgente en sala";riskColor="var(--yw)";}
   else{risk="low";riskLabel="Bajo — Monitoreo rutinario";riskColor="var(--gn)";}
-  return{score,risk,riskLabel,riskColor,components};
+  return{score,risk,riskLabel,riskColor,components,singleParam3:anyThree};
 }
 
 /** Shock Index — HR / SBP ratio. >= 1.4 = severe. */
@@ -131,7 +137,9 @@ export function calcHEART(p){
  */
 export function calcROSIER(p){
   let score=0,details=[];
-  if(p.syncope_seizure){score-=1;details.push("Pérdida de consciencia / convulsión (−1)");}
+  // Ítems negativos separados (Nor et al., 2005). `syncope_seizure` se mantiene por compatibilidad.
+  if(p.syncope||(p.syncope_seizure&&p.syncope===undefined)){score-=1;details.push("Pérdida de consciencia o síncope (−1)");}
+  if(p.seizure){score-=1;details.push("Actividad convulsiva (−1)");}
   if(p.face_weakness){score+=1;details.push("Debilidad facial asimétrica (+1)");}
   if(p.arm_weakness){score+=1;details.push("Debilidad en brazo (+1)");}
   if(p.leg_weakness){score+=1;details.push("Debilidad en pierna (+1)");}
@@ -146,8 +154,9 @@ export function calcROSIER(p){
 }
 
 /**
- * Wells DVT Score — Deep vein thrombosis probability.
- * @param {{cancer:boolean, paralysis:boolean, bedridden:boolean, tenderness:boolean, leg_swollen:boolean, calf_diff:boolean, pitting:boolean, collateral:boolean, alt_diagnosis:boolean}} p
+ * Wells DVT Score — Deep vein thrombosis probability (modelo de 3 niveles, Wells 1997).
+ * Alta ≥ 3, moderada 1-2, baja ≤ 0.
+ * @param {{cancer:boolean, paralysis:boolean, bedridden:boolean, tenderness:boolean, leg_swollen:boolean, calf_diff:boolean, pitting:boolean, collateral:boolean, previous_dvt:boolean, alt_diagnosis:boolean}} p
  * @returns {{score:number, risk:string, label:string, color:string}}
  */
 export function calcWellsDVT(p){
@@ -160,10 +169,11 @@ export function calcWellsDVT(p){
   if(p.calf_diff)score+=1;
   if(p.pitting)score+=1;
   if(p.collateral)score+=1;
+  if(p.previous_dvt)score+=1;
   if(p.alt_diagnosis)score-=2;
   let risk,label,color;
-  if(score>=2){risk="high";label="Alta probabilidad TVP";color="var(--rd)";}
-  else if(score===1){risk="medium";label="Probabilidad moderada TVP";color="var(--yw)";}
+  if(score>=3){risk="high";label="Alta probabilidad TVP";color="var(--rd)";}
+  else if(score>=1){risk="medium";label="Probabilidad moderada TVP";color="var(--yw)";}
   else{risk="low";label="Baja probabilidad TVP";color="var(--gn)";}
   return{score,risk,label,color};
 }

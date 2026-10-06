@@ -3,7 +3,7 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,enableIndexedDbPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT,calcHEART,calcROSIER}from"../clinical/engine.js?v=2";
+import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT,calcHEART,calcROSIER}from"../clinical/engine.js?v=3";
 import{getCopilotHints,renderCopilotCard}from"../clinical/copilot.js?v=1";
 import{buildTriageTimeline}from"../clinical/timeline.js?v=1";
 import{L}from"../i18n/index.js?v=1";
