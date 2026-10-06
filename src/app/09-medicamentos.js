@@ -51,7 +51,7 @@ async function buscarDrug(){
     const ptnBadge=activeHC?`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--cy);background:rgba(0,200,240,.07);border-radius:8px;padding:5px 9px;margin-bottom:10px">🗂️ Análisis personalizado para <strong>${_esc(activeHC.name)}</strong></div>`:"";
     const drugHead=`${ptnBadge}<div style="font-size:1.05rem;font-weight:700;margin-bottom:3px">${_esc(inf.nombre_comercial||nm)}</div><div style="font-size:.73rem;color:var(--mu);margin-bottom:11px">${_esc(inf.nombre_generico||"")}</div>`;
     if(isContra){
-      document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
+      document.getElementById("dr").innerHTML=`<div class="ai-note">Información generada con IA como apoyo. Confirma dosis y contraindicaciones con el médico o farmacéutico.</div><div class="card" style="animation:fadeUp .3s both">
         ${drugHead}
         <div class="ib rd" style="margin-bottom:14px;animation:fadeUp .3s .1s both">
           <div class="ibl">&#x26D4; Contraindicado para este paciente</div>
@@ -62,7 +62,7 @@ async function buscarDrug(){
     }else{
       const patientAlert=inf.alerta_paciente&&inf.alerta_paciente.trim()&&activeHC
         ?`<div class="ib rd" style="animation:fadeUp .3s both"><div class="ibl">&#x26A0;&#xFE0F; Alerta para ${_esc(activeHC.name)}</div><div class="ibt">${_esc(inf.alerta_paciente)}</div></div>`:"";
-      document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
+      document.getElementById("dr").innerHTML=`<div class="ai-note">Información generada con IA como apoyo. Confirma dosis y contraindicaciones con el médico o farmacéutico.</div><div class="card" style="animation:fadeUp .3s both">
         ${drugHead}
         <div style="margin-bottom:11px"><span style="background:var(--cy-a);color:var(--cy);border-radius:20px;padding:3px 9px;font-size:.7rem;font-weight:600">&#x1F48A; ${_esc(inf.dosis_tipica||"Ver prospecto")}</span></div>
         ${patientAlert}
@@ -81,7 +81,7 @@ function _showFullDrugInfo(){
   if(!_lastDrugInfo)return;
   const{inf,nm}=_lastDrugInfo;
   const ptnBadge=_patientHC?`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--cy);background:rgba(0,200,240,.07);border-radius:8px;padding:5px 9px;margin-bottom:10px">&#x1F5C2;&#xFE0F; Análisis personalizado para <strong>${_esc(_patientHC.name)}</strong></div>`:"";
-  document.getElementById("dr").innerHTML=`<div class="card" style="animation:fadeUp .3s both">
+  document.getElementById("dr").innerHTML=`<div class="ai-note">Información generada con IA como apoyo. Confirma dosis y contraindicaciones con el médico o farmacéutico.</div><div class="card" style="animation:fadeUp .3s both">
     ${ptnBadge}
     <div class="ib rd" style="margin-bottom:12px;padding:9px 12px">
       <div class="ibt" style="font-size:.72rem;line-height:1.55">&#x26A0;&#xFE0F; Contraindicación detectada — información mostrada bajo responsabilidad del profesional médico</div>
@@ -155,7 +155,7 @@ async function checkInt(){
     const r=await _aiFetch({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. Responde valores en ${_lr3}. SOLO JSON sin backticks:\n{"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]});
     const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     const cm={BAJO:"gn",MODERADO:"yw",ALTO:"rd",CONTRAINDICADO:"rd"};const im={BAJO:"✅",MODERADO:"⚠️",ALTO:"🚨",CONTRAINDICADO:"⛔"};
-    document.getElementById("ir").innerHTML=`<div class="card"><div class="ib ${cm[inf.nivel_riesgo]||"yw"}" style="margin-bottom:10px"><div class="ibl">${im[inf.nivel_riesgo]||"⚠️"} Riesgo: ${_esc(inf.nivel_riesgo)}</div><div class="ibt">${_esc(inf.resumen)}</div></div>${(inf.interacciones||[]).map(i=>`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-weight:600;font-size:.8rem;margin-bottom:3px">💊 ${_esc(i.par)}</div><div style="font-size:.76rem;color:var(--mu)">${_esc(i.descripcion)}</div></div>`).join("")}<div class="ib cy" style="margin-top:9px"><div class="ibl">Recomendacion</div><div class="ibt">${_esc(inf.recomendacion)}</div></div>${inf.consultar_medico?`<div class="wnote" style="color:var(--rd);border-color:rgba(255,58,92,.2);background:var(--rd-a)">Consulta a tu medico antes de combinar estos medicamentos.</div>`:""}</div>`;
+    document.getElementById("ir").innerHTML=`<div class="ai-note">Información generada con IA como apoyo. Confirma dosis y contraindicaciones con el médico o farmacéutico.</div><div class="card"><div class="ib ${cm[inf.nivel_riesgo]||"yw"}" style="margin-bottom:10px"><div class="ibl">${im[inf.nivel_riesgo]||"⚠️"} Riesgo: ${_esc(inf.nivel_riesgo)}</div><div class="ibt">${_esc(inf.resumen)}</div></div>${(inf.interacciones||[]).map(i=>`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-weight:600;font-size:.8rem;margin-bottom:3px">💊 ${_esc(i.par)}</div><div style="font-size:.76rem;color:var(--mu)">${_esc(i.descripcion)}</div></div>`).join("")}<div class="ib cy" style="margin-top:9px"><div class="ibl">Recomendacion</div><div class="ibt">${_esc(inf.recomendacion)}</div></div>${inf.consultar_medico?`<div class="wnote" style="color:var(--rd);border-color:rgba(255,58,92,.2);background:var(--rd-a)">Consulta a tu medico antes de combinar estos medicamentos.</div>`:""}</div>`;
   }catch(e){document.getElementById("ir").innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.83rem">Error al verificar.</div></div>`;}
 }
 

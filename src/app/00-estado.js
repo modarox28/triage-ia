@@ -3,6 +3,8 @@
 // que se cargan en orden numérico desde index.html.
 
 const PROXY="https://triage-ia-proxy.mdq2804.workers.dev/";
+// Versión de la política de tratamiento de datos (privacidad.html). Si cambia, se pide aceptarla de nuevo.
+const CONSENT_VERSION="1.0";
 // Llamada a la IA a través del Worker. Envía el token de la sesión de Firebase para
 // que el Worker verifique quién consulta y aplique el límite diario. En el modo demo
 // no hay token y el Worker aplica un cupo pequeño por IP.

@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="./src/styles/clinical.css?v=4">
 <link rel="stylesheet" href="./src/styles/queue.css?v=4">
 <link rel="stylesheet" href="./src/styles/ios.css?v=5">
-<link rel="stylesheet" href="./src/styles/tema.css?v=7">
+<link rel="stylesheet" href="./src/styles/tema.css?v=8">
 </head>
 <body>
 
@@ -317,6 +317,7 @@
       </div>
       <hr class="auth-sep" style="animation:fadeUp .4s .2s both">
       <div style="animation:fadeUp .4s .25s both">
+        <div class="auth-legal"><a href="./privacidad.html" target="_blank" rel="noopener">Política de tratamiento de datos</a></div>
         <div style="text-align:center;font-size:.72rem;color:var(--mu);margin-bottom:10px;font-weight:500;letter-spacing:.3px" id="staffAccessLbl">Personal de salud / Administrador</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <button class="bsec" id="btnMedicoAccess" onclick="showStaffLogin('medico')" style="padding:12px 8px;font-size:.88rem;font-weight:600">🩺 Médico</button>
@@ -373,6 +374,10 @@
           </div>
         </div>
         <div style="font-size:.7rem;color:var(--mu);margin:-4px 0 8px">Con tu número de ID y este PIN entrarás a tu historia clínica. No lo compartas.</div>
+        <div class="consent-row">
+          <input type="checkbox" id="pRegConsent">
+          <label for="pRegConsent">Autorizo de forma explícita el tratamiento de mis datos personales y de salud (datos sensibles) para mi atención, según la <a href="./privacidad.html" target="_blank" rel="noopener">Política de tratamiento de datos</a>. Entiendo que responder sobre datos sensibles es facultativo.</label>
+        </div>
         <div class="auth-err" id="pRegErr"></div>
         <button type="submit" class="auth-btn" id="pRegBtn" style="margin-top:6px">Completar registro</button>
       </form>
@@ -406,6 +411,10 @@
       <div class="auth-fg">
         <label class="auth-fl" id="lbPass">Contrasena</label>
         <input class="auth-fi" id="aPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="consent-row" id="termsField" style="display:none">
+        <input type="checkbox" id="aTerms">
+        <label for="aTerms">Acepto los términos de uso y la <a href="./privacidad.html" target="_blank" rel="noopener">Política de tratamiento de datos</a>, y me comprometo a mantener la confidencialidad de la información clínica.</label>
       </div>
       <div class="remember-row" id="rememberRow" onclick="toggleRemember()">
         <div class="remember-check" id="rememberCheck"></div>
@@ -1000,6 +1009,11 @@
       </div>
       <!-- CONFIGURACION -->
       <div class="sc" id="sc-config">
+        <div class="card" id="privacyCard">
+          <div class="clabel">Privacidad y datos</div>
+          <div style="font-size:.85rem;color:var(--mu);line-height:1.5;margin-bottom:10px">Cómo se tratan tus datos personales y de salud, tus derechos y cómo ejercerlos (Ley 1581 de 2012).</div>
+          <a class="bsec" href="./privacidad.html" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none;margin:0">Ver política de tratamiento de datos</a>
+        </div>
         <div class="card" id="installPWACard" style="display:none">
           <div class="clabel">Aplicación móvil</div>
           <div style="display:flex;align-items:center;gap:14px">
@@ -1112,26 +1126,42 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="./src/app/00-iconos.js?v=1"></script>
-<script src="./src/app/00-estado.js?v=9"></script>
-<script src="./src/app/01-auth.js?v=11"></script>
-<script src="./src/app/02-voz-notas.js?v=11"></script>
-<script src="./src/app/03-navegacion.js?v=11"></script>
-<script src="./src/app/04-dashboard-historial.js?v=11"></script>
-<script src="./src/app/05-perfil-qr.js?v=11"></script>
-<script src="./src/app/06-pacientes.js?v=11"></script>
-<script src="./src/app/07-pwa.js?v=11"></script>
-<script src="./src/app/08-triage.js?v=11"></script>
-<script src="./src/app/09-medicamentos.js?v=11"></script>
-<script src="./src/app/10-init.js?v=11"></script>
-<script src="./src/app/11-dolor-sintomas.js?v=11"></script>
-<script src="./src/app/12-historia-clinica.js?v=11"></script>
-<script src="./src/app/13-cola.js?v=11"></script>
-<script src="./src/app/14-herramientas.js?v=11"></script>
-<script src="./src/app/15-mci.js?v=11"></script>
-<script src="./src/app/16-glasgow-gestos.js?v=11"></script>
-<script src="./src/app/17-scores-tablero.js?v=11"></script>
-<script src="./src/app/18-demo.js?v=11"></script>
-<script src="./src/app/19-pdf.js?v=11"></script>
+<!-- Aceptación de la política para cuentas creadas antes de esta versión -->
+<div class="modal" id="consentModal" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-title" id="consentTitle">Política de tratamiento de datos</div>
+    <div style="font-size:.86rem;color:var(--mu);line-height:1.55;margin:6px 0 12px" id="consentTxt"></div>
+    <div class="consent-row" style="margin-top:0">
+      <input type="checkbox" id="consentChk">
+      <label for="consentChk" id="consentLbl"></label>
+    </div>
+    <div class="auth-err" id="consentErr"></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button type="button" class="bsec" style="flex:1;margin:0" onclick="_consentDecline()">Cerrar sesión</button>
+      <button type="button" class="bpri" style="flex:1;margin:0" id="consentOk" onclick="_consentAccept()">Aceptar</button>
+    </div>
+  </div>
+</div>
+<script src="./src/app/00-iconos.js?v=12"></script>
+<script src="./src/app/00-estado.js?v=12"></script>
+<script src="./src/app/01-auth.js?v=12"></script>
+<script src="./src/app/02-voz-notas.js?v=12"></script>
+<script src="./src/app/03-navegacion.js?v=12"></script>
+<script src="./src/app/04-dashboard-historial.js?v=12"></script>
+<script src="./src/app/05-perfil-qr.js?v=12"></script>
+<script src="./src/app/06-pacientes.js?v=12"></script>
+<script src="./src/app/07-pwa.js?v=12"></script>
+<script src="./src/app/08-triage.js?v=12"></script>
+<script src="./src/app/09-medicamentos.js?v=12"></script>
+<script src="./src/app/10-init.js?v=12"></script>
+<script src="./src/app/11-dolor-sintomas.js?v=12"></script>
+<script src="./src/app/12-historia-clinica.js?v=12"></script>
+<script src="./src/app/13-cola.js?v=12"></script>
+<script src="./src/app/14-herramientas.js?v=12"></script>
+<script src="./src/app/15-mci.js?v=12"></script>
+<script src="./src/app/16-glasgow-gestos.js?v=12"></script>
+<script src="./src/app/17-scores-tablero.js?v=12"></script>
+<script src="./src/app/18-demo.js?v=12"></script>
+<script src="./src/app/19-pdf.js?v=12"></script>
 </body>
 </html>

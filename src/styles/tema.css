@@ -141,3 +141,11 @@ button.stat-card{font:inherit;color:inherit;width:100%;text-align:left;display:f
 .ic-dot{display:inline-block;width:.62em;height:.62em;border-radius:50%;vertical-align:.04em;flex-shrink:0;}
 .dot-r{background:var(--rd);} .dot-y{background:var(--yw);} .dot-g{background:var(--gn);}
 .dot-k{background:#6b7280;} .dot-w{background:#e5e7eb;} .dot-o{background:#ff8a3d;} .dot-b{background:#3b82f6;}
+
+/* ── Aviso legal y consentimiento ── */
+.consent-row{display:flex;gap:10px;align-items:flex-start;margin:12px 0 4px;font-size:.8rem;line-height:1.45;color:var(--mu);text-align:left;}
+.consent-row input{flex-shrink:0;width:20px;height:20px;margin:1px 0 0;accent-color:var(--cy);-webkit-appearance:checkbox;appearance:auto;}
+.consent-row label{cursor:pointer;}
+.consent-row a,.auth-legal a{color:var(--cy);}
+.auth-legal{text-align:center;font-size:.76rem;margin:0 0 12px;}
+.ai-note{font-size:.76rem;color:var(--mu);background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;margin:0 0 10px;line-height:1.45;}

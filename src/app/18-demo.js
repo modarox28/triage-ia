@@ -109,7 +109,7 @@ function _demoSeed(uid){
   const now=Date.now(),min=60000;
   const ts=m=>new _DemoTS(now-m*min);
   const users={
-    [uid]:{name:"Usuario Demo",email:"demo@media-suite.app",role:"admin",createdAt:ts(60*24*30)},
+    [uid]:{name:"Usuario Demo",email:"demo@media-suite.app",role:"admin",createdAt:ts(60*24*30),consent:{version:CONSENT_VERSION,tipo:"personal",at:ts(60*24*30)}},
     "demo-med-1":{name:"Dra. Laura Gómez",email:"laura.gomez@hospital.demo",role:"medico",especialidad:"Urgencias",createdAt:ts(60*24*20)},
     "demo-med-2":{name:"Dr. Andrés Pérez",email:"andres.perez@hospital.demo",role:"medico",especialidad:"Medicina interna",createdAt:ts(60*24*12)},
     "demo-hosp":{name:"Coordinación Hospital Demo",email:"coordinacion@hospital.demo",role:"admin_hosp",createdAt:ts(60*24*25)},

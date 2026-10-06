@@ -238,13 +238,15 @@ async function registerPatient(){
   if(!id){fail("Error: número de ID no encontrado");return;}
   if(!PIN_RE.test(pin)){fail("El PIN debe tener exactamente 6 dígitos");return;}
   if(pin!==pin2){fail("Los PIN no coinciden");return;}
+  if(!document.getElementById("pRegConsent")?.checked){fail("Debes autorizar el tratamiento de tus datos para crear la cuenta");return;}
   const btn=document.getElementById("pRegBtn");
   btn.disabled=true;btn.textContent="Registrando...";
   _patientAuthBusy=true;
   try{
     const cred=await FB.createUserWithEmailAndPassword(FB.auth,_patientEmail(id),_patientPwd(pin));
     const uid=cred.user.uid;
-    await FB.setDoc(FB.doc(FB.db,"users",uid),{name,role:"paciente",doc:id,phone,createdAt:FB.serverTimestamp()});
+    await FB.setDoc(FB.doc(FB.db,"users",uid),{name,role:"paciente",doc:id,phone,createdAt:FB.serverTimestamp(),
+      consent:{version:CONSENT_VERSION,tipo:"paciente",at:FB.serverTimestamp()}});
     // Si el personal médico ya había creado la historia con este ID, se reutiliza
     let hc=await _loadPatientHC(id);
     if(!hc){

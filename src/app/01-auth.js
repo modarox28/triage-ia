@@ -66,6 +66,7 @@ function authTab(m){
   document.getElementById("nameField").style.display=isIn?"none":"block";
   const pf=document.getElementById("phoneField");if(pf)pf.style.display=isIn?"none":"block";
   const sf=document.getElementById("specialtyField");if(sf)sf.style.display=isIn?"none":(_staffLoginRole==="medico"?"block":"none");
+  const tf=document.getElementById("termsField");if(tf)tf.style.display=isIn?"none":"flex";
   const ap=document.getElementById("aPass");if(ap)ap.setAttribute("autocomplete",isIn?"current-password":"new-password");
   document.getElementById("authErr").textContent="";
   document.getElementById("authErr").className="auth-err";
@@ -97,6 +98,10 @@ function initAuth(){
             _staffLoginRole=null;
             _showPendingView(CR);
             return;
+          }
+          if(["paciente","medico","admin","admin_hosp"].includes(CR)&&snap.data().consent?.version!==CONSENT_VERSION){
+            const ok=await _ensureConsent(user.uid,CR);
+            if(!ok)return;
           }
           if(CR==="paciente"){
             _staffLoginRole=null;
@@ -179,9 +184,10 @@ async function doAuth(){
       if(!phone){err.className="auth-err er";err.textContent="El teléfono es obligatorio";return;}
       if(_staffLoginRole==="medico"&&!specialty){err.className="auth-err er";err.textContent="La especialidad es obligatoria";return;}
       if(_staffLoginRole==="admin"){err.className="auth-err er";err.textContent="Las cuentas de administrador las crea otro administrador. Regístrate como médico.";return;}
+      if(!document.getElementById("aTerms")?.checked){err.className="auth-err er";err.textContent="Debes aceptar los términos de uso y la política de tratamiento de datos";return;}
       const cred=await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
       const regRole="pendiente";
-      const userData={name,email,role:regRole,phone,createdAt:FB.serverTimestamp()};
+      const userData={name,email,role:regRole,phone,createdAt:FB.serverTimestamp(),consent:{version:CONSENT_VERSION,tipo:"personal",at:FB.serverTimestamp()}};
       if(specialty)userData.especialidad=specialty;
       await FB.setDoc(FB.doc(FB.db,"users",cred.user.uid),userData);
     }
@@ -283,6 +289,45 @@ function showAuthScreen(){
   // Pre-fill email if saved
   const saved=localStorage.getItem("ms_remember_email");
   if(saved){document.getElementById("aEmail").value=saved;_rememberOn=true;document.getElementById("rememberCheck").classList.add("on");}
+}
+
+// ── ACEPTACIÓN DE LA POLÍTICA DE DATOS (Ley 1581 de 2012) ──
+// Cuentas creadas antes de la política (o con una versión anterior) deben aceptarla
+// una vez al entrar. Se guarda la versión y la fecha en el perfil.
+let _consentResolve=null,_consentUid=null;
+function _ensureConsent(uid,role){
+  return new Promise(res=>{
+    _consentResolve=res;_consentUid=uid;
+    dismissSplash();
+    const pac=role==="paciente";
+    document.getElementById("consentTxt").innerHTML=pac
+      ?'Para seguir usando MedIA Suite necesitamos tu autorización para tratar tus datos personales y de salud, que la ley considera datos sensibles. Puedes leer la <a href="./privacidad.html" target="_blank" rel="noopener">política completa</a>.'
+      :'Actualizamos los términos de uso y la política de tratamiento de datos de MedIA Suite. Léelos en la <a href="./privacidad.html" target="_blank" rel="noopener">política completa</a>.';
+    document.getElementById("consentLbl").textContent=pac
+      ?"Autorizo de forma explícita el tratamiento de mis datos personales y de salud para mi atención."
+      :"Acepto los términos de uso y me comprometo a mantener la confidencialidad de la información clínica.";
+    document.getElementById("consentChk").checked=false;
+    document.getElementById("consentErr").textContent="";
+    document.getElementById("consentModal").style.display="flex";
+    document.getElementById("consentModal").dataset.tipo=pac?"paciente":"personal";
+  });
+}
+async function _consentAccept(){
+  const err=document.getElementById("consentErr");
+  if(!document.getElementById("consentChk").checked){err.className="auth-err er";err.textContent="Marca la casilla para continuar";return;}
+  const btn=document.getElementById("consentOk");btn.disabled=true;
+  try{
+    const tipo=document.getElementById("consentModal").dataset.tipo;
+    await FB.updateDoc(FB.doc(FB.db,"users",_consentUid),{consent:{version:CONSENT_VERSION,tipo,at:FB.serverTimestamp()}});
+    document.getElementById("consentModal").style.display="none";
+    const r=_consentResolve;_consentResolve=null;if(r)r(true);
+  }catch(e){err.className="auth-err er";err.textContent="No se pudo guardar: "+e.message;}
+  finally{btn.disabled=false;}
+}
+function _consentDecline(){
+  document.getElementById("consentModal").style.display="none";
+  const r=_consentResolve;_consentResolve=null;if(r)r(false);
+  doSignOut();
 }
 
 // ── CAMBIOS DE ROL EN TIEMPO REAL ──

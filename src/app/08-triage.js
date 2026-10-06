@@ -305,6 +305,7 @@ function rResult(r){
   const pedH=(TD.tipo==="nino"||TD.tipo==="adolescente")?`<div class="cnote"><span style="font-size:.9rem;flex-shrink:0">👨‍👩‍👦</span><span>${t("pedNote")||"Paciente pediatrico / adolescente"}${TD.enino?` — ${TD.enino} años`:""}. ${t("pedNoteSub")||"Confirmar con pediatra."}</span></div>`:"";
   document.getElementById("trc").innerHTML=`
     ${pedH}
+    <div class="ai-note">Sugerencia generada con IA como apoyo. La decisión clínica es del profesional de salud.</div>
     <div class="rcard ${cc}" style="animation:bounceIn .5s cubic-bezier(.34,1.4,.64,1)"><span class="ric">${ic}</span><div class="rlbl">${_esc(r.clasificacion)}</div>
     <div class="rpri">${pm}${r.tiempo_atencion?" · "+_esc(r.tiempo_atencion):""}</div>
     ${attnHtml}${timerHtml}
