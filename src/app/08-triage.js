@@ -68,7 +68,7 @@ function rTriage(){
     if(_patientHC){
       const hcBadge=document.createElement("div");
       hcBadge.style.cssText="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--cy);background:rgba(0,200,240,.08);border:1px solid rgba(0,200,240,.25);border-radius:10px;padding:6px 10px;margin-top:4px;margin-bottom:6px;animation:fadeUp .3s both";
-      hcBadge.innerHTML=`<span>🗂️</span><span>Pre-cargado desde historia clínica de <strong>${_patientHC.name}</strong>. Edita si hay cambios.</span>`;
+      hcBadge.innerHTML=`<span>🗂️</span><span>Pre-cargado desde historia clínica de <strong>${_esc(_patientHC.name)}</strong>. Edita si hay cambios.</span>`;
       card.appendChild(hcBadge);
     }
     const ta=document.createElement("textarea");
@@ -213,7 +213,7 @@ async function callAI(){
     }
     rResult(res);
   }catch(e){
-    document.getElementById("trc").innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.83rem">Error al conectar con la IA.<br><small style="color:var(--mu)">${e.message}</small></div><button class="bsec" onclick="resetT()">← Reintentar</button></div>`;
+    document.getElementById("trc").innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.83rem">Error al conectar con la IA.<br><small style="color:var(--mu)">${_esc(e.message)}</small></div><button class="bsec" onclick="resetT()">← Reintentar</button></div>`;
   }
 }
 
@@ -246,9 +246,9 @@ function rResult(r){
   const timelineHtml=_buildTriageTimeline(qsofa,news2,si,r,elapsed);
   let copilotResultHtml="";
   if((r.red_flags&&r.red_flags.length)||(r.suggested_tests&&r.suggested_tests.length)||r.protocol_hint){
-    const _rfH=r.red_flags&&r.red_flags.length?`<div style="margin-bottom:10px"><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--rd);letter-spacing:1px;margin-bottom:4px">⚠ RED FLAGS DETECTADOS</div>${r.red_flags.map(f=>`<div style="font-size:.74rem;color:var(--rd);margin-bottom:3px;font-weight:600">• ${f}</div>`).join("")}</div>`:"";
-    const _stH=r.suggested_tests&&r.suggested_tests.length?`<div style="margin-bottom:10px"><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--cy);letter-spacing:1px;margin-bottom:6px">🔬 ESTUDIOS SUGERIDOS</div><div style="display:flex;flex-wrap:wrap;gap:4px">${r.suggested_tests.map(ts=>`<span style="font-size:.68rem;padding:3px 8px;border-radius:20px;background:rgba(0,200,240,.1);border:1px solid rgba(0,200,240,.3);color:var(--cy)">${ts}</span>`).join("")}</div></div>`:"";
-    const _phH=r.protocol_hint?`<div><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--gn);letter-spacing:1px;margin-bottom:4px">📋 PROTOCOLO SUGERIDO</div><div style="font-size:.8rem;font-weight:700;color:var(--tx)">${r.protocol_hint}</div></div>`:"";
+    const _rfH=r.red_flags&&r.red_flags.length?`<div style="margin-bottom:10px"><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--rd);letter-spacing:1px;margin-bottom:4px">⚠ RED FLAGS DETECTADOS</div>${r.red_flags.map(f=>`<div style="font-size:.74rem;color:var(--rd);margin-bottom:3px;font-weight:600">• ${_esc(f)}</div>`).join("")}</div>`:"";
+    const _stH=r.suggested_tests&&r.suggested_tests.length?`<div style="margin-bottom:10px"><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--cy);letter-spacing:1px;margin-bottom:6px">🔬 ESTUDIOS SUGERIDOS</div><div style="display:flex;flex-wrap:wrap;gap:4px">${r.suggested_tests.map(ts=>`<span style="font-size:.68rem;padding:3px 8px;border-radius:20px;background:rgba(0,200,240,.1);border:1px solid rgba(0,200,240,.3);color:var(--cy)">${_esc(ts)}</span>`).join("")}</div></div>`:"";
+    const _phH=r.protocol_hint?`<div><div style="font-size:.58rem;font-family:JetBrains Mono,monospace;color:var(--gn);letter-spacing:1px;margin-bottom:4px">📋 PROTOCOLO SUGERIDO</div><div style="font-size:.8rem;font-weight:700;color:var(--tx)">${_esc(r.protocol_hint)}</div></div>`:"";
     copilotResultHtml=`<div class="card" style="border-color:rgba(0,200,240,.3);background:rgba(0,200,240,.04)"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span>🤖</span><div class="clabel" style="margin:0;color:var(--cy)">AI Copilot</div></div>${_rfH}${_stH}${_phH}<div style="font-size:.6rem;color:var(--mu);margin-top:10px;font-style:italic">Sugerencias orientativas. Decisión clínica a cargo del profesional de salud.</div></div>`;
   }
 
@@ -301,22 +301,22 @@ function rResult(r){
   const tM2={adulto:t("adultLbl")||"Adulto",adulto_mayor:t("elderLbl")||"Tercera edad",embarazada:t("pregLbl")||"Embarazada",nino:t("childLbl")||"Pediatrico",adolescente:t("teenLbl")||"Adolescente"};
   const dc={normal:"var(--gn)",warning:"var(--yw)",critical:"var(--rd)"};
   const vcs=[vt.ps?{l:"PA",v:`${vt.ps}/${vt.pd||"—"}`,s:chkPA(vt.ps)}:null,vt.fc?{l:"FC",v:`${vt.fc} lpm`,s:chkFC(vt.fc)}:null,vt.sat?{l:"SatO₂",v:`${vt.sat}%`,s:chkSat(vt.sat)}:null,vt.tem?{l:"Temp",v:`${vt.tem}°C`,s:chkT(vt.tem)}:null,vt.fr?{l:"FR",v:`${vt.fr} rpm`,s:chkFR(vt.fr)}:null].filter(Boolean);
-  const alH=r.alertas_criticas&&r.alertas_criticas.length?`<div style="background:var(--rd-a);border:1px solid rgba(255,58,92,.25);border-radius:8px;padding:9px;margin-top:8px"><div style="font-family:JetBrains Mono,monospace;font-size:.55rem;color:var(--rd);margin-bottom:4px;letter-spacing:1px">ALERTAS CRITICAS</div>${r.alertas_criticas.map(a=>`<div style="font-size:.78rem;color:#ff8fa3;margin-bottom:2px">⚠ ${a}</div>`).join("")}</div>`:"";
+  const alH=r.alertas_criticas&&r.alertas_criticas.length?`<div style="background:var(--rd-a);border:1px solid rgba(255,58,92,.25);border-radius:8px;padding:9px;margin-top:8px"><div style="font-family:JetBrains Mono,monospace;font-size:.55rem;color:var(--rd);margin-bottom:4px;letter-spacing:1px">ALERTAS CRITICAS</div>${r.alertas_criticas.map(a=>`<div style="font-size:.78rem;color:#ff8fa3;margin-bottom:2px">⚠ ${_esc(a)}</div>`).join("")}</div>`:"";
   const pedH=(TD.tipo==="nino"||TD.tipo==="adolescente")?`<div class="cnote"><span style="font-size:.9rem;flex-shrink:0">👨‍👩‍👦</span><span>${t("pedNote")||"Paciente pediatrico / adolescente"}${TD.enino?` — ${TD.enino} años`:""}. ${t("pedNoteSub")||"Confirmar con pediatra."}</span></div>`:"";
   document.getElementById("trc").innerHTML=`
     ${pedH}
-    <div class="rcard ${cc}" style="animation:bounceIn .5s cubic-bezier(.34,1.4,.64,1)"><span class="ric">${ic}</span><div class="rlbl">${r.clasificacion}</div>
-    <div class="rpri">${pm}${r.tiempo_atencion?" · "+r.tiempo_atencion:""}</div>
+    <div class="rcard ${cc}" style="animation:bounceIn .5s cubic-bezier(.34,1.4,.64,1)"><span class="ric">${ic}</span><div class="rlbl">${_esc(r.clasificacion)}</div>
+    <div class="rpri">${pm}${r.tiempo_atencion?" · "+_esc(r.tiempo_atencion):""}</div>
     ${attnHtml}${timerHtml}
     <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:8px">
-      <span class="chip">${tM2[TD.tipo]||""}</span>${TD.semanas?`<span class="chip">${TD.semanas} sem.</span>`:""}${TD.enino?`<span class="chip">${TD.enino} años</span>`:""}
+      <span class="chip">${_esc(tM2[TD.tipo]||"")}</span>${TD.semanas?`<span class="chip">${TD.semanas} sem.</span>`:""}${TD.enino?`<span class="chip">${TD.enino} años</span>`:""}
       <span class="chip">Dolor: ${TD.dolor}/10</span></div></div>
-    <div class="card"><div class="clabel" data-i18n="clinicalAnalysis">${t("clinicalAnalysis")||"Analisis clinico"}</div><div style="font-size:.83rem;line-height:1.65">${r.justificacion}</div>${alH}</div>
+    <div class="card"><div class="clabel" data-i18n="clinicalAnalysis">${t("clinicalAnalysis")||"Analisis clinico"}</div><div style="font-size:.83rem;line-height:1.65">${_esc(r.justificacion)}</div>${alH}</div>
     ${qsofaHtml}${news2Html}${siHtml}${curb65Html}
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
     ${timelineHtml}
     ${copilotResultHtml}
-    <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${a}</span></div>`).join("")}</div>
+    <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${_esc(a)}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
     <div style="display:flex;gap:10px;margin-top:6px;animation:fadeUp .4s .2s both">
       <button class="btn-share" onclick="shareResult()"><span class="bsi">📤</span>Compartir</button>

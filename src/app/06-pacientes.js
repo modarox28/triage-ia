@@ -26,12 +26,12 @@ function _updatePatientHCStrip(){
   if(!strip)return;
   if(!_patientHC){strip.innerHTML="";return;}
   const av=(_patientHC.name||"?")[0].toUpperCase();
-  const aleHtml=(_patientHC.alergias||[]).length?`<div class="pt-ale">⚠️ Alergias: ${_patientHC.alergias.join(", ")}</div>`:"";
+  const aleHtml=(_patientHC.alergias||[]).length?`<div class="pt-ale">⚠️ Alergias: ${_esc(_patientHC.alergias.join(", "))}</div>`:"";
   strip.innerHTML=`<div class="pt-hc-chip">
     <div class="pt-av">${av}</div>
     <div style="flex:1;min-width:0">
-      <div class="pt-name">${_patientHC.name}</div>
-      <div class="pt-sub">${_patientHC.age} años · ${_patientHC.sex==="M"?"Masculino":"Femenino"} · ID: ${_patientHC.doc||"—"}</div>
+      <div class="pt-name">${_esc(_patientHC.name)}</div>
+      <div class="pt-sub">${_patientHC.age} años · ${_patientHC.sex==="M"?"Masculino":"Femenino"} · ID: ${_esc(_patientHC.doc||"—")}</div>
       ${aleHtml}
     </div>
     <button onclick="_clearTriagePatient()" style="background:none;border:none;color:var(--mu);font-size:.85rem;cursor:pointer;padding:4px;flex-shrink:0" title="Cambiar paciente">✕</button>
@@ -125,16 +125,16 @@ async function _searchPatientForTriage(){
       const docSnap=snap.docs[0];
       _triageLookupResult={id:docSnap.id,...docSnap.data()};
       const hc=_triageLookupResult;
-      const aleHtml=hc.alergias?.length?`<div class="lf-ale">⚠️ ALERGIAS: ${hc.alergias.join(", ")}</div>`:"";
-      const antHtml=hc.antecedentes?.length?`<div class="lf-ant">${hc.antecedentes.join(" · ")}</div>`:"";
-      const medHtml=hc.medicacion?.length?`<div class="lf-med">💊 ${hc.medicacion.join(", ")}</div>`:"";
+      const aleHtml=hc.alergias?.length?`<div class="lf-ale">⚠️ ALERGIAS: ${_esc(hc.alergias.join(", "))}</div>`:"";
+      const antHtml=hc.antecedentes?.length?`<div class="lf-ant">${_esc(hc.antecedentes.join(" · "))}</div>`:"";
+      const medHtml=hc.medicacion?.length?`<div class="lf-med">💊 ${_esc(hc.medicacion.join(", "))}</div>`:"";
       res.innerHTML=`<div class="lookup-result-enter">
         <div class="lookup-found-card">
           <div style="display:flex;align-items:center;gap:10px">
-            <div class="pt-av" style="width:40px;height:40px;background:var(--cy-a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:var(--cy);flex-shrink:0">${(hc.name||"?")[0].toUpperCase()}</div>
+            <div class="pt-av" style="width:40px;height:40px;background:var(--cy-a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:var(--cy);flex-shrink:0">${_esc((hc.name||"?")[0].toUpperCase())}</div>
             <div>
-              <div class="lf-name">${hc.name}</div>
-              <div class="lf-meta">${hc.age} años · ${hc.sex==="M"?"Masculino":"Femenino"} · ID: ${hc.doc}</div>
+              <div class="lf-name">${_esc(hc.name)}</div>
+              <div class="lf-meta">${hc.age} años · ${hc.sex==="M"?"Masculino":"Femenino"} · ID: ${_esc(hc.doc)}</div>
             </div>
           </div>
           ${aleHtml}${antHtml}${medHtml}
@@ -146,7 +146,7 @@ async function _searchPatientForTriage(){
     }
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent="Buscar";}
-    if(res)res.innerHTML=`<div class="ib rd lookup-result-enter"><div class="ibl">Error</div><div class="ibt">${e.message}</div></div>`;
+    if(res)res.innerHTML=`<div class="ib rd lookup-result-enter"><div class="ibl">Error</div><div class="ibt">${_esc(e.message)}</div></div>`;
   }
 }
 

@@ -61,7 +61,7 @@ async function analyzeVitcam(){
     const units={fc:"lpm",ps:"mmHg",pd:"mmHg",sat:"%",tem:"°C",fr:"rpm"};
     document.getElementById("vitcamResGrid").innerHTML=Object.entries(extracted).map(([k,v])=>`
       <div class="vitcam-res-item">
-        <div class="vitcam-res-val">${v!==null?v:"—"}</div>
+        <div class="vitcam-res-val">${v!==null?_esc(v):"—"}</div>
         <div class="vitcam-res-lbl">${labels[k]||k} ${v!==null?units[k]||"":""}</div>
       </div>`).join("");
     document.getElementById("vitcamResult").style.display="";
@@ -233,13 +233,13 @@ async function openHandoff(){
       return `<div class="handoff-entry">
         <div class="handoff-entry-cl" style="background:${clrDot[it.clasificacion]||"#888"}"></div>
         <div class="handoff-entry-info">
-          <div class="handoff-entry-top">${it.clasificacion} — ${mM[it.motivo]||it.motivo||"—"}</div>
-          <div class="handoff-entry-sub">${it.tipo||"—"} · ${it.userName||"—"} ${it.atendido?"✓":""}</div>
+          <div class="handoff-entry-top">${_esc(it.clasificacion)} — ${_esc(mM[it.motivo]||it.motivo||"—")}</div>
+          <div class="handoff-entry-sub">${_esc(it.tipo||"—")} · ${_esc(it.userName||"—")} ${it.atendido?"✓":""}</div>
         </div>
         <div class="handoff-entry-time">${dt}</div>
       </div>`;}).join("");
     document.getElementById("handoffList").innerHTML=listHtml||`<div style="font-size:.75rem;color:var(--mu);padding:10px;text-align:center">${tx.noData||"Sin datos."}</div>`;
-  }catch(e){document.getElementById("handoffStats").innerHTML="";document.getElementById("handoffList").innerHTML=`<div style="font-size:.75rem;color:var(--rd);padding:8px">Error: ${e.message}</div>`;}
+  }catch(e){document.getElementById("handoffStats").innerHTML="";document.getElementById("handoffList").innerHTML=`<div style="font-size:.75rem;color:var(--rd);padding:8px">Error: ${_esc(e.message)}</div>`;}
 }
 function closeHandoff(){document.getElementById("handoffOverlay").classList.remove("on");}
 
@@ -326,7 +326,7 @@ function _calcDosP(){
       <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospDose||"Dosis"}</span><span class="dosp-res-val">${doseStr}</span></div>
       <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospVol||"Volumen"}</span><span class="dosp-res-val">${volStr}</span></div>
       <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospMax||"Max"}</span><span class="dosp-res-val">${d.maxDose} mg</span></div>
-      <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospFreq||"Frecuencia"}</span><span class="dosp-res-val" style="font-size:.75rem">${d.freq}</span></div>
+      <div class="dosp-res-row"><span class="dosp-res-lbl">${tx.dospFreq||"Frecuencia"}</span><span class="dosp-res-val" style="font-size:.75rem">${_esc(d.freq)}</span></div>
     </div>
     ${capped?`<div class="dosp-warn">⚠️ ${tx.dospWarn||"Dosis supera el maximo. Usar dosis maxima."}</div>`:""}`;
 }

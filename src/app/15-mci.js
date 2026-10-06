@@ -312,8 +312,8 @@ async function _lookupMciPatient(){
     const d=q.docs[0].data();
     document.getElementById("mciPacNombre").value=d.name||"";
     document.getElementById("mciPacSex").value=d.sex||"";
-    res.innerHTML=`<span style="color:var(--gn)">✓ Paciente encontrado: <b>${d.name}</b> — ${d.age} años</span>`;
-  }catch(e){res.innerHTML=`<span style="color:var(--rd)">Error al buscar: ${e.message}</span>`;}
+    res.innerHTML=`<span style="color:var(--gn)">✓ Paciente encontrado: <b>${_esc(d.name)}</b> — ${_esc(d.age)} años</span>`;
+  }catch(e){res.innerHTML=`<span style="color:var(--rd)">Error al buscar: ${_esc(e.message)}</span>`;}
 }
 
 function _cancelMciPatient(){
@@ -442,10 +442,10 @@ Responde en español. Solo puntos numerados. Lenguaje clínico directo y operati
     const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"deepseek-chat",max_tokens:220,messages:[{role:"user",content:prompt}]})});
     const d=await r.json();
     const txt=d.choices?.[0]?.message?.content?.trim()||"Sin respuesta";
-    if(resultDiv)resultDiv.innerHTML=txt.split("\n").filter(l=>l.trim()).map(l=>`<p style="margin:0 0 6px">${l.replace(/^(\d+[\.\)]\s*)/,'<span style="color:var(--cy);font-weight:700">$1</span>')}</p>`).join("");
+    if(resultDiv)resultDiv.innerHTML=txt.split("\n").filter(l=>l.trim()).map(l=>`<p style="margin:0 0 6px">${_esc(l).replace(/^(\d+[\.\)]\s*)/,'<span style="color:var(--cy);font-weight:700">$1</span>')}</p>`).join("");
     if(btnTxt)btnTxt.textContent="↻ Actualizar recomendación";
   }catch(e){
-    if(resultDiv)resultDiv.innerHTML=`<span style="color:var(--rd);font-size:.74rem">❌ Error: ${e.message}</span>`;
+    if(resultDiv)resultDiv.innerHTML=`<span style="color:var(--rd);font-size:.74rem">❌ Error: ${_esc(e.message)}</span>`;
     if(btnTxt)btnTxt.textContent="↻ Reintentar";
   }finally{
     _mciAILoading=false;

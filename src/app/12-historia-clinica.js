@@ -22,14 +22,15 @@ function addAntCustom(){
   if(v&&!hcAnts.includes(v)){hcAnts.push(v);document.getElementById('antCustom').value='';}
   renderAntChips();
 }
-function removeAnt(v){
+function removeAnt(v){if(typeof v==="number")v=hcAnts[v];  // índice desde el chip (evita meter texto en el onclick)
+  
   hcAnts=hcAnts.filter(x=>x!==v);
   const btn=document.getElementById('antBtn-'+v);
   if(btn)btn.classList.remove('sel');
   renderAntChips();
 }
 function renderAntChips(){
-  document.getElementById('antChips').innerHTML=hcAnts.map(v=>`<span class="ant-chip">${v}<span class="ax" onclick="removeAnt('${v}')">✕</span></span>`).join('');
+  document.getElementById('antChips').innerHTML=hcAnts.map((v,i)=>`<span class="ant-chip">${_esc(v)}<span class="ax" onclick="removeAnt(${i})">✕</span></span>`).join('');
 }
 
 function addAler(){
@@ -37,9 +38,10 @@ function addAler(){
   if(v&&!hcAlers.includes(v)){hcAlers.push(v);document.getElementById('alerInput').value='';}
   renderAlerChips();
 }
-function removeAler(v){hcAlers=hcAlers.filter(x=>x!==v);renderAlerChips();}
+function removeAler(v){if(typeof v==="number")v=hcAlers[v];  // índice desde el chip (evita meter texto en el onclick)
+  hcAlers=hcAlers.filter(x=>x!==v);renderAlerChips();}
 function renderAlerChips(){
-  document.getElementById('alerChips').innerHTML=hcAlers.map(v=>`<span class="ant-chip" style="color:#ff8fa3;border-color:rgba(255,58,92,.25);background:rgba(255,58,92,.08)">${v}<span class="ax" onclick="removeAler('${v}')">✕</span></span>`).join('');
+  document.getElementById('alerChips').innerHTML=hcAlers.map((v,i)=>`<span class="ant-chip" style="color:#ff8fa3;border-color:rgba(255,58,92,.25);background:rgba(255,58,92,.08)">${_esc(v)}<span class="ax" onclick="removeAler(${i})">✕</span></span>`).join('');
 }
 
 function addMedAct(){
@@ -47,9 +49,10 @@ function addMedAct(){
   if(v&&!hcMedActs.includes(v)){hcMedActs.push(v);document.getElementById('medActInput').value='';}
   renderMedActChips();
 }
-function removeMedAct(v){hcMedActs=hcMedActs.filter(x=>x!==v);renderMedActChips();}
+function removeMedAct(v){if(typeof v==="number")v=hcMedActs[v];  // índice desde el chip (evita meter texto en el onclick)
+  hcMedActs=hcMedActs.filter(x=>x!==v);renderMedActChips();}
 function renderMedActChips(){
-  document.getElementById('medActChips').innerHTML=hcMedActs.map(v=>`<span class="ant-chip" style="color:var(--cy);border-color:rgba(0,200,240,.25);background:var(--cy-a)">${v}<span class="ax" onclick="removeMedAct('${v}')">✕</span></span>`).join('');
+  document.getElementById('medActChips').innerHTML=hcMedActs.map((v,i)=>`<span class="ant-chip" style="color:var(--cy);border-color:rgba(0,200,240,.25);background:var(--cy-a)">${_esc(v)}<span class="ax" onclick="removeMedAct(${i})">✕</span></span>`).join('');
 }
 
 async function handleHCPhoto(input){
@@ -78,7 +81,7 @@ Imagen: ${base64.substring(0,100)}... (imagen adjunta)`}
       if(extracted.antecedentes?.length){extracted.antecedentes.forEach(a=>{if(!hcAnts.includes(a))hcAnts.push(a);});renderAntChips();}
       if(extracted.alergias?.length){extracted.alergias.forEach(a=>{if(!hcAlers.includes(a)){hcAlers.push(a);}});renderAlerChips();}
       if(extracted.medicacion?.length){extracted.medicacion.forEach(m=>{if(!hcMedActs.includes(m)){hcMedActs.push(m);}});renderMedActChips();}
-      analysis.innerHTML=`<div class="ib gn"><div class="ibl">Datos extraidos por IA</div><div class="ibt">${extracted.nota||'Datos agregados automaticamente arriba.'}</div></div>`;
+      analysis.innerHTML=`<div class="ib gn"><div class="ibl">Datos extraidos por IA</div><div class="ibt">${_esc(extracted.nota||'Datos agregados automaticamente arriba.')}</div></div>`;
     }catch(e){
       analysis.innerHTML=`<div style="font-size:.76rem;color:var(--mu);padding:8px">No se pudo analizar la imagen automaticamente. Ingresa los datos manualmente.</div>`;
     }
@@ -122,27 +125,27 @@ function _hcSkeleton(n=3){
 function _renderHCItem(id, dt){
   const cols=['#00c8f0','#00e07a','#a855f7','#ffb830','#ff3a5c'];
   const av=(dt.name||'?')[0].toUpperCase();const col=cols[av.charCodeAt(0)%cols.length];
-  const ants=dt.antecedentes?.length?dt.antecedentes.slice(0,3).join(', '):'Sin antecedentes';
-  const alers=dt.alergias?.length?`⚠️ ${dt.alergias.join(', ')}`:'';
-  const safeName=(dt.name||'').replace(/'/g,"\\'");
+  const ants=dt.antecedentes?.length?_esc(dt.antecedentes.slice(0,3).join(', ')):'Sin antecedentes';
+  const alers=dt.alergias?.length?`⚠️ ${_esc(dt.alergias.join(', '))}`:'';
   return`<div class="hc-card" onclick="viewHC('${id}')">
     <div style="display:flex;gap:12px;align-items:flex-start">
-      ${dt.photo?`<img src="${dt.photo}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div class="hc-avatar" style="background:${col}">${av}</div>`}
+      ${dt.photo?`<img src="${_esc(dt.photo)}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div class="hc-avatar" style="background:${col}">${_esc(av)}</div>`}
       <div style="flex:1;min-width:0">
-        <div class="hc-name">${dt.name||'—'}</div>
-        <div class="hc-detail">${dt.age?dt.age+' años · ':''}${dt.sex==='M'?'Masculino':dt.sex==='F'?'Femenino':'Otro'}${dt.doc?` · <span style="font-family:'JetBrains Mono',monospace;font-size:.65rem">${dt.doc}</span>`:''}</div>
+        <div class="hc-name">${_esc(dt.name||'—')}</div>
+        <div class="hc-detail">${dt.age?_esc(dt.age)+' años · ':''}${dt.sex==='M'?'Masculino':dt.sex==='F'?'Femenino':'Otro'}${dt.doc?` · <span style="font-family:'JetBrains Mono',monospace;font-size:.65rem">${_esc(dt.doc)}</span>`:''}</div>
         <div class="hc-detail" style="margin-top:3px">${ants}</div>
         ${alers?`<div class="hc-badge" style="background:var(--rd-a);color:var(--rd)">${alers}</div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:4px">
         <button onclick="event.stopPropagation();_exportHCPDF('${id}')" style="background:none;border:1px solid rgba(0,200,240,.3);border-radius:8px;color:var(--cy);font-size:.72rem;padding:5px 8px;cursor:pointer;transition:all .18s" title="Exportar PDF">📄</button>
-        <button onclick="event.stopPropagation();confirmDeleteHC('${id}','${safeName}')" style="background:none;border:1px solid rgba(255,58,92,.3);border-radius:8px;color:var(--rd);font-size:.72rem;padding:5px 8px;cursor:pointer;transition:all .18s" title="Eliminar historia clínica">🗑️</button>
+        <button onclick="event.stopPropagation();confirmDeleteHC('${id}')" style="background:none;border:1px solid rgba(255,58,92,.3);border-radius:8px;color:var(--rd);font-size:.72rem;padding:5px 8px;cursor:pointer;transition:all .18s" title="Eliminar historia clínica">🗑️</button>
       </div>
     </div>
   </div>`;
 }
 
 function confirmDeleteHC(id, name){
+  if(name===undefined)name=_hcCache?.[id]?.name||"este paciente"; // el nombre no viaja en el onclick
   const dlg=document.getElementById('deleteHCDialog');
   const msg=document.getElementById('deleteHCMsg');
   if(!dlg){
@@ -199,7 +202,7 @@ function loadHC(){
     if(listEl)_refreshHCList(listEl);
   },(e)=>{
     const listEl=document.getElementById('hcList');
-    if(listEl)listEl.innerHTML=`<div class="empty"><div class="etx">Error: ${e.message}</div></div>`;
+    if(listEl)listEl.innerHTML=`<div class="empty"><div class="etx">Error: ${_esc(e.message)}</div></div>`;
   });
 }
 
@@ -220,25 +223,25 @@ function showNewHC(){
 }
 
 function _renderHCDetail(el, id, d){
-  const ants=(d.antecedentes||[]).map(a=>`<span class="chip">${a}</span>`).join('');
-  const alers=(d.alergias||[]).map(a=>`<span class="chip" style="background:var(--rd-a);color:var(--rd)">${a}</span>`).join('');
-  const meds=(d.medicacion||[]).map(m=>`<span class="chip" style="background:var(--cy-a);color:var(--cy)">${m}</span>`).join('');
+  const ants=(d.antecedentes||[]).map(a=>`<span class="chip">${_esc(a)}</span>`).join('');
+  const alers=(d.alergias||[]).map(a=>`<span class="chip" style="background:var(--rd-a);color:var(--rd)">${_esc(a)}</span>`).join('');
+  const meds=(d.medicacion||[]).map(m=>`<span class="chip" style="background:var(--cy-a);color:var(--cy)">${_esc(m)}</span>`).join('');
   const date=d.createdAt?.toDate?.()?.toLocaleDateString('es-ES')||'';
   const av=(d.name||'?')[0].toUpperCase();
   el.innerHTML=`
     <div class="card" style="display:flex;gap:12px;align-items:center;animation:fadeUp .3s both">
-      ${d.photo?`<img src="${d.photo}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0">`:
-        `<div style="width:56px;height:56px;border-radius:50%;background:var(--cy-a);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:var(--cy);flex-shrink:0">${av}</div>`}
+      ${d.photo?`<img src="${_esc(d.photo)}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0">`:
+        `<div style="width:56px;height:56px;border-radius:50%;background:var(--cy-a);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:var(--cy);flex-shrink:0">${_esc(av)}</div>`}
       <div>
-        <div style="font-size:1.05rem;font-weight:700">${d.name||'Sin nombre'}</div>
-        <div class="hc-detail">${d.age?d.age+' años · ':''}${d.sex==='M'?'Masculino':d.sex==='F'?'Femenino':'Otro'}${d.doc?` · <span style="font-family:'JetBrains Mono',monospace">${d.doc}</span>`:''}</div>
-        <div style="font-size:.68rem;color:var(--mu);margin-top:2px">${date}</div>
+        <div style="font-size:1.05rem;font-weight:700">${_esc(d.name||'Sin nombre')}</div>
+        <div class="hc-detail">${d.age?_esc(d.age)+' años · ':''}${d.sex==='M'?'Masculino':d.sex==='F'?'Femenino':'Otro'}${d.doc?` · <span style="font-family:'JetBrains Mono',monospace">${_esc(d.doc)}</span>`:''}</div>
+        <div style="font-size:.68rem;color:var(--mu);margin-top:2px">${_esc(date)}</div>
       </div>
     </div>
     ${ants?`<div class="card" style="animation:fadeUp .3s .05s both"><div class="clabel">Antecedentes</div><div style="display:flex;flex-wrap:wrap;gap:6px">${ants}</div></div>`:''}
     ${alers?`<div class="card" style="animation:fadeUp .3s .1s both"><div class="clabel">Alergias</div><div style="display:flex;flex-wrap:wrap;gap:6px">${alers}</div></div>`:''}
     ${meds?`<div class="card" style="animation:fadeUp .3s .15s both"><div class="clabel">Medicación actual</div><div style="display:flex;flex-wrap:wrap;gap:6px">${meds}</div></div>`:''}
-    ${d.notes?`<div class="card" style="animation:fadeUp .3s .2s both"><div class="clabel">Notas</div><div style="font-size:.84rem;line-height:1.55">${d.notes}</div></div>`:''}
+    ${d.notes?`<div class="card" style="animation:fadeUp .3s .2s both"><div class="clabel">Notas</div><div style="font-size:.84rem;line-height:1.55">${_esc(d.notes)}</div></div>`:''}
   `;
 }
 
@@ -257,7 +260,7 @@ async function viewHC(id){
     if(!snap.exists()){el.innerHTML=`<div class="card" style="color:var(--rd)">Historia no encontrada</div>`;return;}
     const d=snap.data();_hcCache[id]=d;
     _renderHCDetail(el,id,d);
-  }catch(e){el.innerHTML=`<div class="card" style="color:var(--rd)">Error: ${e.message}</div>`;}
+  }catch(e){el.innerHTML=`<div class="card" style="color:var(--rd)">Error: ${_esc(e.message)}</div>`;}
 }
 
 

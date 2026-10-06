@@ -36,7 +36,7 @@ function _renderPresence(docs){
   if(!docs.length){bar.style.display="none";bar.innerHTML="";return;}
   const rl={admin:"Admin",admin_hosp:"Hosp",medico:"Médico",paciente:"Pac"};
   bar.style.display="flex";bar.className="presence-bar";
-  bar.innerHTML=`<div style="font-size:.62rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:1px;width:100%;margin-bottom:2px">🟢 Conectados ahora (${docs.length})</div>${docs.map(d=>`<div class="presence-chip"><span class="pdot"></span>${d.name||d.email?.split("@")[0]||"Usuario"}<span style="font-size:.55rem;opacity:.65;margin-left:2px">${rl[d.role]||""}</span></div>`).join("")}`;
+  bar.innerHTML=`<div style="font-size:.62rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:1px;width:100%;margin-bottom:2px">🟢 Conectados ahora (${docs.length})</div>${docs.map(d=>`<div class="presence-chip"><span class="pdot"></span>${_esc(d.name||d.email?.split("@")[0]||"Usuario")}<span style="font-size:.55rem;opacity:.65;margin-left:2px">${rl[d.role]||""}</span></div>`).join("")}`;
 }
 
 
@@ -83,7 +83,7 @@ function loadCola(){
       if(_colaView==='board')_renderColaBoard();
     }else{_updateColaBadge(_colaData.filter(d=>!d.atendido).length);}
   },(e)=>{
-    if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error: ${e.message}</div>`;
+    if(listEl)listEl.innerHTML=`<div class="card" style="color:var(--rd);font-size:.82rem">Error: ${_esc(e.message)}</div>`;
   });
   if(_colaTimerInterval){clearInterval(_colaTimerInterval);_colaTimerInterval=null;}
   _colaTimerInterval=setInterval(_renderColaTimers,60000);
@@ -228,7 +228,7 @@ function _renderCola(){
     const qsBadge=qs?.risk==="high"?`<span style="font-size:.6rem;font-family:'JetBrains Mono',monospace;background:var(--rd-a);color:var(--rd);border-radius:6px;padding:1px 6px;margin-left:5px;font-weight:700">qSOFA 2+</span>`:"";
     const n2Badge=n2?.risk==="high"?`<span style="font-size:.6rem;font-family:'JetBrains Mono',monospace;background:var(--yw-a);color:var(--yw);border-radius:6px;padding:1px 6px;margin-left:5px;font-weight:700">NEWS2 ${n2.score}</span>`:"";
 
-    const byLine=d.userName?`<div class="cola-by">por ${d.userName}</div>`:"";
+    const byLine=d.userName?`<div class="cola-by">por ${_esc(d.userName)}</div>`:"";
     const atendidoAt=d.atendidoAt?.toDate?.();
     const doneLabel=atendidoAt?`<div class="cola-done-lbl">✓ ${String(atendidoAt.getHours()).padStart(2,"0")}:${String(atendidoAt.getMinutes()).padStart(2,"0")}</div>`:`<div class="cola-done-lbl">✓ ${tx.colaAttended||"Atendido"}</div>`;
 
@@ -242,8 +242,8 @@ function _renderCola(){
           ${isNew?`<span style="font-size:.58rem;font-family:'JetBrains Mono',monospace;background:var(--cy-a);color:var(--cy);border-radius:6px;padding:1px 7px;margin-left:4px;font-weight:700">NUEVO</span>`:""}
           ${qsBadge}${n2Badge}
         </div>
-        <div class="cola-pt">${tM[d.tipo]||d.tipo||"—"}</div>
-        <div class="cola-mot">${mM[d.motivo]||d.motivo||"—"}</div>
+        <div class="cola-pt">${_esc(tM[d.tipo]||d.tipo||"—")}</div>
+        <div class="cola-mot">${_esc(mM[d.motivo]||d.motivo||"—")}</div>
         ${vitLine}
         <div class="cola-times">
           <span class="cola-elapsed" id="elapsed-${d.id}">${elapsedLabel}</span>

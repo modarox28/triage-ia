@@ -84,7 +84,7 @@ function updateUI(){
   const photo=CUPhoto||localStorage.getItem("ms_photo_"+CU?.uid);
   const avInner=photo?`<img id="userAvSidebar" src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span id="userAvSidebar" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">${av}</span>`;
   const sc=document.getElementById("sideChip");
-  if(sc)sc.innerHTML=`<div class="user-av" style="background:${photo?"transparent":col}">${avInner}</div><div><div class="user-name">${name}</div><div class="user-role">${RL[CR]||CR}</div></div>`;
+  if(sc)sc.innerHTML=`<div class="user-av" style="background:${photo?"transparent":col}">${avInner}</div><div><div class="user-name">${_esc(name)}</div><div class="user-role">${RL[CR]||CR}</div></div>`;
   document.getElementById("qrCard").style.display=(CR==="admin"||CR==="medico")?"block":"none";
   const pqr=document.getElementById("patientQRCard");if(pqr)pqr.style.display=(CR==="paciente"&&_patientHC?.doc)?"block":"none";
   if(CR==="paciente"&&_patientHC?.doc){const d=document.getElementById("patientIdDisplay");if(d)d.textContent=_patientHC.doc;}
@@ -253,7 +253,7 @@ function renderNearby(lat,lon,elements){
           if(!elat||!elon)return;
           const name=e.tags?.name||"Centro de salud";
           const am=e.tags?.amenity||"hospital";
-          L.marker([elat,elon]).addTo(_nearbyMap).bindPopup(`<b>${aic[am]||"🏥"} ${name}</b>`);
+          L.marker([elat,elon]).addTo(_nearbyMap).bindPopup(`<b>${aic[am]||"🏥"} ${_esc(name)}</b>`);
         });
         setTimeout(()=>{try{_nearbyMap.invalidateSize();}catch(er){}},300);
       }catch(er){
@@ -272,7 +272,7 @@ function renderNearby(lat,lon,elements){
     const phone=e.tags?.phone||e.tags?.["contact:phone"]||"";
     const elat=e.lat||e.center?.lat;const elon=e.lon||e.center?.lon;
     const gmDir=elat&&elon?`https://www.google.com/maps/dir/?api=1&destination=${elat},${elon}`:"";
-    return`<div class="near-item"${gmDir?` onclick="window.open('${gmDir}','_blank')" style="cursor:pointer"`:""}><span class="near-icon">${aic[am]||"🏥"}</span><div style="flex:1;min-width:0"><div class="near-name">${name}</div>${addr?`<div class="near-addr">${addr}</div>`:""}<div style="display:flex;gap:8px;align-items:center;margin-top:2px">${phone?`<span style="font-size:.65rem;color:var(--mu)">📞 ${phone}</span>`:""}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span class="near-dist">${dist}</span>${gmDir?`<span style="font-size:.6rem;color:var(--cy);opacity:.75">Maps →</span>`:""}</div></div>`;
+    return`<div class="near-item"${gmDir?` onclick="window.open('${gmDir}','_blank')" style="cursor:pointer"`:""}><span class="near-icon">${aic[am]||"🏥"}</span><div style="flex:1;min-width:0"><div class="near-name">${_esc(name)}</div>${addr?`<div class="near-addr">${addr}</div>`:""}<div style="display:flex;gap:8px;align-items:center;margin-top:2px">${phone?`<span style="font-size:.65rem;color:var(--mu)">📞 ${_esc(phone)}</span>`:""}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span class="near-dist">${dist}</span>${gmDir?`<span style="font-size:.6rem;color:var(--cy);opacity:.75">Maps →</span>`:""}</div></div>`;
   }).join("");
 }
 

@@ -236,14 +236,14 @@ function renderHist(){
     const notasBadge=dt.notas?`<span style="font-size:.65rem;background:var(--gn-a);color:var(--gn);padding:1px 6px;border-radius:8px;margin-left:4px">📝</span>`:"";
     const pfx=rolePrefix[dt.userRole]||"";
     const quien=dt.userName||(dt.userEmail?.split("@")[0])||"";
-    const performer=quien?`<span style="font-size:.65rem;color:var(--mu);opacity:.8">👤 ${pfx}${pfx?" ":""}${quien}</span> · `:"";
+    const performer=quien?`<span style="font-size:.65rem;color:var(--mu);opacity:.8">👤 ${pfx}${pfx?" ":""}${_esc(quien)}</span> · `:"";
     const mciTag=dt.esMCI?`<span style="font-size:.62rem;background:rgba(255,128,96,.15);color:#ff8060;padding:1px 5px;border-radius:6px;margin-left:4px">MCI</span>`:"";
     return`<div class="hist-row" onclick="_openHistDetail(${idx})" style="cursor:pointer">
       <span class="hist-b ${cc}">${dt.clasificacion}</span>
       <div style="flex:1;min-width:0">
-        <div style="font-weight:600;font-size:.82rem">${mM[dt.motivo]||dt.motivo||"—"}${notasBadge}${mciTag}</div>
-        <div style="font-size:.69rem;color:var(--mu)">${performer}${dt.tipo||""} · D:${dt.dolor??"-"}/10 · ${date}</div>
-        ${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dt.justificacion.slice(0,80)}...</div>`:""}
+        <div style="font-weight:600;font-size:.82rem">${_esc(mM[dt.motivo]||dt.motivo||"—")}${notasBadge}${mciTag}</div>
+        <div style="font-size:.69rem;color:var(--mu)">${performer}${_esc(dt.tipo||"")} · D:${dt.dolor??"-"}/10 · ${_esc(date)}</div>
+        ${dt.justificacion?`<div style="font-size:.69rem;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esc(dt.justificacion.slice(0,80))}...</div>`:""}
       </div>
       <button onclick="event.stopPropagation();_exportHistPDF(${idx})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.72rem;padding:4px 7px;cursor:pointer;margin-left:6px;touch-action:manipulation" title="Exportar PDF">📄</button>
     </div>`;
@@ -278,8 +278,8 @@ function _renderDashRecent(){
   el.innerHTML=filtered.slice(0,_dashShown).map((dt,i)=>{
     const cc={ROJO:"ro",AMARILLO:"am",VERDE:"ve"}[dt.clasificacion]||"ve";
     const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleDateString(loc,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
-    const quien=dt.userName?`<span style="font-size:.62rem;color:var(--cy);margin-left:4px">· ${dt.userName}</span>`:"";
-    return`<div class="hist-row" style="cursor:pointer" onclick="_openTriageDetail(${i})"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600">${mMD[dt.motivo]||dt.motivo||"—"}</div><div style="font-size:.69rem;color:var(--mu)">${dt.tipo||""} · ${date}${quien}</div></div><button onclick="event.stopPropagation();_exportDashPDF(${i})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.7rem;padding:3px 6px;cursor:pointer;margin-left:4px;touch-action:manipulation" title="PDF">📄</button><span style="color:var(--mu);font-size:.95rem;flex-shrink:0;margin-left:4px">›</span></div>`;
+    const quien=dt.userName?`<span style="font-size:.62rem;color:var(--cy);margin-left:4px">· ${_esc(dt.userName)}</span>`:"";
+    return`<div class="hist-row" style="cursor:pointer" onclick="_openTriageDetail(${i})"><span class="hist-b ${cc}">${dt.clasificacion}</span><div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600">${_esc(mMD[dt.motivo]||dt.motivo||"—")}</div><div style="font-size:.69rem;color:var(--mu)">${_esc(dt.tipo||"")} · ${_esc(date)}${_esc(quien)}</div></div><button onclick="event.stopPropagation();_exportDashPDF(${i})" style="flex-shrink:0;background:none;border:1px solid rgba(255,184,48,.3);border-radius:7px;color:var(--yw);font-size:.7rem;padding:3px 6px;cursor:pointer;margin-left:4px;touch-action:manipulation" title="PDF">📄</button><span style="color:var(--mu);font-size:.95rem;flex-shrink:0;margin-left:4px">›</span></div>`;
   }).join("");
   const hasMore=filtered.length>_dashShown;
   if(moreEl){
@@ -310,19 +310,19 @@ function _showTriageDetail(dt){
   if(dt.news2!=null)scores.push({l:"NEWS2",v:dt.news2,c:dt.news2>=7?"var(--rd)":dt.news2>=5?"var(--yw)":"var(--gn)"});
   if(dt.shockIndex!=null)scores.push({l:"Shock",v:typeof dt.shockIndex==="number"?dt.shockIndex.toFixed(2):dt.shockIndex,c:dt.shockIndex>=1?"var(--rd)":"var(--gn)"});
   if(dt.curb65!=null)scores.push({l:"CURB-65",v:dt.curb65,c:dt.curb65>=3?"var(--rd)":dt.curb65>=2?"var(--yw)":"var(--gn)"});
-  const accionesHtml=dt.acciones?.length?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:6px;font-weight:600">Acciones prioritarias</div>${dt.acciones.map((a,i)=>`<div style="display:flex;gap:7px;margin-bottom:5px;align-items:flex-start"><span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--cy);flex-shrink:0;margin-top:2px;background:var(--cy-a);padding:1px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.8rem;line-height:1.5">${a}</span></div>`).join("")}</div>`:"";
+  const accionesHtml=dt.acciones?.length?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:6px;font-weight:600">Acciones prioritarias</div>${dt.acciones.map((a,i)=>`<div style="display:flex;gap:7px;margin-bottom:5px;align-items:flex-start"><span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--cy);flex-shrink:0;margin-top:2px;background:var(--cy-a);padding:1px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.8rem;line-height:1.5">${_esc(a)}</span></div>`).join("")}</div>`:"";
   const mciTag=dt.esMCI?`<span style="font-size:.62rem;background:rgba(255,128,96,.15);color:#ff8060;padding:1px 6px;border-radius:6px;margin-left:6px">MCI</span>`:"";
   document.getElementById("triageDetailContent").innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:12px">
       <span class="hist-b ${cc}" style="font-size:.88rem;padding:5px 14px">${dt.clasificacion}</span>
-      <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.9rem">${mMD[dt.motivo]||dt.motivo||"—"}${mciTag}</div><div style="font-size:.71rem;color:var(--mu);margin-top:2px">${date}</div></div>
+      <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.9rem">${_esc(mMD[dt.motivo]||dt.motivo||"—")}${mciTag}</div><div style="font-size:.71rem;color:var(--mu);margin-top:2px">${_esc(date)}</div></div>
     </div>
     ${row("Tipo de paciente",dt.tipo)}
     ${dt.pacienteNombre?row("Paciente",dt.pacienteNombre):""}
     ${row("Nivel de dolor",dt.dolor!=null?`${dt.dolor}/10`:null)}
     ${row("Atendido por",dt.userName)}
-    ${dt.notas?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">Notas clínicas</div><div style="font-size:.82rem;line-height:1.55">${dt.notas}</div></div>`:""}
-    ${dt.justificacion?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">Justificación IA</div><div style="font-size:.82rem;line-height:1.55">${dt.justificacion}</div></div>`:""}
+    ${dt.notas?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">Notas clínicas</div><div style="font-size:.82rem;line-height:1.55">${_esc(dt.notas)}</div></div>`:""}
+    ${dt.justificacion?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">Justificación IA</div><div style="font-size:.82rem;line-height:1.55">${_esc(dt.justificacion)}</div></div>`:""}
     ${accionesHtml}
     ${scores.length?`<div style="margin-top:12px"><div style="font-size:.68rem;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Scores clínicos</div><div style="display:flex;gap:8px;flex-wrap:wrap">${scores.map(s=>`<div style="background:var(--bg3);border-radius:10px;padding:9px 14px;text-align:center;flex:1;min-width:64px"><div style="font-size:1.2rem;font-weight:800;color:${s.c}">${s.v}</div><div style="font-size:.65rem;color:var(--mu);margin-top:2px">${s.l}</div></div>`).join("")}</div></div>`:""}
   `;
