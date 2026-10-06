@@ -48,6 +48,7 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 ├── src/
 │   ├── app/                   # Lógica de la interfaz (scripts clásicos, se cargan en orden)
 │   │   ├── firebase-init.js   #   Inicializa Firebase y expone helpers (módulo ES)
+│   │   ├── 00-iconos.js       #   Íconos SVG de la app y reemplazo automático de emojis por íconos
 │   │   ├── 00-estado.js       #   Estado global, auditoría, tema, toast
 │   │   ├── 01-auth.js         #   Login de personal, roles, inactividad
 │   │   ├── 02-voz-notas.js    #   Modo voz y validación de notas clínicas
