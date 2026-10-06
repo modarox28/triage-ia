@@ -11,7 +11,8 @@
       "tests/**",
       "README.md",
       "firestore.rules",
-      "seed-patients.mjs"
+      "seed-patients.mjs",
+      "package-lock.json"
     ]
   },
   "firestore": {
