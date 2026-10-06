@@ -91,9 +91,9 @@ function initAuth(){
           try{localStorage.setItem("ms_role_"+user.uid,CR||"");}catch(_){}
           _watchOwnRole(user.uid);
           if(CUPhoto)localStorage.setItem("ms_photo_"+user.uid,CUPhoto);
-          if(CR==="pendiente"||CR==="rechazado"){
+          if(CR==="pendiente"||CR==="rechazado"||CR==="eliminado"){
             _staffLoginRole=null;
-            _showPendingView(CR==="rechazado");
+            _showPendingView(CR);
             return;
           }
           if(CR==="paciente"){
@@ -136,7 +136,7 @@ function initAuth(){
           await FB.setDoc(FB.doc(FB.db,"users",user.uid),{name:autoName,email:user.email,role:CR,createdAt:FB.serverTimestamp()},{merge:true});
           _staffLoginRole=null;
           _watchOwnRole(user.uid);
-          _showPendingView(false);
+          _showPendingView("pendiente");
           return;
         }
       }catch(e){
@@ -300,7 +300,7 @@ function _watchOwnRole(uid){
     _roleReloading=true;
     try{localStorage.setItem("ms_role_"+uid,role||"");}catch(_){}
     const msg=role==="medico"&&CR==="pendiente"?"✓ Tu cuenta fue aprobada":
-      (!role?"Tu perfil fue eliminado por un administrador":"Un administrador cambió tu rol");
+      (role==="eliminado"||!role?"Tu cuenta fue eliminada por un administrador":"Un administrador cambió tu rol");
     toast(msg);
     _stopRoleWatch();
     setTimeout(()=>window.location.reload(),1500);
@@ -309,18 +309,23 @@ function _watchOwnRole(uid){
 
 // ── CUENTA EN REVISIÓN ──
 // El personal nuevo entra con rol "pendiente" y espera aprobación de un admin.
-function _showPendingView(rejected){
+// state: "pendiente" | "rechazado" | "eliminado"
+function _showPendingView(state){
+  const rejected=state==="rechazado"||state==="eliminado";
   dismissSplash();
   document.getElementById("authScreen").style.display="flex";
   document.getElementById("mainApp").classList.remove("on");
   ["authPatientView","authStaffView","patientRegisterView"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display="none";});
   const v=document.getElementById("authPendingView");if(!v)return;
   v.style.display="";
-  document.getElementById("pendIcon").textContent=rejected?"🚫":"⏳";
-  document.getElementById("pendTitle").textContent=rejected?"Solicitud rechazada":"Cuenta en revisión";
-  document.getElementById("pendMsg").textContent=rejected
-    ?"Un administrador rechazó el acceso de esta cuenta. Si crees que es un error, contacta al administrador de tu hospital."
-    :"Tu cuenta ("+(CU?.email||"")+") fue creada. Un administrador debe aprobarla antes de que puedas ver pacientes y triages.";
+  const T={
+    pendiente:["⏳","Cuenta en revisión","Tu cuenta ("+(CU?.email||"")+") fue creada. Un administrador debe aprobarla antes de que puedas ver pacientes y triages."],
+    rechazado:["🚫","Solicitud rechazada","Un administrador rechazó el acceso de esta cuenta. Si crees que es un error, contacta al administrador de tu hospital."],
+    eliminado:["🗑️","Cuenta eliminada","Un administrador eliminó esta cuenta. Ya no tiene acceso a MedIA Suite. Si crees que es un error, contacta al administrador de tu hospital."],
+  }[state]||[];
+  document.getElementById("pendIcon").textContent=T[0];
+  document.getElementById("pendTitle").textContent=T[1];
+  document.getElementById("pendMsg").textContent=T[2];
   const retry=document.getElementById("pendRetryBtn");if(retry)retry.style.display=rejected?"none":"";
 }
 async function _recheckPending(){
@@ -330,8 +335,8 @@ async function _recheckPending(){
   try{
     const snap=await FB.getDoc(FB.doc(FB.db,"users",CU.uid));
     const role=snap.exists()?snap.data().role:null;
-    if(role&&role!=="pendiente"&&role!=="rechazado"){window.location.reload();return;}
-    if(role==="rechazado"){CR=role;_showPendingView(true);return;}
+    if(role&&role!=="pendiente"&&role!=="rechazado"&&role!=="eliminado"){window.location.reload();return;}
+    if(role==="rechazado"||role==="eliminado"){CR=role;_showPendingView(role);return;}
     toast("Tu cuenta sigue pendiente de aprobación");
   }catch(e){toast("Error: "+e.message);}
   finally{if(btn){btn.disabled=false;btn.textContent="Revisar de nuevo";}}

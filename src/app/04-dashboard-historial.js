@@ -46,11 +46,11 @@ async function loadDash(){
     if(CR==="admin"||CR==="admin_hosp"){
       const umc=document.getElementById("userMgmtCard");if(umc)umc.style.display="";
       const users=await FB.getDocs(FB.collection(FB.db,"users"));
-      const RL={admin:"Admin",admin_hosp:"Adm.Hospital",medico:"Médico",paciente:"Paciente",pendiente:"Pendiente",rechazado:"Rechazado"};
-      const roleIc={admin:"👑",admin_hosp:"🏥",medico:"👨‍⚕️",paciente:"🙋",pendiente:"⏳",rechazado:"🚫"};
-      const roleColors={admin:"var(--yw)",admin_hosp:"var(--pu)",medico:"var(--cy)",paciente:"var(--gn)",pendiente:"var(--yw)",rechazado:"var(--rd)"};
+      const RL={admin:"Admin",admin_hosp:"Adm.Hospital",medico:"Médico",paciente:"Paciente",pendiente:"Pendiente",rechazado:"Rechazado",eliminado:"Eliminado"};
+      const roleIc={admin:"👑",admin_hosp:"🏥",medico:"👨‍⚕️",paciente:"🙋",pendiente:"⏳",rechazado:"🚫",eliminado:"🗑️"};
+      const roleColors={admin:"var(--yw)",admin_hosp:"var(--pu)",medico:"var(--cy)",paciente:"var(--gn)",pendiente:"var(--yw)",rechazado:"var(--rd)",eliminado:"var(--mu)"};
       const cols=["#00c8f0","#00e07a","#a855f7","#ffb830","#ff3a5c"];
-      const ORDER=["pendiente","admin","admin_hosp","medico","paciente","rechazado"];
+      const ORDER=["pendiente","admin","admin_hosp","medico","paciente","rechazado","eliminado"];
       const groups={};ORDER.forEach(r=>groups[r]=[]);
       users.docs.forEach(u=>{const ud=u.data();const r=ud.role||"pendiente";(groups[r]||groups.pendiente).push({u,ud});});
       const btn=(bg,fg)=>`padding:4px 9px;border-radius:7px;font-size:.7rem;font-weight:600;cursor:pointer;border:1px solid ${fg};background:${bg};color:${fg}`;
@@ -72,8 +72,9 @@ async function loadDash(){
             // Tu propia cuenta: no se puede cambiar ni borrar desde aquí (evita quedarte sin admin)
             roleCtrl=`<span style="font-size:.68rem;color:var(--mu);padding:3px 8px;background:var(--bg3);border-radius:6px">👑 Tú</span>`;
           }else if(CR==="admin"){
-            const opts=["admin","admin_hosp","medico","paciente","pendiente","rechazado"];
-            roleCtrl=`<div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><select onchange="changeRole('${uid}',this.value)" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${opts.map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select><button type="button" title="Eliminar perfil" onclick="deleteUserProfile('${uid}')" style="${btn("var(--rd-a)","var(--rd)")};padding:4px 7px">🗑</button></div>`;
+            const opts=["admin","admin_hosp","medico","paciente","pendiente","rechazado","eliminado"];
+            const delBtn=ud.role==="eliminado"?"":`<button type="button" title="Eliminar cuenta" onclick="deleteUserProfile('${uid}')" style="${btn("var(--rd-a)","var(--rd)")};padding:4px 7px">🗑</button>`;
+            roleCtrl=`<div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><select onchange="changeRole('${uid}',this.value)" title="${ud.role==="eliminado"?"Cambia el rol para restaurar la cuenta":"Rol"}" style="padding:3px 7px;border-radius:6px;font-size:.7rem;width:auto;background:var(--bg3);border:1px solid var(--bd);color:var(--tx)">${opts.map(r=>`<option value="${r}" ${ud.role===r?"selected":""}>${RL[r]}</option>`).join("")}</select>${delBtn}</div>`;
           }else{
             roleCtrl=`<span style="font-size:.68rem;font-family:'JetBrains Mono',monospace;color:${roleColors[ud.role]||"var(--mu)"};padding:3px 8px;background:var(--bg3);border-radius:6px">${roleIc[ud.role]||""} ${_esc(RL[ud.role]||ud.role||"")}</span>`;
           }
@@ -137,19 +138,19 @@ async function changeRole(uid,role){
   try{await FB.updateDoc(FB.doc(FB.db,"users",uid),{role});toast("Rol actualizado");loadDash();}
   catch(e){toast("No se pudo cambiar el rol: "+e.message);}
 }
-// Eliminar el perfil de un usuario (solo admin).
-// Borra su documento en Firestore; la cuenta de inicio de sesión sigue existiendo,
-// así que la próxima vez que entre será tratado como cuenta nueva:
-// el personal vuelve a "pendiente" y el paciente vuelve a "paciente".
-// Para borrar también el correo: consola de Firebase → Authentication.
+// Eliminar una cuenta (solo admin).
+// La cuenta queda marcada con rol "eliminado": pierde todo acceso, ve el aviso
+// "Cuenta eliminada" y no puede volver a registrarse con el mismo correo.
+// Se puede restaurar cambiando su rol en el selector.
+// (El correo de inicio de sesión solo se borra desde la consola de Firebase → Authentication.)
 async function deleteUserProfile(uid){
   if(uid===CU?.uid){toast("No puedes eliminar tu propia cuenta");return;}
-  if(!confirm("¿Eliminar este perfil?\n\nLa persona perderá su rol. Si vuelve a entrar con el mismo correo, quedará como cuenta nueva pendiente de aprobación."))return;
+  if(!confirm("¿Eliminar esta cuenta?\n\nPerderá todo acceso y no podrá volver a registrarse con el mismo correo. Puedes restaurarla después cambiando su rol."))return;
   try{
-    await FB.deleteDoc(FB.doc(FB.db,"users",uid));
+    await FB.updateDoc(FB.doc(FB.db,"users",uid),{role:"eliminado",deletedBy:CU.uid,deletedAt:FB.serverTimestamp()});
     try{await FB.deleteDoc(FB.doc(FB.db,"presence",uid));}catch(_){}
-    logAudit("user_profile_deleted",{uid});
-    toast("Perfil eliminado ✓");
+    logAudit("user_deleted",{uid});
+    toast("Cuenta eliminada ✓");
     loadDash();
   }catch(e){toast("Error: "+e.message);}
 }
