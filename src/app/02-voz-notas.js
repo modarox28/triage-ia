@@ -218,6 +218,7 @@ function showApp(){
   dismissSplash();
   document.getElementById("authScreen").style.display="none";
   document.getElementById("mainApp").classList.add("on");
+  if(typeof _queueViewport==="function"){_queueViewport();setTimeout(_queueViewport,400);}
   // Reset triage lookup state for new session
   if(CR!=="paciente"){_triageLookupDone=false;_triageLookupResult=null;}
   buildNav();updateUI();

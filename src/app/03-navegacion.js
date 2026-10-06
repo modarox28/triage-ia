@@ -87,6 +87,7 @@ function _closeMoreSheet(){const sh=document.getElementById("moreSheet");if(sh)s
 
 function navigateTo(id,_fh){
   _curTab=id;
+  document.documentElement.classList.remove("nav-compact");
   if(!_fh)history.pushState({_ms:'tab',id},'');
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
   const sc=document.getElementById("sc-"+id);if(sc)sc.classList.add("on");
@@ -268,6 +269,48 @@ function _checkIOSViewport(){
   document.documentElement.classList.toggle("vp-short",screenH-window.innerHeight>20);
   const on=document.querySelector(".nb.on");if(on&&typeof _curTab!=="undefined"&&_curTab)_markActiveNav(_curTab);
 }
-_checkIOSViewport();
-window.addEventListener("resize",()=>setTimeout(_checkIOSViewport,60));
-window.addEventListener("orientationchange",()=>setTimeout(_checkIOSViewport,300));
+// ── Ajuste del área visible ─────────────────────────────────
+// iOS a veces calcula mal el alto de la pantalla al abrir la app y solo se corrige
+// al girar el teléfono. Por eso se vuelve a medir en todos los momentos en que el
+// navegador puede cambiar ese valor (abrir, volver a la app, girar, teclado) y
+// también unos instantes después de abrir, cuando iOS ya terminó de acomodarse.
+function _syncViewport(){
+  _checkIOSViewport();
+  const vv=window.visualViewport,root=document.documentElement;
+  let gap=0,kb=false;
+  if(vv){
+    const oculto=Math.round(window.innerHeight-(vv.height+vv.offsetTop)); // zona tapada abajo
+    const activo=document.activeElement;
+    const escribiendo=activo&&(/^(INPUT|TEXTAREA|SELECT)$/.test(activo.tagName)||activo.isContentEditable);
+    if(oculto>120&&escribiendo)kb=true;            // teclado abierto
+    else if(oculto>0&&oculto<=120)gap=oculto;      // barra del navegador o zona mal calculada
+  }
+  root.style.setProperty("--vv-gap",gap+"px");
+  root.classList.toggle("kb-open",kb);
+  if(typeof _curTab!=="undefined"&&_curTab)_markActiveNav(_curTab);
+}
+let _vpRaf=0;
+function _queueViewport(){cancelAnimationFrame(_vpRaf);_vpRaf=requestAnimationFrame(_syncViewport);}
+["resize","orientationchange","pageshow","load","focusin","focusout"].forEach(ev=>window.addEventListener(ev,()=>{_queueViewport();setTimeout(_queueViewport,350);}));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){_queueViewport();setTimeout(_queueViewport,400);}});
+if(window.visualViewport){visualViewport.addEventListener("resize",_queueViewport);visualViewport.addEventListener("scroll",_queueViewport);}
+[0,250,800,1800].forEach(ms=>setTimeout(_queueViewport,ms));
+
+// Píldora compacta al bajar con el dedo (como WhatsApp); vuelve al subir o al llegar arriba
+(function(){
+  let ultimo=0,acum=0;
+  function alScroll(e){
+    const el=e.target;if(!el||!el.classList||!el.classList.contains("body"))return;
+    if(window.innerWidth>=768)return;
+    const y=el.scrollTop,d=y-ultimo;ultimo=y;
+    acum=(Math.sign(d)===Math.sign(acum))?acum+d:d;
+    const root=document.documentElement;
+    if(y<40)root.classList.remove("nav-compact");
+    else if(acum>24)root.classList.add("nav-compact");
+    else if(acum<-24)root.classList.remove("nav-compact");
+  }
+  document.addEventListener("scroll",alScroll,{capture:true,passive:true});
+  document.addEventListener("transitionend",e=>{
+    if(e.target&&e.target.id==="bnav"&&e.propertyName==="height"&&typeof _curTab!=="undefined"&&_curTab)_markActiveNav(_curTab);
+  });
+})();

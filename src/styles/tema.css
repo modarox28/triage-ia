@@ -213,3 +213,49 @@ button.stat-card{font:inherit;color:inherit;width:100%;text-align:left;display:f
 .light .dash-crit-lbl{color:#c81e3c;}
 .light .dash-crit-num{color:#d61f45;}
 .light .dash-crit.calm .dash-crit-num{color:#15803d;}
+
+/* ── Barra inferior tipo píldora con efecto vidrio (estilo iOS 26 / WhatsApp) ──
+   Flota sobre el contenido y respeta la barrita de gestos de iPhone y Android:
+   --nav-gap = espacio entre la píldora y el borde inferior.
+   · iPhone: el área segura mide ~34px; la píldora se apoya un poco dentro (como iOS 26).
+   · Android con gestos (Chrome reporta el área segura en pantalla completa) o sin ella: mínimo 14px.
+   · --vv-gap lo calcula 03-navegacion.js cuando el navegador deja zona oculta abajo. */
+@media(max-width:767px){
+  :root{--nav-h:62px;--nav-gap:max(14px,calc(env(safe-area-inset-bottom,0px) - 8px));--nav-side:max(14px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px));}
+  html.vp-short{--nav-gap:12px;}
+  .bottom-nav{
+    left:50%;right:auto;bottom:calc(var(--nav-gap) + var(--vv-gap,0px));
+    width:min(500px,calc(100% - var(--nav-side)*2));height:var(--nav-h);
+    transform:translateX(-50%);padding:5px;gap:2px;border-radius:999px;overflow:visible;
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02)),rgba(16,24,42,.58);
+    backdrop-filter:blur(24px) saturate(190%);-webkit-backdrop-filter:blur(24px) saturate(190%);
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(255,255,255,.05),0 12px 32px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.25);
+    transition:height .25s cubic-bezier(.3,1.3,.6,1),bottom .25s ease,opacity .2s,transform .25s;
+  }
+  .light .bottom-nav{
+    background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.45)),rgba(240,244,250,.55);
+    border:1px solid rgba(255,255,255,.7);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 30px rgba(15,25,45,.16),0 1px 3px rgba(15,25,45,.1);
+  }
+  .nb{padding:4px 2px;gap:2px;justify-content:center;border-radius:999px;min-width:0;}
+  .nb .ni{height:24px;}
+  .nb .nl{font-size:.64rem;transition:opacity .18s,max-height .22s;max-height:16px;}
+  .nb:active{opacity:1;transform:scale(.94);}
+  /* Burbuja de vidrio que se desliza a la pestaña activa */
+  .nind{border-radius:999px;background:rgba(255,255,255,.13);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 0 0 1px rgba(255,255,255,.06);
+    transition:left .38s cubic-bezier(.3,1.5,.5,1),width .38s cubic-bezier(.3,1.5,.5,1),top .25s,height .25s,opacity .2s;}
+  .light .nind{background:rgba(0,153,187,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 0 0 1px rgba(0,153,187,.12);}
+  /* Al bajar con el dedo la píldora se encoge (solo íconos); al subir vuelve */
+  html.nav-compact .bottom-nav{--nav-h:50px;height:50px;}
+  html.nav-compact .nb .nl{opacity:0;max-height:0;}
+  /* Con el teclado abierto la barra se oculta para no tapar los campos */
+  html.kb-open .bottom-nav{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(20px);}
+  /* El contenido termina por encima de la píldora */
+  .body{padding-bottom:calc(62px + var(--nav-gap) + 18px)!important;}
+  #voiceFab{bottom:calc(62px + var(--nav-gap) + 14px);}
+  #voiceBanner{bottom:calc(62px + var(--nav-gap) + 20px);}
+  /* Menú "Más": hoja que respeta la barrita de gestos */
+  .more-panel{padding-bottom:calc(max(14px,env(safe-area-inset-bottom,0px)) + 10px);}
+}
