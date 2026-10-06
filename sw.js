@@ -1,4 +1,4 @@
-const CACHE = 'media-suite-v43';
+const CACHE = 'media-suite-v44';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -7,6 +7,7 @@ const ASSETS = [
   './apple-touch-icon.png',
   './icon.svg',
   './favicon-32.png',
+  './icon-maskable-192.png',
   './icon-maskable-512.png'
 ];
 
