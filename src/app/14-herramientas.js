@@ -52,7 +52,7 @@ async function analyzeVitcam(){
   try{
     const prompt="Analiza esta imagen de un monitor de signos vitales medico. Extrae SOLO los siguientes valores si son visibles. Responde UNICAMENTE con un JSON valido con estas claves exactas (usa null si no se ve el valor): {\"fc\":...,\"ps\":...,\"pd\":...,\"sat\":...,\"tem\":...,\"fr\":...}. fc=frecuencia cardiaca lpm, ps=presion sistolica mmHg, pd=presion diastolica mmHg, sat=saturacion O2 %, tem=temperatura C, fr=frecuencia respiratoria rpm.";
     const messages=[{role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:"data:image/jpeg;base64,"+_vitcamB64}}]}];
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"deepseek-chat",max_tokens:200,messages})});
+    const r=await _aiFetch({model:"deepseek-chat",max_tokens:200,messages});
     const d=await r.json();
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const extracted=JSON.parse(txt);

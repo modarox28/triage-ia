@@ -202,7 +202,7 @@ async function callAI(){
   }
   const prompt=buildTriagePrompt(TD,CL,_patientHC);
   try{
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"deepseek-chat",max_tokens:750,messages:[{role:"user",content:prompt}]})});
+    const r=await _aiFetch({model:"deepseek-chat",max_tokens:750,messages:[{role:"user",content:prompt}]});
     const d=await r.json();
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
     const res=JSON.parse(txt);

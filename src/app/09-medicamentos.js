@@ -43,7 +43,7 @@ async function buscarDrug(){
   try{
     const _lr2=({es:'español',en:'English',pt:'português',fr:'français',de:'Deutsch',ja:'日本語'})[CL]||'español';
     const prompt=`Informacion farmacologica sobre: "${nm}".${hcCtx} Responde valores en ${_lr2}. SOLO JSON sin backticks:\n{"nombre_comercial":"...","nombre_generico":"...","para_que_sirve":"...","dosis_tipica":"...","como_tomar":"...","efectos_secundarios":"...","contraindicaciones":"...","interacciones_comunes":"...","advertencias":"...","alerta_paciente":"","contraindicado_paciente":false}`;
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"deepseek-chat",max_tokens:900,messages:[{role:"user",content:prompt}]})});
+    const r=await _aiFetch({model:"deepseek-chat",max_tokens:900,messages:[{role:"user",content:prompt}]});
     const d=await r.json();
     const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     _lastDrugInfo={inf,nm};
@@ -152,7 +152,7 @@ async function checkInt(){
   document.getElementById("ir").innerHTML=`<div class="card"><div class="ldg"><div class="sp"></div>Verificando interacciones...</div></div>`;
   try{
     const _lr3=({es:'español',en:'English',pt:'português',fr:'français',de:'Deutsch',ja:'日本語'})[CL]||'español';
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. Responde valores en ${_lr3}. SOLO JSON sin backticks:\n{"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]})});
+    const r=await _aiFetch({model:"deepseek-chat",max_tokens:700,messages:[{role:"user",content:`Interacciones entre: ${intDrugs.join(", ")}. Responde valores en ${_lr3}. SOLO JSON sin backticks:\n{"nivel_riesgo":"BAJO"|"MODERADO"|"ALTO"|"CONTRAINDICADO","resumen":"...","interacciones":[{"par":"...","descripcion":"...","severidad":"leve|moderada|grave"}],"recomendacion":"...","consultar_medico":true|false}`}]});
     const d=await r.json();const inf=JSON.parse(d.choices[0].message.content.replace(/```json|```/g,"").trim());
     const cm={BAJO:"gn",MODERADO:"yw",ALTO:"rd",CONTRAINDICADO:"rd"};const im={BAJO:"✅",MODERADO:"⚠️",ALTO:"🚨",CONTRAINDICADO:"⛔"};
     document.getElementById("ir").innerHTML=`<div class="card"><div class="ib ${cm[inf.nivel_riesgo]||"yw"}" style="margin-bottom:10px"><div class="ibl">${im[inf.nivel_riesgo]||"⚠️"} Riesgo: ${_esc(inf.nivel_riesgo)}</div><div class="ibt">${_esc(inf.resumen)}</div></div>${(inf.interacciones||[]).map(i=>`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-weight:600;font-size:.8rem;margin-bottom:3px">💊 ${_esc(i.par)}</div><div style="font-size:.76rem;color:var(--mu)">${_esc(i.descripcion)}</div></div>`).join("")}<div class="ib cy" style="margin-top:9px"><div class="ibl">Recomendacion</div><div class="ibt">${_esc(inf.recomendacion)}</div></div>${inf.consultar_medico?`<div class="wnote" style="color:var(--rd);border-color:rgba(255,58,92,.2);background:var(--rd-a)">Consulta a tu medico antes de combinar estos medicamentos.</div>`:""}</div>`;

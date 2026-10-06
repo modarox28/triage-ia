@@ -439,7 +439,7 @@ Proporciona exactamente 3 puntos concisos (máx 90 palabras en total):
 Responde en español. Solo puntos numerados. Lenguaje clínico directo y operativo.`;
 
   try{
-    const r=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"deepseek-chat",max_tokens:220,messages:[{role:"user",content:prompt}]})});
+    const r=await _aiFetch({model:"deepseek-chat",max_tokens:220,messages:[{role:"user",content:prompt}]});
     const d=await r.json();
     const txt=d.choices?.[0]?.message?.content?.trim()||"Sin respuesta";
     if(resultDiv)resultDiv.innerHTML=txt.split("\n").filter(l=>l.trim()).map(l=>`<p style="margin:0 0 6px">${_esc(l).replace(/^(\d+[\.\)]\s*)/,'<span style="color:var(--cy);font-weight:700">$1</span>')}</p>`).join("");

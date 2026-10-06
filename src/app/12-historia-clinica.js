@@ -67,14 +67,12 @@ async function handleHCPhoto(input){
     analysis.innerHTML=`<div class="ldg"><div class="sp"></div>Analizando documento con IA...</div>`;
     try{
       const base64=hcPhoto.split(',')[1];
-      const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'deepseek-chat',max_tokens:600,messages:[
+      const r=await _aiFetch({model:'deepseek-chat',max_tokens:600,messages:[
           {role:'user',content:`Analiza esta imagen de documento medico y extrae antecedentes, alergias y medicacion actual si los hay. Si no es un documento medico, indica que no se encontro informacion medica. SOLO JSON:
 {"antecedentes":["..."],"alergias":["..."],"medicacion":["..."],"nota":"..."}
 
 Imagen: ${base64.substring(0,100)}... (imagen adjunta)`}
-        ]})
-      });
+        ]});
       const d=await r.json();
       const txt=d.choices[0].message.content.replace(/\`\`\`json|\`\`\`/g,'').trim();
       const extracted=JSON.parse(txt);

@@ -3,6 +3,26 @@
 // que se cargan en orden numérico desde index.html.
 
 const PROXY="https://triage-ia-proxy.mdq2804.workers.dev/";
+// Llamada a la IA a través del Worker. Envía el token de la sesión de Firebase para
+// que el Worker verifique quién consulta y aplique el límite diario. En el modo demo
+// no hay token y el Worker aplica un cupo pequeño por IP.
+// Si el Worker rechaza la consulta, lanza un error con un mensaje para el usuario.
+async function _aiFetch(payload){
+  const headers={"Content-Type":"application/json"};
+  try{
+    const u=FB?.auth?.currentUser;
+    if(u&&typeof u.getIdToken==="function")headers.Authorization="Bearer "+await u.getIdToken();
+  }catch(_){}
+  const r=await fetch(PROXY,{method:"POST",headers,body:JSON.stringify(payload)});
+  if(!r.ok&&[400,401,403,429,503].includes(r.status)){
+    let j={};try{j=await r.clone().json();}catch(_){}
+    throw new Error(j.error||("La IA no está disponible ("+r.status+")"));
+  }
+  const left=r.headers.get("X-IA-Restantes");
+  if(left!==null&&Number(left)<=3)toast(`Te quedan ${left} consultas de IA hoy`);
+  return r;
+}
+
 // Escapa texto antes de insertarlo con innerHTML (evita inyección de HTML/JS
 // con nombres o correos escritos por los usuarios).
 function _esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
