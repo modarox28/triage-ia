@@ -1,13 +1,62 @@
-# MedIA Suite — Triage hospitalario con IA
+<div align="center">
 
-![Pruebas](https://github.com/modarox28/triage-ia/actions/workflows/tests.yml/badge.svg)
+# MedIA Suite
 
-PWA médica para clasificación de urgencias (triage) y gestión de medicamentos, con asistente de inteligencia artificial.
+**Triage de urgencias con apoyo de IA, en una app web instalable**
 
-**App:** https://media-suite-6f432.web.app
-**Probar sin registro:** https://media-suite-6f432.web.app/?demo=1 (o el botón "Probar demo" en la pantalla de inicio)
+[![Pruebas](https://github.com/modarox28/triage-ia/actions/workflows/tests.yml/badge.svg)](https://github.com/modarox28/triage-ia/actions/workflows/tests.yml)
+![Plan gratuito](https://img.shields.io/badge/Firebase-plan%20Spark-orange)
+![Sin frameworks](https://img.shields.io/badge/JavaScript-sin%20frameworks-yellow)
+![PWA](https://img.shields.io/badge/PWA-Android%20%C2%B7%20iOS%20%C2%B7%20PC-5a0fc8)
 
-El modo demo entra como administrador con pacientes, triages, cola y solicitudes de acceso ficticias. Funciona con una base de datos en memoria (`src/app/18-demo.js`): no toca Firestore, no gasta cuota y todo se reinicia al salir. La IA sí es real, con un cupo de 15 consultas al día por visitante.
+[**Probar la demo**](https://media-suite-6f432.web.app/?demo=1) · [Página del proyecto](https://modarox28.github.io/medai-lander/) · [App](https://media-suite-6f432.web.app)
+
+<img src="docs/img/recorrido.gif" width="230" alt="Recorrido por la app en un celular">
+&nbsp;
+<img src="docs/img/m-cola.webp" width="230" alt="Cola de espera por prioridad">
+&nbsp;
+<img src="docs/img/m-hc.webp" width="230" alt="Historia clínica del paciente">
+
+</div>
+
+## El problema
+
+En una sala de urgencias, el orden de atención depende de clasificar bien a cada paciente y de no perder de vista cuánto lleva esperando. Muchas veces se hace en papel o de memoria. MedIA Suite lo digitaliza:
+
+- **Clasifica** a cada paciente en rojo, amarillo o verde según sus signos vitales y síntomas, con un tiempo máximo de espera.
+- **Ordena la cola** en tiempo real para todo el equipo y **avisa** cuando un paciente rojo supera su tiempo.
+- **Sugiere** con IA la prioridad y las primeras acciones, explicando por qué. La decisión siempre es del médico.
+- **Guarda** la historia clínica, con búsqueda por nombre o documento y exportación a PDF.
+
+La demo no pide registro: entra como administrador con pacientes ficticios, en una base de datos en memoria que se reinicia al salir.
+
+## Lo más interesante técnicamente
+
+| Reto | Cómo lo resolví |
+|------|-----------------|
+| Usar IA sin exponer la API key ni pagar servidores | Un **Cloudflare Worker** gratuito hace de proxy: verifica la firma del token de Firebase, lee el rol del usuario y aplica un cupo diario en KV. La clave nunca llega al navegador. |
+| Datos clínicos protegidos sin backend propio | **Reglas de Firestore por rol** (paciente, médico, admin de hospital, admin). Nadie puede asignarse un rol, ni siquiera manipulando el navegador. |
+| Restablecer el PIN de un paciente sin Cloud Functions (plan gratis) | El Worker firma un JWT con una cuenta de servicio y llama a la API de administración de Firebase Auth. |
+| Buscar "rodri" y encontrar "Rodríguez" en una base que no busca texto parcial | Cada historia guarda **claves de búsqueda** normalizadas (sin tildes, prefijos de nombre y documento). |
+| Que cualquiera pueda probarla sin cuentas ni gastar cuota | **Modo demo** con un Firebase simulado en memoria y la misma interfaz real. |
+| Confiar en los cálculos clínicos | **59 pruebas unitarias** de scores (qSOFA, NEWS2, HEART…) contra sus criterios publicados, más **7 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
+| Funcionar bien en celular | PWA instalable, barra inferior que respeta la barra de gestos de iOS y Android, tema claro/oscuro y 6 idiomas. |
+
+## Capturas
+
+| Inicio (celular) | Scores clínicos | Escritorio |
+|:-:|:-:|:-:|
+| <img src="docs/img/m-dash.webp" width="220" alt="Inicio con críticos y cifras del día"> | <img src="docs/img/m-scores.webp" width="220" alt="Calculadoras de scores clínicos"> | <img src="docs/img/d-dash.webp" width="420" alt="Inicio en computador"> |
+
+## Autor
+
+**Moisés** ([@modarox28](https://github.com/modarox28)), estudiante de Ingeniería de Sistemas en la Universidad Autónoma del Caribe, Colombia. Diseñé y desarrollé el proyecto completo: interfaz, lógica clínica, seguridad del servidor y pruebas.
+
+> Proyecto académico. Es una herramienta de apoyo a la decisión clínica, no un dispositivo médico certificado.
+
+---
+
+# Documentación técnica
 
 ## Módulos
 
@@ -87,6 +136,7 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   └── utils/                 # Validación de signos vitales
 ├── cloudflare-worker/
 │   └── worker.js              # Proxy de IA (se pega en el panel de Cloudflare)
+├── docs/img/                  # Capturas y GIF de este README
 ├── tests/                     # Pruebas: scores clínicos, signos vitales y seguridad del Worker
 ├── .github/workflows/         # Ejecuta las pruebas en GitHub en cada push
 ├── firestore.rules            # Reglas de seguridad de la base de datos

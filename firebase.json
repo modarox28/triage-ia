@@ -9,6 +9,7 @@
       "cloudflare-worker/**",
       "package.json",
       "tests/**",
+      "docs/**",
       "README.md",
       "firestore.rules",
       "seed-patients.mjs",
