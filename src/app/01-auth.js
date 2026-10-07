@@ -271,6 +271,7 @@ async function doSignOut(){
   ["dr","ir"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML="";});
   if(_hcUnsub){_hcUnsub();_hcUnsub=null;}_hcCache={};
   _stopRoleWatch();
+  if(typeof detenerAvisos==="function")detenerAvisos();
   if(CR==="paciente"){CR=null;CU=null;try{await FB.signOut(FB.auth);}catch(e){}showAuthScreen();return;}
   await logAudit("logout");
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}

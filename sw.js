@@ -1,4 +1,4 @@
-const CACHE = 'media-suite-v48';
+const CACHE = 'media-suite-v49';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -58,4 +58,13 @@ self.addEventListener('fetch', e => {
       }).catch(() => cached);
     })
   );
+});
+
+// Tocar la notificación de "paciente rojo vencido" abre la app en la cola
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(cs => {
+    if (cs.length) { cs[0].focus(); cs[0].postMessage({type: 'OPEN_COLA'}); }
+    else self.clients.openWindow('./index.html');
+  }));
 });

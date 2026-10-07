@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="./src/styles/clinical.css?v=4">
 <link rel="stylesheet" href="./src/styles/queue.css?v=4">
 <link rel="stylesheet" href="./src/styles/ios.css?v=5">
-<link rel="stylesheet" href="./src/styles/tema.css?v=16">
+<link rel="stylesheet" href="./src/styles/tema.css?v=17">
 </head>
 <body>
 
@@ -1044,6 +1044,11 @@
               <span class="set-txt"><b id="setThemeT">Modo oscuro</b><small id="setThemeS">Toca para cambiar a claro</small></span>
               <span class="set-switch" id="setThemeSw" aria-hidden="true"><i></i></span>
             </button>
+            <button type="button" class="set-row" id="setAvisosRow" onclick="toggleAvisos()" style="display:none">
+              <span class="set-ic set-ic-alert"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span>
+              <span class="set-txt"><b>Avisos de pacientes rojos</b><small id="setAvisosS">En la app</small></span>
+              <span class="set-switch on" id="setAvisosSw" aria-hidden="true"><i></i></span>
+            </button>
           </div>
           <div class="set-cap set-anim">Personalización</div>
           <div class="set-group set-anim">
@@ -1187,8 +1192,8 @@
 <script src="./src/app/00-iconos.js?v=20"></script>
 <script src="./src/app/00-busqueda.js?v=20"></script>
 <script src="./src/app/00-estado.js?v=20"></script>
-<script src="./src/app/01-auth.js?v=20"></script>
-<script src="./src/app/02-voz-notas.js?v=20"></script>
+<script src="./src/app/01-auth.js?v=22"></script>
+<script src="./src/app/02-voz-notas.js?v=22"></script>
 <script src="./src/app/03-navegacion.js?v=20"></script>
 <script src="./src/app/04-dashboard-historial.js?v=20"></script>
 <script src="./src/app/05-perfil-qr.js?v=20"></script>
@@ -1208,7 +1213,8 @@
 <script src="./src/app/19-pdf.js?v=20"></script>
 <script src="./src/app/20-pin.js?v=20"></script>
 <script src="./src/app/21-estadisticas.js?v=20"></script>
-<script src="./src/app/22-ajustes.js?v=20"></script>
+<script src="./src/app/22-ajustes.js?v=22"></script>
 <script src="./src/app/23-guia.js?v=1"></script>
+<script src="./src/app/24-avisos.js?v=1"></script>
 </body>
 </html>
