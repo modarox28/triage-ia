@@ -201,24 +201,46 @@ async function callAI(){
     return;
   }
   const prompt=buildTriagePrompt(TD,CL,_patientHC);
+  let res,motivoSinIA="";
   try{
-    const r=await _aiFetch({model:"deepseek-chat",max_tokens:750,messages:[{role:"user",content:prompt}]});
+    if(!navigator.onLine)throw new Error("Sin conexión");
+    // Si la IA no contesta en 25 s (conexión lenta) se sigue con la clasificación local
+    const r=await Promise.race([_aiFetch({model:"deepseek-chat",max_tokens:750,messages:[{role:"user",content:prompt}]}),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("La IA tardó demasiado en responder")),25000))]);
     const d=await r.json();
     const txt=d.choices[0].message.content.replace(/```json|```/g,"").trim();
-    const res=JSON.parse(txt);
-    if(FB&&CU&&CR!=="paciente"){
-      const triageData={...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userName:uName(),userRole:CR||"",userEmail:CU?.email||"",userId:CU?.uid||""};
-      if(!navigator.onLine){_queueOfflineTriage(triageData);}
-      else{try{await saveTriage(FB,{...triageData,createdAt:FB.serverTimestamp()});logAudit("triage_completed",{clasificacion:res.clasificacion,motivo:TD.motivo,tipo:TD.tipo});}catch(e){_queueOfflineTriage(triageData);}}
-    }
-    rResult(res);
+    res=JSON.parse(txt);
+    if(!["ROJO","AMARILLO","VERDE"].includes(res.clasificacion))throw new Error("Respuesta de la IA incompleta");
   }catch(e){
-    document.getElementById("trc").innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.83rem">Error al conectar con la IA.<br><small style="color:var(--mu)">${_esc(e.message)}</small></div><button class="bsec" onclick="resetT()">← Reintentar</button></div>`;
+    // Sin IA no se pierde el triage: clasificación provisional con las reglas de signos vitales
+    if(typeof clasificarSinIA!=="function"){
+      document.getElementById("trc").innerHTML=`<div class="card"><div style="color:var(--rd);font-size:.83rem">Error al conectar con la IA.<br><small style="color:var(--mu)">${_esc(e.message)}</small></div><button class="bsec" onclick="resetT()">← Reintentar</button></div>`;
+      return;
+    }
+    res=clasificarSinIA(TD);motivoSinIA=e.message||"Sin conexión";
   }
+  if(FB&&CU&&CR!=="paciente"){
+    const triageData={...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userName:uName(),userRole:CR||"",userEmail:CU?.email||"",userId:CU?.uid||""};
+    if(res.local)triageData.sinIA=true;
+    await _guardarTriage(triageData);
+    logAudit("triage_completed",{clasificacion:res.clasificacion,motivo:TD.motivo,tipo:TD.tipo,sinIA:!!res.local});
+  }
+  rResult(res,motivoSinIA);
+}
+
+// Guarda el triage sin bloquear la pantalla: sin conexión, o si Firestore no confirma en 8 s,
+// queda en la cola local del dispositivo con el mismo id y se sincroniza al volver la conexión.
+async function _guardarTriage(data){
+  const id=typeof newTriageId==="function"?newTriageId():undefined;
+  if(!navigator.onLine&&!window._demoMode){_queueOfflineTriage({...data,_id:id});return;}
+  try{
+    await Promise.race([saveTriage(FB,{...data,createdAt:FB.serverTimestamp()},id),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),8000))]);
+  }catch(e){_queueOfflineTriage({...data,_id:id});}
 }
 
 let _lastResult=null;
-function rResult(r){
+function rResult(r,motivoSinIA){
   const elapsed=_getTriageElapsed();
   _stopTriageTimer();
   const timerBadge=document.getElementById("triageTimerBadge");if(timerBadge)timerBadge.style.display="none";
@@ -305,7 +327,7 @@ function rResult(r){
   const pedH=(TD.tipo==="nino"||TD.tipo==="adolescente")?`<div class="cnote"><span style="font-size:.9rem;flex-shrink:0">👨‍👩‍👦</span><span>${t("pedNote")||"Paciente pediatrico / adolescente"}${TD.enino?` — ${TD.enino} años`:""}. ${t("pedNoteSub")||"Confirmar con pediatra."}</span></div>`:"";
   document.getElementById("trc").innerHTML=`
     ${pedH}
-    <div class="ai-note">Sugerencia generada con IA como apoyo. La decisión clínica es del profesional de salud.</div>
+    ${r.local?`<div class="ai-note sin-ia"><b>Sin IA: clasificación provisional.</b> ${_esc(motivoSinIA||"Sin conexión")}. Se calculó con los umbrales de signos vitales, NEWS2 y qSOFA, y el triage ${navigator.onLine?"se guardó":"quedó guardado en este dispositivo y se enviará al volver la conexión"}. Confírmala con criterio clínico.</div>`:`<div class="ai-note">Sugerencia generada con IA como apoyo. La decisión clínica es del profesional de salud.</div>`}
     <div class="rcard ${cc}" style="animation:bounceIn .5s cubic-bezier(.34,1.4,.64,1)"><span class="ric">${ic}</span><div class="rlbl">${_esc(r.clasificacion)}</div>
     <div class="rpri">${pm}${r.tiempo_atencion?" · "+_esc(r.tiempo_atencion):""}</div>
     ${attnHtml}${timerHtml}
@@ -317,7 +339,7 @@ function rResult(r){
     ${vcs.length?`<div class="card"><div class="clabel">Signos vitales</div>${vcs.map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><div style="width:8px;height:8px;border-radius:50%;background:${dc[v.s]};flex-shrink:0;box-shadow:0 0 6px ${dc[v.s]}55;"></div><div style="flex:1;font-size:.76rem;color:var(--mu)">${v.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:.84rem;font-weight:700;color:${dc[v.s]}">${v.v}</div></div>`).join("")}</div>`:""}
     ${timelineHtml}
     ${copilotResultHtml}
-    <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${r.acciones.map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${_esc(a)}</span></div>`).join("")}</div>
+    <div class="card"><div class="clabel">${t("priorityActions")||"Acciones prioritarias"}</div>${(r.acciones||[]).map((a,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="font-family:JetBrains Mono,monospace;font-size:.64rem;color:var(--cy);flex-shrink:0;margin-top:3px;background:var(--cy-a);padding:2px 5px;border-radius:4px">${String(i+1).padStart(2,"0")}</span><span style="font-size:.84rem;line-height:1.55">${_esc(a)}</span></div>`).join("")}</div>
     <div class="wnote">${t("disclaimer")}</div>
     <div style="display:flex;gap:10px;margin-top:6px;animation:fadeUp .4s .2s both">
       <button class="btn-share" onclick="shareResult()"><span class="bsi">📤</span>Compartir</button>

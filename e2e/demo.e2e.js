@@ -138,6 +138,33 @@ test("aviso cuando un paciente rojo supera su tiempo", async () => {
   await ctx.close();
 });
 
+test("sin IA ni conexión el triage no se pierde: clasificación provisional y queda en la cola", async () => {
+  const { ctx, p, errores } = await abrirDemo();
+  await p.route(/workers\.dev/, r => r.abort());           // la IA no responde
+  await p.evaluate(() => navigateTo("cola"));
+  await p.waitForSelector(".cola-card");
+  const antes = (await p.$$(".cola-card")).length;
+  await p.evaluate(() => {
+    navigateTo("triage");
+    TD = { tipo: "adulto", motivo: "disnea", consc: "alerta", dolor: 4, sint: [], notas: "",
+           vit: { ps: "118", fc: "124", sat: "86", tem: "37.2", fr: "28" } };
+    rAnalyzing();
+  });
+  await p.waitForSelector(".ai-note.sin-ia", { timeout: 10000 });
+  assert.match(await p.textContent(".rcard .rlbl"), /ROJO/);
+  assert.match(await p.textContent("#trc"), /SpO₂ 86/);
+  await p.evaluate(() => navigateTo("cola"));
+  await p.waitForFunction(n => document.querySelectorAll(".cola-card").length > n, antes);
+  // Sin conexión del todo: tampoco se bloquea la pantalla
+  await ctx.setOffline(true);
+  await p.evaluate(() => { navigateTo("triage"); TD = { tipo: "adulto", motivo: "otro", consc: "alerta", dolor: 1, sint: [], notas: "", vit: { ps: "120", fc: "78", sat: "98", tem: "36.6", fr: "15" } }; rAnalyzing(); });
+  await p.waitForSelector(".ai-note.sin-ia");
+  assert.match(await p.textContent(".ai-note.sin-ia"), /Sin conexión/);
+  assert.match(await p.textContent(".rcard .rlbl"), /VERDE/);
+  assert.deepEqual(errores.filter(e => !/^L is not defined|Chart|QRCode/.test(e)), []);
+  await ctx.close();
+});
+
 test("en computador se usa la barra lateral y nada se desborda", async () => {
   const { ctx, p, errores } = await abrirDemo({ ancho: 1440, alto: 900 });
   assert.ok(await p.isVisible(".sidebar"));

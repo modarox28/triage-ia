@@ -399,3 +399,11 @@ body.demo-on .aviso-rojo{top:calc(env(safe-area-inset-top,0px) + 36px)}
 .err-item summary b{font-size:.88rem;color:var(--rd);word-break:break-word}
 .err-item summary small{font-size:.74rem;color:var(--mu)}
 .err-item pre{margin-top:8px;padding:10px;border-radius:10px;background:var(--bg3);font-family:var(--font-num);font-size:.7rem;white-space:pre-wrap;word-break:break-word;color:var(--tx);max-height:260px;overflow:auto}
+
+/* Triage sin IA / sin conexión */
+.ai-note.sin-ia{color:var(--tx);background:rgba(255,170,0,.1);border-color:rgba(255,170,0,.45)}
+.ai-note.sin-ia b{color:#ffb830}
+body.light .ai-note.sin-ia b{color:#a66300}
+.offline-bar.sync{background:rgba(0,200,240,.12);border-bottom-color:rgba(0,200,240,.35);color:var(--cy)}
+.offline-bar.sync .ob-dot{background:var(--cy);animation:obPulse 1.2s infinite}
+@keyframes obPulse{50%{opacity:.3}}

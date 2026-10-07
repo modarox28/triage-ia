@@ -4,8 +4,18 @@
  * @module src/firebase/triages
  */
 
-/** Save a triage document (caller must include createdAt/syncedAt fields). */
-export async function saveTriage(FB,data){
+/** Id aleatorio de 20 caracteres (como los de Firestore), generado en el dispositivo
+ *  para que reintentar el guardado nunca cree un triage duplicado. */
+export function newTriageId(){
+  const abc="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const b=new Uint8Array(20);crypto.getRandomValues(b);
+  return Array.from(b,x=>abc[x%62]).join("");
+}
+
+/** Save a triage document (caller must include createdAt/syncedAt fields).
+ *  Con id, se escribe con merge: repetir el guardado del mismo triage no lo duplica. */
+export async function saveTriage(FB,data,id){
+  if(id)return FB.setDoc(FB.doc(FB.db,"triages",id),data,{merge:true});
   return FB.addDoc(FB.collection(FB.db,"triages"),data);
 }
 
@@ -41,7 +51,10 @@ export async function getTriagesHistory(FB,limitN=100){
 export async function syncOfflineQueue(FB,queue){
   const remaining=[];
   for(const item of queue){
-    try{await FB.addDoc(FB.collection(FB.db,"triages"),{...item,syncedAt:FB.serverTimestamp()});}
+    const{_id,queuedAt,...data}=item;
+    // createdAt = hora real del triage (no la de sincronización), para que la cola lo ordene bien
+    const doc={...data,createdAt:new Date(queuedAt||Date.now()),syncedAt:FB.serverTimestamp(),offline:true};
+    try{await saveTriage(FB,doc,_id||newTriageId());}
     catch(e){remaining.push(item);}
   }
   return remaining;

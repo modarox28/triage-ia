@@ -220,6 +220,7 @@ function showApp(){
   document.getElementById("mainApp").classList.add("on");
   if(typeof _queueViewport==="function"){_queueViewport();setTimeout(_queueViewport,400);}
   if(typeof iniciarAvisos==="function")setTimeout(iniciarAvisos,1500);
+  if(typeof _syncOfflineQueue==="function")setTimeout(_syncOfflineQueue,2500);
   // Reset triage lookup state for new session
   if(CR!=="paciente"){_triageLookupDone=false;_triageLookupResult=null;}
   buildNav();updateUI();

@@ -93,35 +93,57 @@ function applyVitcam(){
 // ── MODO OFFLINE ──────────────────────────────────────────────────────────
 const OFFLINE_QUEUE_KEY="ms_offline_triages";
 
+function _leerColaOffline(){try{return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||"[]");}catch(_){return[];}}
+
+// Franja superior: sin conexión, o con conexión pero con triages aún por enviar
+function _actualizarFranjaOffline(){
+  const bar=document.getElementById("offlineBar"),txt=document.getElementById("offlineBarTxt");
+  if(!bar)return;
+  const n=_leerColaOffline().length,off=!navigator.onLine;
+  const pend=n?` · ${n} triage${n>1?"s":""} por enviar`:"";
+  bar.classList.toggle("on",off||n>0);
+  bar.classList.toggle("sync",!off&&n>0);
+  if(txt)txt.textContent=off?`Sin conexión — puedes seguir haciendo triages${pend}`:`Enviando triages guardados sin conexión${pend}`;
+}
+
 function _initOfflineDetection(){
-  const bar=document.getElementById("offlineBar");
   const update=()=>{
-    const offline=!navigator.onLine;
-    bar.classList.toggle("on",offline);
-    if(!offline)_syncOfflineQueue();
+    _actualizarFranjaOffline();
+    if(navigator.onLine)_syncOfflineQueue();
   };
   window.addEventListener("online",update);
   window.addEventListener("offline",update);
   update();
+  setInterval(()=>{if(navigator.onLine&&_leerColaOffline().length)_syncOfflineQueue();},60000);
 }
 
 function _queueOfflineTriage(data){
-  const queue=JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||"[]");
+  const queue=_leerColaOffline();
+  if(data._id&&queue.some(q=>q._id===data._id))return;
   queue.push({...data,queuedAt:Date.now()});
-  localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(queue));
-  toast("📶 Sin conexion — triage guardado localmente");
+  try{localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(queue));}catch(_){}
+  toast("📶 Triage guardado en este dispositivo: se enviará al volver la conexión");
+  _actualizarFranjaOffline();
 }
 
+let _sincronizando=false;
 async function _syncOfflineQueue(){
-  if(!FB||!CU)return;
-  const queue=JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||"[]");
-  if(!queue.length)return;
-  const remaining=await _syncOfflineQueueFn(FB,queue);
-  localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(remaining));
-  if(remaining.length<queue.length){
-    const synced=queue.length-remaining.length;
-    toast(`✓ ${synced} triage${synced>1?"s":""} sincronizado${synced>1?"s":""}  offline → Firebase`);
-  }
+  if(!FB||!CU||_sincronizando||window._demoMode)return;
+  const queue=_leerColaOffline();
+  if(!queue.length){_actualizarFranjaOffline();return;}
+  _sincronizando=true;
+  try{
+    const remaining=await _syncOfflineQueueFn(FB,queue);
+    // Conserva lo que se haya encolado mientras se sincronizaba
+    const ids=new Set(queue.map(q=>q._id||q.queuedAt));
+    const nuevos=_leerColaOffline().filter(q=>!ids.has(q._id||q.queuedAt));
+    try{localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify([...remaining,...nuevos]));}catch(_){}
+    if(remaining.length<queue.length){
+      const synced=queue.length-remaining.length;
+      toast(`✓ ${synced} triage${synced>1?"s":""} guardado${synced>1?"s":""} sin conexión ya ${synced>1?"están":"está"} en la cola`);
+      logAudit("offline_sync",{triages:synced});
+    }
+  }finally{_sincronizando=false;_actualizarFranjaOffline();}
 }
 
 // ── NOTIFICACIÓN PRE-HOSPITALARIA ─────────────────────────────────────────

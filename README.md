@@ -39,7 +39,8 @@ La demo no pide registro: entra como administrador con pacientes ficticios, en u
 | Restablecer el PIN de un paciente sin Cloud Functions (plan gratis) | El Worker firma un JWT con una cuenta de servicio y llama a la API de administración de Firebase Auth. |
 | Buscar "rodri" y encontrar "Rodríguez" en una base que no busca texto parcial | Cada historia guarda **claves de búsqueda** normalizadas (sin tildes, prefijos de nombre y documento). |
 | Que cualquiera pueda probarla sin cuentas ni gastar cuota | **Modo demo** con un Firebase simulado en memoria y la misma interfaz real. |
-| Confiar en los cálculos clínicos | **59 pruebas unitarias** de scores (qSOFA, NEWS2, HEART…) contra sus criterios publicados, más **7 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
+| Confiar en los cálculos clínicos | **68 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **8 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
+| Que no se pierda un triage si se cae internet | Sin conexión (o si la IA no responde) se calcula una **clasificación provisional** con reglas de signos vitales, NEWS2 y qSOFA; el triage se guarda en el dispositivo con un id propio y se envía solo al volver la conexión, sin duplicados. |
 | Funcionar bien en celular | PWA instalable, barra inferior que respeta la barra de gestos de iOS y Android, tema claro/oscuro y 6 idiomas. |
 
 ## Capturas
@@ -192,6 +193,16 @@ Como Firestore no busca texto parcial, cada historia guarda `searchKeys`: los pr
 
 Mientras la app está abierta (aunque sea en segundo plano), el personal de salud recibe un aviso cuando un paciente ROJO sin atender supera su tiempo objetivo (15 min): franja roja con "Ver cola", sonido, vibración y, si se dio permiso en **Ajustes → Avisos de pacientes rojos**, una notificación del sistema que abre la cola al tocarla (`src/app/24-avisos.js`). Cada paciente avisa una vez por sesión. Con la app cerrada no llegan avisos: para eso haría falta enviar notificaciones push desde un servidor (Firebase Cloud Messaging + una función programada).
 
+### Triage sin conexión
+
+Si no hay internet, o la IA no responde en 25 segundos, el triage no se pierde:
+
+1. La app calcula una **clasificación provisional sin IA** (`src/clinical/offline.js`): rojo si hay un signo vital crítico, alteración de la consciencia, NEWS2 ≥ 7, qSOFA ≥ 2, sangrado activo o cianosis; amarillo si hay signos de advertencia, NEWS2 5–6, dolor ≥ 7/10, dolor de pecho, disnea o síntoma neurológico; verde en los demás casos. El resultado lo indica claramente y pide confirmarlo con criterio clínico.
+2. El triage se guarda en la cola local del dispositivo con un id generado ahí mismo (`ms_offline_triages`). La franja superior muestra cuántos faltan por enviar.
+3. Al volver la conexión (o al iniciar sesión) se envían solos, con su hora real y marcados `offline` y `sinIA`. Como se escriben con su id, un reintento nunca crea duplicados.
+
+Para funcionar sin internet la app debe haberse abierto con conexión al menos una vez en ese dispositivo (el service worker guarda los archivos).
+
 ### Registro de errores
 
 Los errores de JavaScript que ocurren en los dispositivos de los usuarios se guardan en la colección `errorLogs` (máximo 8 por sesión, sin repetir, sin datos clínicos ni números largos). El administrador los ve en **Ajustes → Errores reportados**, con fecha, tipo de dispositivo, rol y versión de la app (`src/app/25-errores.js`). Las reglas solo permiten crear registros propios con campos y tamaños limitados, y solo el admin puede leerlos o borrarlos.
@@ -226,6 +237,7 @@ Usa el runner de pruebas incluido en Node. Cubre:
 - **Seguridad del Worker**: tokens falsos, vencidos, alterados o de otro proyecto; cuentas sin acceso; cupos diarios; y que ninguna consulta rechazada llegue a DeepSeek.
 - **Estadísticas**: conteos por período (hoy, 7 y 30 días), tendencia y que el reporte PDF no se salga de la hoja.
 - **Búsqueda de pacientes**: tildes, mayúsculas, partes de palabra, orden de los términos y documentos con puntos o letras.
+- **Triage sin conexión**: la clasificación provisional en sus casos límite, y que la cola local se envíe con su hora real, sin duplicar y conservando lo que falle.
 - **Restablecimiento de PIN**: solo el personal aprobado puede hacerlo, la firma de la cuenta de servicio es válida, se marca `mustChangePin` y se respeta el límite diario.
 
 ### Pruebas de extremo a extremo
@@ -235,7 +247,7 @@ npx playwright install chromium   # solo la primera vez
 E2E_OFFLINE=1 npm run test:e2e
 ```
 
-Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
+Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido, triage sin IA ni conexión y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
 
 ### Probar en local
 

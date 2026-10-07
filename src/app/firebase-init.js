@@ -11,7 +11,8 @@ import{chkPA,chkFC,chkSat,chkT,chkFR}from"../utils/clinical.js?v=4";
 import{COLA_DEADLINE,INACT_MS,WARN_MS}from"../config/constants.js?v=4";
 import{getSteps as _getStepsModule}from"../triage/steps.js?v=4";
 import{buildTriagePrompt}from"../ai/prompt.js?v=4";
-import{saveTriage,updateTriageAttended,getTriagesHistory,syncOfflineQueue as _syncOfflineQueueFn,subscribeTriageQueue}from"../firebase/triages.js?v=4";
+import{saveTriage,newTriageId,updateTriageAttended,getTriagesHistory,syncOfflineQueue as _syncOfflineQueueFn,subscribeTriageQueue}from"../firebase/triages.js?v=5";
+import{clasificarSinIA}from"../clinical/offline.js?v=1";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
 const auth=getAuth(fbapp);const db=getFirestore(fbapp);
@@ -26,5 +27,5 @@ window.chkPA=chkPA;window.chkFC=chkFC;window.chkSat=chkSat;window.chkT=chkT;wind
 window.COLA_DEADLINE=COLA_DEADLINE;window.INACT_MS=INACT_MS;window.WARN_MS=WARN_MS;
 window._getStepsModule=_getStepsModule;
 window.buildTriagePrompt=buildTriagePrompt;
-window.saveTriage=saveTriage;window.updateTriageAttended=updateTriageAttended;window.getTriagesHistory=getTriagesHistory;window._syncOfflineQueueFn=_syncOfflineQueueFn;window.subscribeTriageQueue=subscribeTriageQueue;
+window.saveTriage=saveTriage;window.newTriageId=newTriageId;window.clasificarSinIA=clasificarSinIA;window.updateTriageAttended=updateTriageAttended;window.getTriagesHistory=getTriagesHistory;window._syncOfflineQueueFn=_syncOfflineQueueFn;window.subscribeTriageQueue=subscribeTriageQueue;
 window.dispatchEvent(new Event("fbready"));
