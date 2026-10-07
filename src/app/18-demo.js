@@ -166,6 +166,8 @@ function startDemo(){
   try{localStorage.setItem("ms_role_"+uid,"admin");}catch(_){}
   _showDemoBanner();
   initAuth();
+  // Guía rápida la primera vez (cuando ya pasó el saludo de bienvenida)
+  setTimeout(()=>{if(typeof iniciarGuia==="function")iniciarGuia();},3400);
 }
 function _exitDemo(){
   const url=new URL(window.location.href);url.searchParams.delete("demo");
@@ -177,7 +179,7 @@ function _showDemoBanner(){
   b.id="demoBanner";
   // Franja delgada arriba, fuera del contenido (la app se corre hacia abajo para no taparla)
   b.style.cssText="position:fixed;top:0;left:0;right:0;z-index:9998;height:calc(env(safe-area-inset-top,0px) + 26px);padding:env(safe-area-inset-top,0px) 10px 0;background:var(--yw);color:#1a1300;font-size:.7rem;font-weight:700;display:flex;gap:10px;align-items:center;justify-content:center;font-family:'Familjen Grotesk',sans-serif";
-  b.innerHTML='<span>Modo demo · datos ficticios, nada se guarda</span><button type="button" onclick="_exitDemo()" style="background:#1a1300;color:var(--yw);border:none;border-radius:10px;padding:2px 10px;font-size:.66rem;font-weight:700;cursor:pointer">Salir</button>';
+  b.innerHTML='<span>Modo demo · datos ficticios, nada se guarda</span><button type="button" onclick="iniciarGuia(true)" style="background:transparent;color:#1a1300;border:1.5px solid #1a1300;border-radius:10px;padding:1px 9px;font-size:.66rem;font-weight:700;cursor:pointer">Guía</button><button type="button" onclick="_exitDemo()" style="background:#1a1300;color:var(--yw);border:none;border-radius:10px;padding:2px 10px;font-size:.66rem;font-weight:700;cursor:pointer">Salir</button>';
   document.body.classList.add("demo-on");
   document.body.appendChild(b);
 }

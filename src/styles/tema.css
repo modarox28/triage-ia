@@ -358,3 +358,20 @@ button.stat-card{font:inherit;color:inherit;width:100%;text-align:left;display:f
 .lang-menu.open .lang-item:nth-child(2){transition-delay:.03s}.lang-menu.open .lang-item:nth-child(3){transition-delay:.06s}
 .lang-menu.open .lang-item:nth-child(4){transition-delay:.09s}.lang-menu.open .lang-item:nth-child(5){transition-delay:.12s}.lang-menu.open .lang-item:nth-child(6){transition-delay:.15s}
 @media (prefers-reduced-motion:reduce){.lang-menu,.lang-menu .lang-item{transition:none;}}
+
+/* ── Guía rápida de la demo (ver src/app/23-guia.js) ── */
+.guia-capa{position:fixed;inset:0;z-index:9990;animation:guiaIn .25s ease}
+.guia-capa.fuera{opacity:0;transition:opacity .25s}
+@keyframes guiaIn{from{opacity:0}}
+.guia-hueco{position:fixed;border-radius:18px;box-shadow:0 0 0 9999px rgba(4,8,18,.72),0 0 0 2px var(--cy);pointer-events:none;transition:top .4s cubic-bezier(.3,1.2,.5,1),left .4s cubic-bezier(.3,1.2,.5,1),width .4s cubic-bezier(.3,1.2,.5,1),height .4s cubic-bezier(.3,1.2,.5,1)}
+.guia-globo{position:fixed;background:var(--bg2);border:1px solid var(--bd);border-radius:18px;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.5);color:var(--tx);font-family:var(--font-ui);transition:top .4s cubic-bezier(.3,1.2,.5,1),left .4s cubic-bezier(.3,1.2,.5,1)}
+.guia-paso{font-size:.74rem;font-weight:700;color:var(--cy);margin-bottom:6px}
+.guia-globo h3{margin:0;font-size:1.08rem;font-weight:700}
+.guia-globo p{margin:6px 0 14px;font-size:.88rem;line-height:1.5;color:var(--mu)}
+.guia-btns{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.guia-saltar{background:none;border:none;color:var(--mu);font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;padding:8px 0}
+.guia-atras,.guia-sig{min-height:38px;padding:0 14px;border-radius:10px;font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer}
+.guia-atras{background:var(--bg3);border:1px solid var(--bd);color:var(--tx)}
+.guia-sig{background:var(--cy);border:none;color:#04202a}
+.light .guia-sig{color:#fff}
+@media (prefers-reduced-motion:reduce){.guia-hueco,.guia-globo{transition:none}.guia-capa{animation:none}}
