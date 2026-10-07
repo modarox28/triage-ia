@@ -2,7 +2,7 @@
 // Se ejecuta después de los scripts clásicos y avisa con el evento "fbready".
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import{getFirestore,enableIndexedDbPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,enableIndexedDbPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc,arrayUnion}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import{checkCriticalVitals,calcQSOFA,calcNEWS2,calcShockIndex,calcCURB65,calcWellsDVT,calcHEART,calcROSIER}from"../clinical/engine.js?v=4";
 import{getCopilotHints,renderCopilotCard}from"../clinical/copilot.js?v=4";
 import{buildTriageTimeline}from"../clinical/timeline.js?v=4";
@@ -11,7 +11,7 @@ import{chkPA,chkFC,chkSat,chkT,chkFR}from"../utils/clinical.js?v=4";
 import{COLA_DEADLINE,INACT_MS,WARN_MS}from"../config/constants.js?v=4";
 import{getSteps as _getStepsModule}from"../triage/steps.js?v=4";
 import{buildTriagePrompt}from"../ai/prompt.js?v=4";
-import{saveTriage,newTriageId,updateTriageAttended,getTriagesHistory,syncOfflineQueue as _syncOfflineQueueFn,subscribeTriageQueue}from"../firebase/triages.js?v=5";
+import{saveTriage,newTriageId,updateTriageAttended,getTriagesHistory,syncOfflineQueue as _syncOfflineQueueFn,subscribeTriageQueue}from"../firebase/triages.js?v=6";
 import{clasificarSinIA}from"../clinical/offline.js?v=1";
 const firebaseConfig={apiKey:"AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo",authDomain:"media-suite-6f432.firebaseapp.com",projectId:"media-suite-6f432",storageBucket:"media-suite-6f432.firebasestorage.app",messagingSenderId:"158351804051",appId:"1:158351804051:web:af7f68859b555025162f66"};
 const fbapp=initializeApp(firebaseConfig);
@@ -19,7 +19,7 @@ const auth=getAuth(fbapp);const db=getFirestore(fbapp);
 enableIndexedDbPersistence(db).catch(()=>{});
 const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:"select_account"});
-window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc};
+window._fb={auth,db,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,gProvider,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,updateProfile,fetchSignInMethodsForEmail,setPersistence,browserLocalPersistence,browserSessionPersistence,doc,setDoc,getDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp,updateDoc,onSnapshot,where,deleteDoc,arrayUnion};
 window.L=L;
 window.checkCriticalVitals=checkCriticalVitals;window.calcQSOFA=calcQSOFA;window.calcNEWS2=calcNEWS2;window.calcShockIndex=calcShockIndex;window.calcCURB65=calcCURB65;window.calcWellsDVT=calcWellsDVT;window.calcHEART=calcHEART;window.calcROSIER=calcROSIER;
 window.getCopilotHints=getCopilotHints;window.renderCopilotCard=renderCopilotCard;window.buildTriageTimeline=buildTriageTimeline;

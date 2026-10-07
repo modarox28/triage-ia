@@ -342,6 +342,32 @@ function _dashMore(){_dashShown+=5;_renderDashRecent();}
 
 // ── TRIAGE DETAIL SHEET ──
 let _currentTriageDetail=null;
+// Registro de cambios del triage: usa "cambios" si existe; en triages antiguos lo reconstruye
+// con los campos que ya tenían (creado, atendido y revisión de la clasificación).
+function _triageCambios(dt){
+  const ms=v=>v?.toMillis?.()??(v?.toDate?v.toDate().getTime():v instanceof Date?v.getTime():typeof v==="string"?Date.parse(v):null);
+  const reg=Array.isArray(dt.cambios)?dt.cambios.map(c=>({...c,ms:ms(c.at)})):[];
+  const tiene=t=>reg.some(c=>t.includes(c.tipo));
+  const primeraRev=reg.find(c=>c.tipo==="reclasificado");
+  const previos=[];
+  if(!tiene(["creado"]))previos.push({tipo:"creado",por:dt.userName,a:primeraRev?.de||dt.overrideOriginal||dt.clasificacion,ms:ms(dt.createdAt)});
+  if(!tiene(["reclasificado"])&&dt.overridePor)previos.push({tipo:"reclasificado",por:dt.overridePor,de:dt.overrideOriginal||"",a:dt.clasificacion,razon:dt.overrideRazon,ms:ms(dt.overrideAt)});
+  if(!tiene(["atendido","pendiente"])&&dt.atendido)previos.push({tipo:"atendido",por:dt.atendidoPor,ms:ms(dt.atendidoAt)});
+  return[...previos,...reg].sort((a,b)=>(a.ms||0)-(b.ms||0));
+}
+function _triageCambiosHtml(dt,loc){
+  const lista=_triageCambios(dt);
+  const fecha=m=>m?new Date(m).toLocaleString(loc,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+  const txt=c=>({
+    creado:`Triage creado${c.a?` · ${_esc(c.a)}`:""}${c.sinIA?" (sin IA)":""}`,
+    atendido:"Marcado como atendido",
+    pendiente:"Vuelto a pendiente",
+    reclasificado:`Clasificación revisada${c.de?`: ${_esc(c.de)} → `:": "}${_esc(c.a||"")}`,
+  }[c.tipo]||_esc(c.tipo||"Cambio"));
+  return`<div class="tri-log"><div class="tri-log-h">Registro de cambios</div>${lista.map(c=>`
+    <div class="tri-log-row ${c.tipo==="reclasificado"?"warn":""}"><span class="tri-log-dot" aria-hidden="true"></span>
+      <div><b>${txt(c)}</b><span>${[c.por?_esc(c.por):"",fecha(c.ms)].filter(Boolean).join(" · ")}</span>${c.razon?`<em>“${_esc(c.razon)}”</em>`:""}</div></div>`).join("")}</div>`;
+}
 function _showTriageDetail(dt){
   if(!dt)return;
   _currentTriageDetail=dt;
@@ -371,6 +397,7 @@ function _showTriageDetail(dt){
     ${accionesHtml}
     ${scores.length?`<div style="margin-top:12px"><div style="font-size:.68rem;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Scores clínicos</div><div style="display:flex;gap:8px;flex-wrap:wrap">${scores.map(s=>`<div style="background:var(--bg3);border-radius:10px;padding:9px 14px;text-align:center;flex:1;min-width:64px"><div style="font-size:1.2rem;font-weight:800;color:${s.c}">${s.v}</div><div style="font-size:.65rem;color:var(--mu);margin-top:2px">${s.l}</div></div>`).join("")}</div></div>`:""}
   `;
+  document.getElementById("triageDetailContent").insertAdjacentHTML("beforeend",_triageCambiosHtml(dt,loc));
   document.getElementById("triageDetailSheet").style.display="";
   document.getElementById("triageDetailOverlay").style.display="";
 }

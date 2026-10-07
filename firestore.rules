@@ -64,10 +64,19 @@ service cloud.firestore {
     }
 
     // ── Triages ───────────────────────────────────────────────
+    function cambiosSoloCrecen() {
+      return !('cambios' in resource.data) ||
+        (request.resource.data.cambios is list &&
+         request.resource.data.cambios.size() >= resource.data.cambios.size() &&
+         request.resource.data.cambios[0:resource.data.cambios.size()] == resource.data.cambios);
+    }
+
     match /triages/{docId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isClinician());
       allow create: if isClinician() && ownsNew();
-      allow update: if isClinician();   // marcar como atendido desde la cola
+      // Marcar como atendido o revisar la clasificación. El registro de cambios solo puede crecer:
+      // nadie puede borrar ni reescribir entradas anteriores.
+      allow update: if isClinician() && cambiosSoloCrecen();
       allow delete: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
     }
 

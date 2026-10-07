@@ -419,3 +419,14 @@ body.light .ai-note.sin-ia b{color:#a66300}
 .hc-tri-main span{font-size:.74rem;color:var(--mu)}
 .hc-tri-vacio,.hc-tri-mas{font-size:.78rem;color:var(--mu);line-height:1.5}
 .hc-tri-mas{padding-top:8px}
+
+/* Registro de cambios del triage */
+.tri-log{margin-top:14px}
+.tri-log-h{font-size:.68rem;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.tri-log-row{position:relative;display:flex;gap:10px;padding:0 0 12px 0}
+.tri-log-row:not(:last-child)::before{content:"";position:absolute;left:4px;top:12px;bottom:0;width:2px;background:var(--bd)}
+.tri-log-dot{width:10px;height:10px;border-radius:50%;background:var(--cy);margin-top:4px;flex-shrink:0;position:relative;z-index:1}
+.tri-log-row.warn .tri-log-dot{background:var(--yw)}
+.tri-log-row b{display:block;font-size:.8rem}
+.tri-log-row span{display:block;font-size:.72rem;color:var(--mu);margin-top:1px}
+.tri-log-row em{display:block;font-size:.76rem;color:var(--tx);margin-top:4px;font-style:normal;background:var(--bg3);border-radius:8px;padding:6px 9px}

@@ -1,4 +1,4 @@
-const CACHE = 'media-suite-v53';
+const CACHE = 'media-suite-v54';
 const ASSETS = [
   './index.html',
   './manifest.json',

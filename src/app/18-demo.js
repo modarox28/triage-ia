@@ -19,6 +19,7 @@ function _demoVal(v){ // valor comparable para where/orderBy
 }
 function _demoClone(o){ // copia profunda que conserva los timestamps
   if(o instanceof _DemoTS)return o;
+  if(o instanceof Date)return new _DemoTS(o.getTime()); // Firestore guarda Date como Timestamp
   if(Array.isArray(o))return o.map(_demoClone);
   if(o&&typeof o==="object"){const r={};for(const k in o)r[k]=_demoClone(o[k]);return r;}
   return o;
@@ -64,7 +65,9 @@ function _makeDemoFB(user,seed){
   const notify=()=>setTimeout(()=>listeners.forEach(l=>{try{l.cb(snapshotOf(l.t));}catch(e){console.error(e);}}),0);
   const write=(c,id,data,merge)=>{
     const prev=col(c).get(id);
-    col(c).set(id,_demoClone(resolveNow(merge&&prev?{...prev,...data}:data)));
+    const d={...data};
+    for(const k in d)if(d[k]&&d[k].__arrayUnion)d[k]=[...((merge&&prev&&Array.isArray(prev[k]))?prev[k]:[]),...d[k].__arrayUnion];
+    col(c).set(id,_demoClone(resolveNow(merge&&prev?{...prev,...d}:d)));
     notify();
   };
   const notAvailable=()=>Promise.reject({code:"demo/no-disponible",message:"No disponible en el modo demo"});
@@ -83,6 +86,7 @@ function _makeDemoFB(user,seed){
     orderBy:(f,dir="asc")=>({k:"orderBy",f,dir}),
     limit:n=>({k:"limit",n}),
     serverTimestamp:()=>NOW,
+    arrayUnion:(...v)=>({__arrayUnion:v}),
     getDoc:async ref=>docSnap(ref.c,ref.id),
     getDocs:async q=>runQuery(q.type==="col"?{c:q.c,cons:[]}:q),
     setDoc:async(ref,data,opts)=>write(ref.c,ref.id,data,!!opts?.merge),

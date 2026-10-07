@@ -306,7 +306,7 @@ async function markCola(id,done){
   const card=document.getElementById("colacard-"+id);
   if(card)card.style.opacity="0.5";
   try{
-    await updateTriageAttended(FB,id,done,uName());
+    await updateTriageAttended(FB,id,done,uName(),_cambioTriage(done?"atendido":"pendiente"));
     const idx=_colaData.findIndex(d=>d.id===id);
     if(idx>=0){
       _colaData[idx].atendido=done;

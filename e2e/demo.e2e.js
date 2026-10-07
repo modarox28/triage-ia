@@ -130,6 +130,28 @@ test("la historia clínica muestra los triages del paciente y exporta el PDF", a
   await ctx.close();
 });
 
+test("registro de cambios del triage: atendido y clasificación revisada con su razón", async () => {
+  const { ctx, p, errores } = await abrirDemo();
+  await p.evaluate(() => navigateTo("cola"));
+  await p.waitForSelector(".cola-card");
+  const id = await p.evaluate(() => _colaData.find(d => !d.atendido && d.clasificacion === "AMARILLO").id);
+  await p.evaluate(i => _openOverrideModal(i, "AMARILLO"), id);
+  await p.click(`#overrideModal button[onclick*="'ROJO'"]`);
+  await p.fill("#overrideReason", "Dolor torácico con diaforesis al reevaluar");
+  await p.evaluate(() => _confirmOverride());
+  await p.evaluate(i => markCola(i, true), id);
+  await p.waitForTimeout(300);
+  await p.evaluate(i => _showTriageDetail(_colaData.find(d => d.id === i)), id);
+  const log = await p.textContent(".tri-log");
+  assert.match(log, /Triage creado/);
+  assert.match(log, /Clasificación revisada: AMARILLO → ROJO/);
+  assert.match(log, /Dolor torácico con diaforesis/);
+  assert.match(log, /Marcado como atendido/);
+  assert.ok(log.indexOf("revisada") < log.indexOf("atendido"), "en orden cronológico");
+  assert.deepEqual(errores.filter(e => !/^L is not defined|Chart|QRCode/.test(e)), []);
+  await ctx.close();
+});
+
 test("ajustes: subpágina de apariencia, cambio de tema y volver", async () => {
   const { ctx, p } = await abrirDemo();
   await p.evaluate(() => navigateTo("config"));

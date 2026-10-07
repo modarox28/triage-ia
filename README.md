@@ -39,8 +39,9 @@ La demo no pide registro: entra como administrador con pacientes ficticios, en u
 | Restablecer el PIN de un paciente sin Cloud Functions (plan gratis) | El Worker firma un JWT con una cuenta de servicio y llama a la API de administración de Firebase Auth. |
 | Buscar "rodri" y encontrar "Rodríguez" en una base que no busca texto parcial | Cada historia guarda **claves de búsqueda** normalizadas (sin tildes, prefijos de nombre y documento). |
 | Que cualquiera pueda probarla sin cuentas ni gastar cuota | **Modo demo** con un Firebase simulado en memoria y la misma interfaz real. |
-| Confiar en los cálculos clínicos | **69 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **9 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
+| Confiar en los cálculos clínicos | **69 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **10 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
 | Que no se pierda un triage si se cae internet | Sin conexión (o si la IA no responde) se calcula una **clasificación provisional** con reglas de signos vitales, NEWS2 y qSOFA; el triage se guarda en el dispositivo con un id propio y se envía solo al volver la conexión, sin duplicados. |
+| Saber quién cambió qué en un triage | Cada triage lleva un **registro de cambios** (creación, atendido, reclasificación con razón). Las reglas de Firestore solo dejan agregar entradas, nunca borrarlas. |
 | Funcionar bien en celular | PWA instalable, barra inferior que respeta la barra de gestos de iOS y Android, tema claro/oscuro y 6 idiomas. |
 
 ## Capturas
@@ -197,6 +198,10 @@ Mientras la app está abierta (aunque sea en segundo plano), el personal de salu
 
 Cuando el triage se inicia con **Buscar paciente**, queda enlazado a su historia (`hcId`, `pacienteNombre`, `pacienteDoc`). En la historia clínica aparece la tarjeta **Triages de este paciente** (fecha, prioridad, motivo y quién lo atendió), y el PDF de la historia incluye el historial completo con la justificación de cada triage. Los triages de múltiples víctimas se enlazan por documento.
 
+### Registro de cambios de cada triage
+
+Cada triage guarda en `cambios` quién hizo qué y cuándo: creación (con su clasificación y si fue sin IA), marcado como atendido o pendiente, y revisión de la clasificación (de qué a qué y la razón clínica). Se ve al final del detalle del triage, en orden cronológico. Las reglas de Firestore solo permiten **agregar** entradas: nadie puede borrar ni reescribir las anteriores. En triages anteriores a esta función, el registro se reconstruye con los datos que ya tenían.
+
 ### Triage sin conexión
 
 Si no hay internet, o la IA no responde en 25 segundos, el triage no se pierde:
@@ -251,7 +256,7 @@ npx playwright install chromium   # solo la primera vez
 E2E_OFFLINE=1 npm run test:e2e
 ```
 
-Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido, triage sin IA ni conexión, historial de triages y PDF de la historia, y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
+Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido, triage sin IA ni conexión, historial de triages y PDF de la historia, registro de cambios del triage, y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
 
 ### Probar en local
 

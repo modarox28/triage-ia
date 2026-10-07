@@ -222,6 +222,7 @@ async function callAI(){
   if(FB&&CU&&CR!=="paciente"){
     const triageData={...TD,clasificacion:res.clasificacion,justificacion:res.justificacion,motivo:TD.motivo,tipo:TD.tipo,dolor:TD.dolor,notas:TD.notas||"",userName:uName(),userRole:CR||"",userEmail:CU?.email||"",userId:CU?.uid||""};
     if(res.local)triageData.sinIA=true;
+    triageData.cambios=[_cambioTriage("creado",{a:res.clasificacion,...(res.local?{sinIA:true}:{})})];
     // Enlaza el triage con la historia del paciente (para su historial y el PDF)
     if(_patientHC?.id){triageData.hcId=_patientHC.id;triageData.pacienteNombre=_patientHC.name||"";triageData.pacienteDoc=_patientHC.doc||"";}
     await _guardarTriage(triageData);

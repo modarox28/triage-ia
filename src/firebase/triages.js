@@ -22,13 +22,17 @@ export async function saveTriage(FB,data,id){
 /**
  * Mark a triage as attended / un-attended.
  * @param {string} userName - display name of the user performing the action
+ * @param {Object} [cambio] - entrada para el registro de cambios del triage
  */
-export async function updateTriageAttended(FB,id,done,userName){
-  return FB.updateDoc(FB.doc(FB.db,"triages",id),{
+export async function updateTriageAttended(FB,id,done,userName,cambio){
+  const data={
     atendido:done,
     atendidoAt:done?FB.serverTimestamp():null,
     atendidoPor:done?userName:"",
-  });
+  };
+  // Registro de cambios: cada modificación se agrega al final de "cambios" (nunca se borra)
+  if(cambio&&FB.arrayUnion)data.cambios=FB.arrayUnion(cambio);
+  return FB.updateDoc(FB.doc(FB.db,"triages",id),data);
 }
 
 /**

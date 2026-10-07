@@ -151,9 +151,9 @@ function _renderColaBoard(){
 // ══════════════════════════════════════
 // OVERRIDE MÉDICO — Cola
 // ══════════════════════════════════════
-let _overrideTargetId=null;
+let _overrideTargetId=null,_overrideOriginal=null;
 function _openOverrideModal(id,currentClasif){
-  _overrideTargetId=id;
+  _overrideTargetId=id;_overrideOriginal=currentClasif||null;
   let modal=document.getElementById('overrideModal');
   if(!modal){
     modal=document.createElement('div');
@@ -201,7 +201,8 @@ async function _confirmOverride(){
       overridePor:uName(),
       overrideRazon:reason,
       overrideAt:FB.serverTimestamp(),
-      overrideOriginal:null
+      overrideOriginal:_overrideOriginal,
+      ...(FB.arrayUnion?{cambios:FB.arrayUnion(_cambioTriage("reclasificado",{de:_overrideOriginal||"",a:cl,razon:reason.slice(0,300)}))}:{})
     });
     logAudit('triage_override',{id:_overrideTargetId,nuevaClasif:cl,razon:reason});
     modal.style.display='none';

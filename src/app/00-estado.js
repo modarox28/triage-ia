@@ -152,6 +152,11 @@ function getInsLabel(){const m={CO:"EPS afiliada",AR:"Obra social / prepaga",US:
 function uName(fallback="Usuario"){return CUName||CU?.displayName||CU?.email?.split("@")[0]||fallback;}
 
 // AUDIT LOG — writes to Firestore auditLogs collection (silent fail, never blocks the app)
+// Entrada del registro de cambios de un triage (quién, qué y cuándo). La hora es la del
+// dispositivo porque Firestore no admite serverTimestamp() dentro de una lista.
+function _cambioTriage(tipo,extra={}){
+  return{tipo,por:typeof uName==="function"?uName():"",rol:CR||"",uid:CU?.uid||"",at:new Date().toISOString(),...extra};
+}
 async function logAudit(action,meta={}){
   if(!FB||!CU||CR==="paciente")return;
   try{
