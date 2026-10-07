@@ -39,7 +39,7 @@ La demo no pide registro: entra como administrador con pacientes ficticios, en u
 | Restablecer el PIN de un paciente sin Cloud Functions (plan gratis) | El Worker firma un JWT con una cuenta de servicio y llama a la API de administración de Firebase Auth. |
 | Buscar "rodri" y encontrar "Rodríguez" en una base que no busca texto parcial | Cada historia guarda **claves de búsqueda** normalizadas (sin tildes, prefijos de nombre y documento). |
 | Que cualquiera pueda probarla sin cuentas ni gastar cuota | **Modo demo** con un Firebase simulado en memoria y la misma interfaz real. |
-| Confiar en los cálculos clínicos | **68 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **8 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
+| Confiar en los cálculos clínicos | **69 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **9 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
 | Que no se pierda un triage si se cae internet | Sin conexión (o si la IA no responde) se calcula una **clasificación provisional** con reglas de signos vitales, NEWS2 y qSOFA; el triage se guarda en el dispositivo con un id propio y se envía solo al volver la conexión, sin duplicados. |
 | Funcionar bien en celular | PWA instalable, barra inferior que respeta la barra de gestos de iOS y Android, tema claro/oscuro y 6 idiomas. |
 
@@ -68,7 +68,7 @@ La demo no pide registro: entra como administrador con pacientes ficticios, en u
 | **MCI** | Incidentes con múltiples víctimas: asistente START + PDF |
 | **Scores clínicos** | HEART, qSOFA, NEWS2, CURB-65, Wells, Glasgow, ROSIER |
 | **Cola de pacientes** | Cola en tiempo real, tablero kanban, override médico |
-| **Historia clínica** | Antecedentes, alergias y medicación; exportación a PDF |
+| **Historia clínica** | Antecedentes, alergias, medicación e historial de triages del paciente; exportación a PDF |
 
 ## Stack
 
@@ -193,6 +193,10 @@ Como Firestore no busca texto parcial, cada historia guarda `searchKeys`: los pr
 
 Mientras la app está abierta (aunque sea en segundo plano), el personal de salud recibe un aviso cuando un paciente ROJO sin atender supera su tiempo objetivo (15 min): franja roja con "Ver cola", sonido, vibración y, si se dio permiso en **Ajustes → Avisos de pacientes rojos**, una notificación del sistema que abre la cola al tocarla (`src/app/24-avisos.js`). Cada paciente avisa una vez por sesión. Con la app cerrada no llegan avisos: para eso haría falta enviar notificaciones push desde un servidor (Firebase Cloud Messaging + una función programada).
 
+### Historial de triages del paciente
+
+Cuando el triage se inicia con **Buscar paciente**, queda enlazado a su historia (`hcId`, `pacienteNombre`, `pacienteDoc`). En la historia clínica aparece la tarjeta **Triages de este paciente** (fecha, prioridad, motivo y quién lo atendió), y el PDF de la historia incluye el historial completo con la justificación de cada triage. Los triages de múltiples víctimas se enlazan por documento.
+
 ### Triage sin conexión
 
 Si no hay internet, o la IA no responde en 25 segundos, el triage no se pierde:
@@ -247,7 +251,7 @@ npx playwright install chromium   # solo la primera vez
 E2E_OFFLINE=1 npm run test:e2e
 ```
 
-Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido, triage sin IA ni conexión y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
+Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido, triage sin IA ni conexión, historial de triages y PDF de la historia, y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
 
 ### Probar en local
 

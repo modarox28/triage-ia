@@ -78,6 +78,20 @@ test("PDF de historia clínica: secciones largas continúan en la página siguie
   assert.ok(pdf.internal.getNumberOfPages() >= 3);
 });
 
+test("PDF de historia clínica con historial de triages: fechas, prioridad y justificación sin salirse", () => {
+  const { ctx, problemas } = crearEntorno("12-historia-clinica.js", "_buildHCPDF", { _HC_MOT: { dolor_pecho: "Dolor de pecho" } });
+  vm.runInContext(funcion("12-historia-clinica.js", "_hcFechaTri"), ctx);
+  const ts = ms => ({ toMillis: () => ms });
+  const triages = Array.from({ length: 30 }, (_, i) => ({
+    createdAt: ts(Date.UTC(2026, 9, 6 - i, 15, 5)), clasificacion: ["ROJO", "AMARILLO", "VERDE"][i % 3],
+    motivo: i % 2 ? "dolor_pecho" : "otro", atendido: i % 2 === 0, atendidoPor: "Dra. " + nombreLargo,
+    sinIA: i === 4, justificacion: LARGO.repeat(3) + " SpO₂ ≥ 94% → O₂",
+  }));
+  const pdf = ctx._buildHCPDF({ name: "Carlos Rodríguez", doc: "482951", age: 45, sex: "M", antecedentes: ["HTA"] }, triages);
+  assert.deepEqual(problemas, []);
+  assert.ok(pdf.internal.getNumberOfPages() >= 2, "el historial largo continúa en otra página");
+});
+
 test("PDF de tarjetas demo: cada tarjeta crece con su contenido", () => {
   const paciente = { doc: "930427", name: nombreLargo, age: "78", sex: "F",
     antecedentes: Array.from({ length: 8 }, (_, i) => `Antecedente largo ${i} con detalles clínicos`),

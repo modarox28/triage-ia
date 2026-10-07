@@ -246,8 +246,42 @@ function _renderHCDetail(el, id, d){
     ${alers?`<div class="card" style="animation:fadeUp .3s .1s both"><div class="clabel">Alergias</div><div style="display:flex;flex-wrap:wrap;gap:6px">${alers}</div></div>`:''}
     ${meds?`<div class="card" style="animation:fadeUp .3s .15s both"><div class="clabel">Medicación actual</div><div style="display:flex;flex-wrap:wrap;gap:6px">${meds}</div></div>`:''}
     ${d.notes?`<div class="card" style="animation:fadeUp .3s .2s both"><div class="clabel">Notas</div><div style="font-size:.84rem;line-height:1.55">${_esc(d.notes)}</div></div>`:''}
+    ${CR!=="paciente"?`<div class="card hc-tri" id="hcTriages" style="animation:fadeUp .3s .25s both"><div class="clabel">Triages de este paciente</div><div class="skel" style="height:40px;width:100%"></div></div>`:''}
     ${typeof _resetPinCard==="function"?_resetPinCard(d):''}
   `;
+  if(CR!=="paciente")_hcPintarTriages(id,d);
+}
+
+// ── Triages del paciente (enlazados por hcId, o por documento en los de múltiples víctimas) ──
+const _HC_MOT={dolor_pecho:"Dolor de pecho",disnea:"Dificultad respiratoria",trauma:"Trauma",abdominal:"Dolor abdominal",neuro:"Neurológico",fiebre:"Fiebre",otro:"Otro motivo"};
+const _hcTriCache={};
+async function _hcTriages(id,d){
+  if(!FB||CR==="paciente")return[];
+  const col=FB.collection(FB.db,"triages"),res=new Map();
+  const consultas=[FB.query(col,FB.where("hcId","==",id),FB.limit(40))];
+  if(d?.doc)consultas.push(FB.query(col,FB.where("pacienteDoc","==",String(d.doc)),FB.limit(40)));
+  for(const q of consultas){
+    try{(await FB.getDocs(q)).docs.forEach(x=>res.set(x.id,{id:x.id,...x.data()}));}catch(_){}
+  }
+  const ms=t=>t?.toMillis?.()??(t instanceof Date?t.getTime():0);
+  return[...res.values()].sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));
+}
+function _hcFechaTri(t){
+  const ms=t?.toMillis?.()??(t instanceof Date?t.getTime():null);
+  return ms?new Date(ms).toLocaleString("es-CO",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Sin fecha";
+}
+async function _hcPintarTriages(id,d){
+  const lista=await _hcTriages(id,d);
+  const el=document.getElementById("hcTriages");
+  if(!el||_currentHCId!==id)return;
+  _hcTriCache[id]=lista;
+  const cls={ROJO:"ro",AMARILLO:"am",VERDE:"ve"};
+  el.innerHTML=`<div class="clabel">Triages de este paciente${lista.length?` · ${lista.length}`:""}</div>`+(lista.length?lista.slice(0,8).map(t=>`
+    <div class="hc-tri-row">
+      <span class="hc-tri-dot ${cls[t.clasificacion]||"ve"}" aria-hidden="true"></span>
+      <div class="hc-tri-main"><b>${_esc(t.clasificacion||"—")} · ${_esc(_HC_MOT[t.motivo]||t.motivo||"Triage")}</b>
+        <span>${_esc(_hcFechaTri(t.createdAt))}${t.atendido?` · atendido${t.atendidoPor?" por "+_esc(t.atendidoPor):""}`:" · sin atender"}${t.sinIA?" · sin IA":""}</span></div>
+    </div>`).join("")+(lista.length>8?`<div class="hc-tri-mas">Y ${lista.length-8} más en el PDF</div>`:""):`<div class="hc-tri-vacio">Aún no hay triages enlazados. Los nuevos se enlazan solos al iniciar el triage con "Buscar paciente".</div>`);
 }
 
 let _currentHCId=null;
@@ -274,7 +308,7 @@ function toggleExplain(i){const el=document.getElementById("explain-"+i);if(el)e
 // ══════════════════════════════════════
 // HC — EXPORT PDF
 // ══════════════════════════════════════
-function _buildHCPDF(d){
+function _buildHCPDF(d,triages=[]){
   if(typeof window.jspdf==="undefined")return null;
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({unit:"mm",format:"a4"});
@@ -344,6 +378,10 @@ function _buildHCPDF(d){
   sectionBox("Alergias conocidas",[255,80,80],d.alergias||[]);
   sectionBox("Medicación actual",[80,220,160],d.medicacion||[]);
   if(d.notes)sectionBox("Notas clínicas",[180,160,255],null,d.notes);
+  if(triages.length)sectionBox(`Historial de triages (${triages.length})`,[255,184,48],triages.map(t=>{
+    const j=(t.justificacion||"").replace(/\s+/g," ").trim();
+    return `${_hcFechaTri(t.createdAt)} · ${t.clasificacion||"—"} · ${_HC_MOT[t.motivo]||t.motivo||"Triage"}${t.atendido?" · atendido"+(t.atendidoPor?" por "+t.atendidoPor:""):""}${t.sinIA?" · sin IA":""}${j?" — "+(j.length>220?j.slice(0,217)+"…":j):""}`;
+  }));
 
   _pdfFooter(pdf,{
     left:`${d.name||"Paciente"}${d.doc?"  ·  ID "+d.doc:""}  ·  Uso interno exclusivo del personal autorizado`,
@@ -363,10 +401,12 @@ function _exportHCDetailPDF(){
   _exportHCPDF(_currentHCId);
 }
 
-function _doExportHCPDF(d){
+async function _doExportHCPDF(d){
   if(typeof window.jspdf==="undefined"){toast("PDF no disponible — recarga la app");return;}
   try{
-    const pdf=_buildHCPDF(d);
+    const id=Object.keys(_hcCache).find(k=>_hcCache[k]===d);
+    const triages=id?(_hcTriCache[id]||await _hcTriages(id,d)):[];
+    const pdf=_buildHCPDF(d,triages);
     if(pdf){pdf.save(`historia-${(d.doc||"hc")}-${(d.name||"paciente").replace(/\s+/g,"-").toLowerCase()}.pdf`);toast("PDF generado ✓");}
     else toast("No se pudo generar el PDF");
   }catch(e){toast("Error PDF: "+e.message);console.error("[HC-PDF]",e);}

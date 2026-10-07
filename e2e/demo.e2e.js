@@ -114,6 +114,22 @@ test("buscar paciente por nombre sin tildes y por documento", async () => {
   await ctx.close();
 });
 
+test("la historia clínica muestra los triages del paciente y exporta el PDF", async () => {
+  const { ctx, p, errores } = await abrirDemo();
+  await p.evaluate(() => viewHC("demo-hc-0"));
+  await p.waitForFunction(() => /Triages de este paciente · 2/.test(document.getElementById("hcTriages")?.textContent || ""));
+  assert.match(await p.textContent("#hcTriages"), /ROJO · Dolor de pecho/);
+  assert.match(await p.textContent("#hcTriages"), /atendido por Dr\. Andrés Pérez/);
+  const [descarga] = await Promise.all([p.waitForEvent("download"), p.evaluate(() => _exportHCDetailPDF())]);
+  const ruta = await descarga.path();
+  const { readFile: leerArchivo } = await import("node:fs/promises");
+  const pdf = await leerArchivo(ruta);
+  assert.equal(pdf.subarray(0, 5).toString(), "%PDF-");
+  assert.ok(pdf.length > 5000);
+  assert.deepEqual(errores.filter(e => !/^L is not defined|Chart|QRCode/.test(e)), []);
+  await ctx.close();
+});
+
 test("ajustes: subpágina de apariencia, cambio de tema y volver", async () => {
   const { ctx, p } = await abrirDemo();
   await p.evaluate(() => navigateTo("config"));

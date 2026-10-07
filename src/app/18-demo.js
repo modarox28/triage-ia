@@ -124,9 +124,13 @@ function _demoSeed(uid){
     tipo:"adulto",dolor:0,notas:"",atendido:false,createdAt:ts(m),...o});
   const triages={
     "demo-t1":T(8,{clasificacion:"ROJO",motivo:"dolor_pecho",dolor:9,vit:{fc:118,ps:88,pd:54,sat:91,fr:26,tem:36.8},
-      pacienteNombre:"Carlos Rodríguez Mendez",notas:"Dolor opresivo retroesternal irradiado a brazo izquierdo, diaforesis.",
+      pacienteNombre:"Carlos Rodríguez Mendez",pacienteDoc:"482951",hcId:"demo-hc-0",notas:"Dolor opresivo retroesternal irradiado a brazo izquierdo, diaforesis.",
       justificacion:"Dolor torácico típico con hipotensión y taquicardia: sospecha de síndrome coronario agudo.",
       acciones:["ECG de 12 derivaciones inmediato","Monitorización continua","Acceso venoso y troponinas","Aspirina 300 mg si no hay contraindicación"]}),
+    "demo-t0":T(60*24*12,{clasificacion:"AMARILLO",motivo:"dolor_pecho",dolor:5,vit:{fc:96,ps:150,pd:92,sat:97,fr:18,tem:36.6},
+      pacienteNombre:"Carlos Rodríguez Mendez",pacienteDoc:"482951",hcId:"demo-hc-0",atendido:true,atendidoPor:"Dr. Andrés Pérez",
+      justificacion:"Dolor torácico atípico con hipertensión, sin cambios hemodinámicos. ECG sin alteraciones agudas.",
+      acciones:["ECG de 12 derivaciones","Control de presión arterial","Reevaluar en 30 minutos"]}),
     "demo-t2":T(22,{clasificacion:"AMARILLO",motivo:"disnea",dolor:3,vit:{fc:104,ps:132,pd:84,sat:93,fr:24,tem:37.9},
       userId:"demo-med-2",userName:"Dr. Andrés Pérez",notas:"Disnea progresiva de 2 días, tos productiva.",
       justificacion:"Disnea moderada con saturación limítrofe y fiebre: probable neumonía adquirida en la comunidad.",

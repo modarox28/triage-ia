@@ -407,3 +407,15 @@ body.light .ai-note.sin-ia b{color:#a66300}
 .offline-bar.sync{background:rgba(0,200,240,.12);border-bottom-color:rgba(0,200,240,.35);color:var(--cy)}
 .offline-bar.sync .ob-dot{background:var(--cy);animation:obPulse 1.2s infinite}
 @keyframes obPulse{50%{opacity:.3}}
+
+/* Triages en la historia clínica */
+.hc-tri-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--bd)}
+.hc-tri-row:last-of-type{border-bottom:0}
+.hc-tri-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;background:var(--gn)}
+.hc-tri-dot.ro{background:var(--rd);box-shadow:0 0 8px var(--rd)}
+.hc-tri-dot.am{background:var(--yw)}
+.hc-tri-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hc-tri-main b{font-size:.84rem}
+.hc-tri-main span{font-size:.74rem;color:var(--mu)}
+.hc-tri-vacio,.hc-tri-mas{font-size:.78rem;color:var(--mu);line-height:1.5}
+.hc-tri-mas{padding-top:8px}
