@@ -12,7 +12,9 @@
       "README.md",
       "firestore.rules",
       "seed-patients.mjs",
-      "package-lock.json"
+      "package-lock.json",
+      "e2e/**",
+      ".github/**"
     ],
     "headers": [
       {

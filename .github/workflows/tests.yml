@@ -17,3 +17,9 @@ jobs:
       - run: npm ci
       - name: Scores clínicos, signos vitales, PDF y Worker de IA
         run: npm test
+      - name: Instalar navegador para pruebas de extremo a extremo
+        run: npx playwright install --with-deps chromium
+      - name: Pruebas de extremo a extremo (modo demo en Chromium)
+        run: npm run test:e2e
+        env:
+          E2E_OFFLINE: "1"

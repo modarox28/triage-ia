@@ -178,6 +178,15 @@ Usa el runner de pruebas incluido en Node. Cubre:
 - **Búsqueda de pacientes**: tildes, mayúsculas, partes de palabra, orden de los términos y documentos con puntos o letras.
 - **Restablecimiento de PIN**: solo el personal aprobado puede hacerlo, la firma de la cuenta de servicio es válida, se marca `mustChangePin` y se respeta el límite diario.
 
+### Pruebas de extremo a extremo
+
+```bash
+npx playwright install chromium   # solo la primera vez
+E2E_OFFLINE=1 npm run test:e2e
+```
+
+Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
+
 ### Probar en local
 
 ```bash

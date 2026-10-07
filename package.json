@@ -4,12 +4,14 @@
   "description": "MedIA Suite — triage hospitalario con IA (PWA)",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "test:e2e": "node --test --test-concurrency=1 e2e/*.e2e.js"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
-    "jspdf": "2.5.1"
+    "jspdf": "2.5.1",
+    "playwright": "^1.63.0"
   }
 }
