@@ -317,10 +317,12 @@ function _renderDashRecent(){
     const cls=_DASH_CLS[dt.clasificacion]||_DASH_CLS.VERDE;
     const date=dt.createdAt?.toDate?dt.createdAt.toDate().toLocaleString(loc,{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}):"—";
     const meta=[_tipoLabel(dt.tipo),date,dt.userName].filter(Boolean).map(_esc).join(" · ");
-    return`<div class="dash-row" role="button" tabindex="0" onclick="_openTriageDetail(${i})" onkeydown="if(event.key==='Enter')_openTriageDetail(${i})">
-      <span class="dash-dot" style="background:${cls.dot}"></span>
-      <div class="dash-row-body"><div class="dash-row-title">${_esc(mMD[dt.motivo]||dt.motivo||"—")}</div><div class="dash-row-meta">${meta}</div></div>
+    return`<div class="dash-row">
+      <button type="button" class="dash-row-main" onclick="_openTriageDetail(${i})">
+      <span class="dash-dot" style="background:${cls.dot}" aria-hidden="true"></span>
+      <span class="dash-row-body"><span class="dash-row-title">${_esc(mMD[dt.motivo]||dt.motivo||"—")}</span><span class="dash-row-meta">${meta}</span></span>
       <span class="dash-row-cls" style="color:${cls.txt}">${_esc(dt.clasificacion||"")}</span>
+      </button>
       <button type="button" class="dash-row-pdf" aria-label="Exportar PDF" title="Exportar PDF" onclick="event.stopPropagation();_exportDashPDF(${i})">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
       </button>
@@ -393,7 +395,7 @@ function _showTriageDetail(dt){
     ${row("Nivel de dolor",dt.dolor!=null?`${dt.dolor}/10`:null)}
     ${row("Atendido por",dt.userName)}
     ${dt.notas?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">Notas clínicas</div><div style="font-size:.82rem;line-height:1.55">${_esc(dt.notas)}</div></div>`:""}
-    ${dt.justificacion?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">Justificación IA</div><div style="font-size:.82rem;line-height:1.55">${_esc(dt.justificacion)}</div></div>`:""}
+    ${dt.justificacion?`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="font-size:.71rem;color:var(--mu);margin-bottom:4px;font-weight:600">${dt.sinIA?"Justificación (sin IA, provisional)":"Justificación IA"}</div><div style="font-size:.82rem;line-height:1.55">${_esc(dt.justificacion)}</div></div>`:""}
     ${accionesHtml}
     ${scores.length?`<div style="margin-top:12px"><div style="font-size:.68rem;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Scores clínicos</div><div style="display:flex;gap:8px;flex-wrap:wrap">${scores.map(s=>`<div style="background:var(--bg3);border-radius:10px;padding:9px 14px;text-align:center;flex:1;min-width:64px"><div style="font-size:1.2rem;font-weight:800;color:${s.c}">${s.v}</div><div style="font-size:.65rem;color:var(--mu);margin-top:2px">${s.l}</div></div>`).join("")}</div></div>`:""}
   `;

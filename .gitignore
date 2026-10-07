@@ -27,3 +27,6 @@ desktop.ini
 *service-account*.json
 *credentials*.json
 *secret*.json
+
+# Reportes de Lighthouse CI
+.lighthouseci/

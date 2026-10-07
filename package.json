@@ -11,6 +11,7 @@
     "node": ">=20"
   },
   "devDependencies": {
+    "axe-core": "^4.14.0",
     "jspdf": "2.5.1",
     "playwright": "^1.63.0"
   }

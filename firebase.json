@@ -10,6 +10,7 @@
       "package.json",
       "tests/**",
       "docs/**",
+      "lighthouserc.json",
       "README.md",
       "firestore.rules",
       "seed-patients.mjs",

@@ -203,6 +203,27 @@ test("sin IA ni conexión el triage no se pierde: clasificación provisional y q
   await ctx.close();
 });
 
+test("accesibilidad (axe, WCAG 2 A/AA): sin fallas en las pantallas principales, tema claro y oscuro", async () => {
+  const axe = await readFile(join(RAIZ, "node_modules/axe-core/axe.min.js"), "utf8");
+  const fallas = [];
+  for (const [tema, ancho, alto] of [["dark", 390, 844], ["light", 390, 844], ["dark", 1440, 900]]) {
+    const { ctx, p } = await abrirDemo({ tema, ancho, alto });
+    await p.evaluate(t => setTheme(t), tema);
+    await p.addScriptTag({ content: axe });
+    const revisar = async nombre => {
+      await p.waitForTimeout(450);
+      const v = await p.evaluate(async () => (await axe.run(document, { runOnly: ["wcag2a", "wcag2aa"], resultTypes: ["violations"] })).violations
+        .map(x => `${x.id} (${x.impact}): ${x.nodes.slice(0, 2).map(n => n.target.join(" ")).join(", ")}`));
+      v.forEach(x => fallas.push(`${tema} ${ancho}px ${nombre} → ${x}`));
+    };
+    for (const tab of ["dash", "triage", "cola", "hc", "scores", "config"]) { await p.evaluate(t => navigateTo(t), tab); await revisar(tab); }
+    await p.evaluate(() => viewHC("demo-hc-0")); await revisar("historia clínica");
+    await p.evaluate(() => _showTriageDetail(_colaData[0])); await revisar("detalle del triage");
+    await ctx.close();
+  }
+  assert.deepEqual(fallas, []);
+});
+
 test("en computador se usa la barra lateral y nada se desborda", async () => {
   const { ctx, p, errores } = await abrirDemo({ ancho: 1440, alto: 900 });
   assert.ok(await p.isVisible(".sidebar"));

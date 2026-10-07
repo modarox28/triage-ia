@@ -39,9 +39,10 @@ La demo no pide registro: entra como administrador con pacientes ficticios, en u
 | Restablecer el PIN de un paciente sin Cloud Functions (plan gratis) | El Worker firma un JWT con una cuenta de servicio y llama a la API de administración de Firebase Auth. |
 | Buscar "rodri" y encontrar "Rodríguez" en una base que no busca texto parcial | Cada historia guarda **claves de búsqueda** normalizadas (sin tildes, prefijos de nombre y documento). |
 | Que cualquiera pueda probarla sin cuentas ni gastar cuota | **Modo demo** con un Firebase simulado en memoria y la misma interfaz real. |
-| Confiar en los cálculos clínicos | **69 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **10 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
+| Confiar en los cálculos clínicos | **69 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **11 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
 | Que no se pierda un triage si se cae internet | Sin conexión (o si la IA no responde) se calcula una **clasificación provisional** con reglas de signos vitales, NEWS2 y qSOFA; el triage se guarda en el dispositivo con un id propio y se envía solo al volver la conexión, sin duplicados. |
 | Saber quién cambió qué en un triage | Cada triage lleva un **registro de cambios** (creación, atendido, reclasificación con razón). Las reglas de Firestore solo dejan agregar entradas, nunca borrarlas. |
+| Que sea usable por todos | **axe-core** sin fallas WCAG 2 AA en todas las pantallas y **Lighthouse** en cada cambio (accesibilidad 100 en el modo demo). |
 | Funcionar bien en celular | PWA instalable, barra inferior que respeta la barra de gestos de iOS y Android, tema claro/oscuro y 6 idiomas. |
 
 ## Capturas
@@ -249,6 +250,12 @@ Usa el runner de pruebas incluido en Node. Cubre:
 - **Triage sin conexión**: la clasificación provisional en sus casos límite, y que la cola local se envíe con su hora real, sin duplicar y conservando lo que falle.
 - **Restablecimiento de PIN**: solo el personal aprobado puede hacerlo, la firma de la cuenta de servicio es válida, se marca `mustChangePin` y se respeta el límite diario.
 
+### Accesibilidad y Lighthouse
+
+- Una prueba de extremo a extremo ejecuta **axe-core** (WCAG 2 A y AA) en Inicio, Triage, Cola, Pacientes, Scores, Ajustes, la historia clínica y el detalle del triage, en tema claro y oscuro, celular y computador. Debe dar cero fallas.
+- Se puede hacer zoom con los dedos (la app ya no lo bloquea) y las filas del inicio son botones que funcionan con teclado y lector de pantalla.
+- GitHub Actions corre **Lighthouse** en el modo demo en cada cambio (`lighthouserc.json`): la accesibilidad debe ser ≥ 90 o el cambio queda marcado en rojo; rendimiento, buenas prácticas y SEO se reportan como aviso. El enlace al reporte completo aparece en el registro del job "Lighthouse".
+
 ### Pruebas de extremo a extremo
 
 ```bash
@@ -256,7 +263,7 @@ npx playwright install chromium   # solo la primera vez
 E2E_OFFLINE=1 npm run test:e2e
 ```
 
-Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido, triage sin IA ni conexión, historial de triages y PDF de la historia, registro de cambios del triage, y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
+Abren la app real en Chromium en modo demo y la usan como una persona: inicio, guía rápida, cola y detalle del triage, búsqueda de pacientes, Ajustes y cambio de tema, aviso de paciente rojo vencido, triage sin IA ni conexión, historial de triages y PDF de la historia, registro de cambios del triage, accesibilidad con axe, y vista de computador sin desbordes (`e2e/demo.e2e.js`). Con `E2E_OFFLINE=1` no se descargan los módulos de Firebase del CDN (el modo demo no los necesita), así las pruebas no dependen de internet. GitHub Actions las ejecuta en cada cambio, después de las pruebas unitarias.
 
 ### Probar en local
 
