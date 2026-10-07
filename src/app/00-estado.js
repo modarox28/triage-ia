@@ -267,7 +267,12 @@ function _renderCopilotCard(hints){return renderCopilotCard(hints);}
 function _buildTriageTimeline(qsofa,news2,si,res,elapsed){return buildTriageTimeline(TD,_triageStartTime,qsofa,news2,si,res,elapsed);}
 
 const LC={es:"ES",en:"EN",pt:"PT",fr:"FR",de:"DE",ja:"JA"};
-let CL=localStorage.getItem("ms_lang")||"es";
+// Idioma: ?lang=en en la dirección (p. ej. desde la landing en inglés) tiene prioridad y se recuerda
+let CL=(()=>{
+  const q=new URLSearchParams(location.search).get("lang");
+  if(q&&LC[q]){try{localStorage.setItem("ms_lang",q);}catch(_){}return q;}
+  try{return localStorage.getItem("ms_lang")||"es";}catch(_){return"es";}
+})();
 function t(k){return(L[CL]||L.es)[k]||k;}
 
 function setLang(lang){
