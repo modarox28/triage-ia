@@ -390,3 +390,12 @@ body.demo-on .aviso-rojo{top:calc(env(safe-area-inset-top,0px) + 36px)}
 .aviso-x{flex-shrink:0;width:32px;height:32px;border:none;border-radius:8px;background:none;color:#ffc9d3;cursor:pointer;font-size:.95rem}
 .set-ic-alert{background:rgba(255,58,92,.14);color:var(--rd)}
 @media (prefers-reduced-motion:reduce){.aviso-rojo{transition:none}.aviso-ic{animation:none}}
+/* Errores reportados (admin) */
+.err-vacio{color:var(--mu);font-size:.9rem;text-align:center;padding:14px}
+.err-item{border-bottom:1px solid var(--bd);padding:10px 2px}
+.err-item:last-child{border-bottom:none}
+.err-item summary{cursor:pointer;display:flex;flex-direction:column;gap:2px;list-style:none}
+.err-item summary::-webkit-details-marker{display:none}
+.err-item summary b{font-size:.88rem;color:var(--rd);word-break:break-word}
+.err-item summary small{font-size:.74rem;color:var(--mu)}
+.err-item pre{margin-top:8px;padding:10px;border-radius:10px;background:var(--bg3);font-family:var(--font-num);font-size:.7rem;white-space:pre-wrap;word-break:break-word;color:var(--tx);max-height:260px;overflow:auto}

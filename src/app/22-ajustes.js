@@ -143,6 +143,7 @@ function _setRefresh(){
     const on=Math.abs(parseFloat(b.dataset.zoom)-(typeof _zoomLevel!=="undefined"?_zoomLevel:1))<.01;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
   _setPills();
   if(typeof _avRefrescarAjuste==="function")_avRefrescarAjuste();
+  const er=$("setErrRow");if(er)er.style.display=CR==="admin"?"":"none";
 }
 
 // Al cambiar de idioma o país: refrescar textos y animar el saludo

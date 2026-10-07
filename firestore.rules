@@ -86,6 +86,17 @@ service cloud.firestore {
     }
 
     // ── Auditoría: solo se agregan registros, nunca se editan ─
+    // ── Errores de la app en los dispositivos (para depurar) ──
+    // Cualquier usuario con sesión puede reportar un error propio, con campos y tamaños limitados.
+    match /errorLogs/{docId} {
+      allow create: if signedIn() && ownsNew()
+        && request.resource.data.keys().hasOnly(['userId', 'role', 'msg', 'src', 'stack', 'url', 'ua', 'version', 'count', 'ts'])
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 500
+        && request.resource.data.stack is string && request.resource.data.stack.size() <= 2000;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
     match /auditLogs/{docId} {
       allow create: if signedIn() && ownsNew();
       allow read: if isAdmin();

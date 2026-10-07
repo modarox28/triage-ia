@@ -74,7 +74,8 @@ Navegador (PWA) ──► Firebase Auth / Firestore      (datos y sesiones)
 │   │   ├── 21-estadisticas.js #   Estadísticas del inicio: gráfico, tabla con porcentajes y reporte PDF
 │   │   ├── 22-ajustes.js      #   Ajustes con navegación tipo iOS: subpáginas, saludo de idioma y selectores animados
 │   │   ├── 23-guia.js         #   Guía rápida del modo demo (globos la primera vez)
-│   │   └── 24-avisos.js       #   Aviso de pacientes rojos que superan su tiempo
+│   │   ├── 24-avisos.js       #   Aviso de pacientes rojos que superan su tiempo
+│   │   └── 25-errores.js      #   Registro de errores en los dispositivos (visible para el admin)
 │   ├── styles/                # CSS por área: base, auth, layout, components, screens, clinical, queue, ios
 │   │                          #   y tema.css (estilo visual, Inicio y diseño para tablet/escritorio; se carga al final)
 │   ├── clinical/              # Motor de scores clínicos, copiloto y línea de tiempo (módulos ES)
@@ -140,6 +141,10 @@ Como Firestore no busca texto parcial, cada historia guarda `searchKeys`: los pr
 ### Aviso de pacientes rojos vencidos
 
 Mientras la app está abierta (aunque sea en segundo plano), el personal de salud recibe un aviso cuando un paciente ROJO sin atender supera su tiempo objetivo (15 min): franja roja con "Ver cola", sonido, vibración y, si se dio permiso en **Ajustes → Avisos de pacientes rojos**, una notificación del sistema que abre la cola al tocarla (`src/app/24-avisos.js`). Cada paciente avisa una vez por sesión. Con la app cerrada no llegan avisos: para eso haría falta enviar notificaciones push desde un servidor (Firebase Cloud Messaging + una función programada).
+
+### Registro de errores
+
+Los errores de JavaScript que ocurren en los dispositivos de los usuarios se guardan en la colección `errorLogs` (máximo 8 por sesión, sin repetir, sin datos clínicos ni números largos). El administrador los ve en **Ajustes → Errores reportados**, con fecha, tipo de dispositivo, rol y versión de la app (`src/app/25-errores.js`). Las reglas solo permiten crear registros propios con campos y tamaños limitados, y solo el admin puede leerlos o borrarlos.
 
 ### Recuperación del PIN de pacientes
 
