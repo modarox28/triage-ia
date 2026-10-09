@@ -19,7 +19,8 @@
       ".github/**",
       "tests-rules/**",
       "SECURITY.md",
-      ".lighthouseci/**"
+      ".lighthouseci/**",
+      "scripts/**"
     ],
     "headers": [
       {

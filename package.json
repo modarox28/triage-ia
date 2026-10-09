@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test tests/*.test.js",
     "test:e2e": "node --test --test-concurrency=1 e2e/*.e2e.js",
-    "test:rules": "npx -y firebase-tools@15 emulators:exec --only firestore --project demo-media-suite \"node --test --test-concurrency=1 tests-rules/*.test.js\""
+    "test:rules": "npx -y firebase-tools@15 emulators:exec --only firestore --project demo-media-suite \"node --test --test-concurrency=1 tests-rules/*.test.js\"",
+    "vendor": "node scripts/vendor.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -14,7 +15,7 @@
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
     "axe-core": "^4.14.0",
-    "chart.js": "4.4.0",
+    "chart.js": "4.5.1",
     "firebase": "^13.0.0",
     "jspdf": "4.2.1",
     "jsqr": "1.4.0",
