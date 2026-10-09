@@ -7,6 +7,11 @@
 //     Las cuentas pendientes, rechazadas o eliminadas no pueden usar la IA.
 //  3. Límite diario de consultas por usuario (y por IP en el modo demo),
 //     guardado en Workers KV. Así nadie puede agotar el saldo de DeepSeek.
+//  4. Límite por minuto (ráfagas) por usuario o IP, en memoria del Worker.
+//  5. Protección contra bots en el modo demo con Cloudflare Turnstile (opcional,
+//     se activa al agregar el secreto TURNSTILE_SECRET).
+//  6. Solo acepta mensajes de rol "user" con texto o una imagen JPEG/PNG pequeña,
+//     y devuelve únicamente el texto de la respuesta (no los metadatos de DeepSeek).
 //
 // Rutas:
 //  - POST /           → consulta de IA (DeepSeek).
@@ -20,6 +25,8 @@
 //    Solo lo usa /reset-pin; sin él, esa ruta responde "no configurado".
 //  - Binding de KV con nombre LIMITES: activa los límites diarios y el modo demo.
 //    Sin él, la IA solo funciona con sesión iniciada y sin límites.
+//  - Secreto TURNSTILE_SECRET (opcional): exige un desafío anti-bots de Turnstile a las
+//    consultas del modo demo. La clave pública va en TURNSTILE_SITEKEY de src/app/00-estado.js.
 
 const PROJECT_ID = "media-suite-6f432";
 const ORIGENES_PERMITIDOS = [
@@ -30,6 +37,9 @@ const ORIGENES_PERMITIDOS = [
 ];
 const MAX_TOKENS = 1000;
 const MAX_CARACTERES = 20000;
+const MAX_CUERPO = 2_000_000;          // bytes de la petición (incluye una foto de signos vitales)
+const MAX_IMAGEN = 1_500_000;          // caracteres base64 de la imagen (~1,1 MB)
+const RAFAGA_POR_MINUTO = { personal: 20, paciente: 8, demo: 5 };
 
 // Consultas de IA permitidas por día
 const LIMITE_DIARIO = {
@@ -49,17 +59,74 @@ function cabecerasCors(origen) {
   return {
     "Access-Control-Allow-Origin": origen,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Turnstile",
     "Access-Control-Expose-Headers": "X-IA-Restantes",
     "Vary": "Origin",
   };
 }
+// Cabeceras de seguridad en todas las respuestas
+const SEGURIDAD = {
+  "X-Content-Type-Options": "nosniff",
+  "Cache-Control": "no-store",
+  "Referrer-Policy": "no-referrer",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
+};
 function responder(cuerpo, estado, origen, extra = {}) {
   return new Response(JSON.stringify(cuerpo), {
     status: estado,
-    headers: { "Content-Type": "application/json", ...cabecerasCors(origen), ...extra },
+    headers: { "Content-Type": "application/json", ...SEGURIDAD, ...cabecerasCors(origen), ...extra },
   });
 }
+
+// ── Límite por minuto (en memoria de cada instancia del Worker) ──
+const rafagas = new Map();
+function dentroDeRafaga(quien, limite) {
+  const minuto = Math.floor(Date.now() / 60000);
+  const clave = quien + ":" + minuto;
+  const n = (rafagas.get(clave) || 0) + 1;
+  rafagas.set(clave, n);
+  if (rafagas.size > 5000) for (const k of rafagas.keys()) if (!k.endsWith(":" + minuto)) rafagas.delete(k);
+  return n <= limite;
+}
+
+// ── Validación de los mensajes que se envían a la IA ──
+// Solo mensajes de rol "user": texto, o texto + una imagen JPEG/PNG en base64 (signos vitales por foto).
+function validarMensajes(mensajes) {
+  if (!Array.isArray(mensajes) || mensajes.length === 0 || mensajes.length > 4) return null;
+  let caracteres = 0;
+  const limpios = [];
+  for (const m of mensajes) {
+    if (!m || m.role !== "user") return null;
+    if (typeof m.content === "string") { caracteres += m.content.length; limpios.push({ role: "user", content: m.content }); continue; }
+    if (!Array.isArray(m.content) || m.content.length > 3) return null;
+    const partes = [];
+    for (const p of m.content) {
+      if (p?.type === "text" && typeof p.text === "string") { caracteres += p.text.length; partes.push({ type: "text", text: p.text }); }
+      else if (p?.type === "image_url" && typeof p.image_url?.url === "string"
+        && /^data:image\/(jpeg|png);base64,[A-Za-z0-9+/=]+$/.test(p.image_url.url) && p.image_url.url.length <= MAX_IMAGEN) {
+        partes.push({ type: "image_url", image_url: { url: p.image_url.url } });
+      } else return null;
+    }
+    limpios.push({ role: "user", content: partes });
+  }
+  return caracteres > 0 && caracteres <= MAX_CARACTERES ? limpios : null;
+}
+
+// ── Turnstile (anti-bots del modo demo) ──
+async function verificarTurnstile(env, token, ip) {
+  if (!env.TURNSTILE_SECRET) return true;
+  if (!token || token.length > 2048) return false;
+  try {
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: ip }),
+    });
+    return (await r.json()).success === true;
+  } catch { return false; }
+}
+
 function b64urlBytes(s) {
   const b64 = s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4);
   const bin = atob(b64);
@@ -207,6 +274,7 @@ async function resetPin(request, env, origen) {
   let datos; try { datos = await request.json(); } catch { datos = {}; }
   const id = normalizarId(datos.doc);
   if (!id || id.length > 30) return responder({ error: "Número de identificación inválido." }, 400, origen);
+  if (!dentroDeRafaga("reset:" + quien.uid, Number(env.RAFAGA_POR_MINUTO) || 5)) return responder({ error: "Demasiados intentos seguidos. Espera un minuto.", code: "rate_limited" }, 429, origen, { "Retry-After": "60" });
   const cupo = await consumirCupo(env, "reset:" + quien.uid, LIMITE_RESETS_DIA, true);
   if (!cupo.ok) return responder({ error: "Alcanzaste el límite diario de restablecimientos.", code: "quota_exceeded" }, 429, origen);
 
@@ -244,13 +312,16 @@ export default {
   async fetch(request, env) {
     const origen = request.headers.get("Origin") || "";
     if (!ORIGENES_PERMITIDOS.includes(origen)) {
-      return new Response("Origen no permitido", { status: 403 });
+      return new Response("Origen no permitido", { status: 403, headers: SEGURIDAD });
     }
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: cabecerasCors(origen) });
+      return new Response(null, { status: 204, headers: { ...SEGURIDAD, ...cabecerasCors(origen) } });
     }
     if (request.method !== "POST") {
       return responder({ error: "Método no permitido" }, 405, origen);
+    }
+    if (Number(request.headers.get("Content-Length") || 0) > MAX_CUERPO) {
+      return responder({ error: "Petición demasiado grande" }, 413, origen);
     }
     if (new URL(request.url).pathname === "/reset-pin") {
       return resetPin(request, env, origen);
@@ -280,6 +351,9 @@ export default {
         return responder({ error: "Tu cuenta no tiene acceso a la IA.", code: "role_forbidden" }, 403, origen);
       }
       const esPersonal = rol !== "paciente";
+      if (!dentroDeRafaga("u:" + payload.sub, Number(env.RAFAGA_POR_MINUTO) || RAFAGA_POR_MINUTO[esPersonal ? "personal" : "paciente"])) {
+        return responder({ error: "Demasiadas consultas seguidas. Espera un minuto.", code: "rate_limited" }, 429, origen, { "Retry-After": "60" });
+      }
       cupo = await consumirCupo(env, "u:" + payload.sub, LIMITE_DIARIO[rol], !esPersonal);
     } else {
       // Sin sesión: solo el modo demo, con un cupo pequeño por IP (requiere KV)
@@ -287,6 +361,12 @@ export default {
         return responder({ error: "Inicia sesión para usar la IA.", code: "auth_required" }, 401, origen);
       }
       const ip = request.headers.get("CF-Connecting-IP") || "desconocida";
+      if (!dentroDeRafaga("ip:" + ip, Number(env.RAFAGA_POR_MINUTO) || RAFAGA_POR_MINUTO.demo)) {
+        return responder({ error: "Demasiadas consultas seguidas. Espera un minuto.", code: "rate_limited" }, 429, origen, { "Retry-After": "60" });
+      }
+      if (!(await verificarTurnstile(env, request.headers.get("X-Turnstile"), ip))) {
+        return responder({ error: "No pudimos verificar que no eres un robot. Recarga la página.", code: "bot_check_failed" }, 403, origen);
+      }
       cupo = await consumirCupo(env, "ip:" + ip, LIMITE_DIARIO.demo, true);
     }
     if (!cupo.ok) {
@@ -300,10 +380,9 @@ export default {
     } catch {
       return responder({ error: "JSON inválido" }, 400, origen);
     }
-    const mensajes = Array.isArray(datos.messages) ? datos.messages : [];
-    const largo = mensajes.reduce((n, m) => n + String(m?.content ?? "").length, 0);
-    if (mensajes.length === 0 || largo > MAX_CARACTERES) {
-      return responder({ error: "Mensaje vacío o demasiado largo" }, 400, origen);
+    const mensajes = validarMensajes(datos?.messages);
+    if (!mensajes) {
+      return responder({ error: "Mensaje vacío, demasiado largo o con un formato no permitido" }, 400, origen);
     }
 
     // 3) Llamar a DeepSeek
@@ -320,14 +399,14 @@ export default {
           messages: mensajes,
         }),
       });
-      const texto = await r.text();
       const extra = cupo.restantes === null ? {} : { "X-IA-Restantes": String(cupo.restantes) };
-      return new Response(texto, {
-        status: r.status,
-        headers: { "Content-Type": "application/json", ...cabecerasCors(origen), ...extra },
-      });
+      if (!r.ok) return responder({ error: "La IA no está disponible en este momento (" + r.status + ")." }, 502, origen, extra);
+      // Solo el texto de la respuesta: sin ids, uso de tokens ni otros metadatos del proveedor
+      const j = await r.json();
+      const contenido = String(j?.choices?.[0]?.message?.content ?? "");
+      return responder({ choices: [{ message: { content: contenido } }] }, 200, origen, extra);
     } catch (e) {
-      return responder({ error: e.message }, 502, origen);
+      return responder({ error: "No se pudo contactar a la IA. Intenta de nuevo." }, 502, origen);
     }
   },
 };

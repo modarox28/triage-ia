@@ -57,6 +57,7 @@ function renderMedActChips(){
 
 async function handleHCPhoto(input){
   const file=input.files[0];if(!file)return;
+  {const _e=_imagenPermitida(file);if(_e){toast(_e);input.value="";return;}}
   const reader=new FileReader();
   reader.onload=async(e)=>{
     hcPhoto=e.target.result;

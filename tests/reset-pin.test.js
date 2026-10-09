@@ -55,7 +55,7 @@ async function token(sub) {
   return `${h}.${p}.${firma}`;
 }
 class KV { m = new Map(); async get(k) { return this.m.get(k) ?? null; } async put(k, v) { this.m.set(k, v); } }
-const env = (extra = {}) => ({ DEEPSEEK_KEY: "x", LIMITES: new KV(), GOOGLE_SA: sa, ...extra });
+const env = (extra = {}) => ({ DEEPSEEK_KEY: "x", LIMITES: new KV(), GOOGLE_SA: sa, RAFAGA_POR_MINUTO: "1000", ...extra });
 
 async function reset({ sub, doc = "123456789", e = env() } = {}) {
   const headers = { Origin: ORIGIN, "Content-Type": "application/json" };
@@ -120,4 +120,12 @@ test("límite diario de restablecimientos por persona", async () => {
   const r = await reset({ sub: "uid-medico", e });
   assert.equal(r.status, 429);
   assert.equal(r.code, "quota_exceeded");
+});
+
+test("límite por minuto: no se pueden restablecer PIN en ráfaga", async () => {
+  const e = env({ RAFAGA_POR_MINUTO: undefined });
+  const estados = [];
+  for (let i = 0; i < 7; i++) estados.push((await reset({ sub: "uid-admin", e })).status);
+  assert.ok(estados.filter(s => s === 200).length <= 5, "máximo 5 por minuto");
+  assert.equal(estados.at(-1), 429);
 });

@@ -16,7 +16,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script type="module" src="./src/app/firebase-init.js?v=7"></script>
+<script type="module" src="./src/app/firebase-init.js?v=8"></script>
 <link rel="stylesheet" href="./src/styles/base.css?v=5">
 <link rel="stylesheet" href="./src/styles/auth.css?v=4">
 <link rel="stylesheet" href="./src/styles/layout.css?v=5">
@@ -81,7 +81,7 @@
     <div class="vitcam-sub" id="vitcamSubTxt">Fotografía el monitor y la IA extrae los valores</div>
     <img id="vitcamPreview" class="vitcam-preview" alt="preview">
     <div class="vitcam-drop" id="vitcamDrop" onclick="document.getElementById('vitcamFileIn').click()">
-      <input type="file" id="vitcamFileIn" accept="image/*" capture="environment" style="display:none" onchange="vitcamLoadImage(this)">
+      <input type="file" id="vitcamFileIn" accept="image/jpeg,image/png,image/webp" capture="environment" style="display:none" onchange="vitcamLoadImage(this)">
       <div class="vitcam-drop-ic">📷</div>
       <div class="vitcam-drop-txt" id="vitcamDropTxt">Toca para fotografiar o seleccionar imagen</div>
     </div>
@@ -757,7 +757,7 @@
       <div style="font-size:.8rem;color:var(--mu)">Toca para tomar foto o subir imagen</div>
       <div style="font-size:.7rem;color:var(--mu2);margin-top:4px">La IA puede extraer antecedentes de documentos medicos</div>
     </div>
-    <input type="file" id="hcPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleHCPhoto(this)">
+    <input type="file" id="hcPhotoInput" accept="image/jpeg,image/png,image/webp" capture="environment" style="display:none" onchange="handleHCPhoto(this)">
     <img id="hcPhotoPreview" class="photo-preview" style="display:none">
     <div id="hcPhotoAnalysis"></div>
   </div>
@@ -1136,7 +1136,7 @@
             <div class="prof-photo-wrap" onclick="document.getElementById('configPhotoInput').click()" style="cursor:pointer">
               <div class="prof-photo-av" id="configPhotoAv" style="background:var(--cy)">?</div>
               <div class="prof-photo-badge">📷</div>
-              <input type="file" id="configPhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhoto(this,'config')">
+              <input type="file" id="configPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleProfilePhoto(this,'config')">
             </div>
             <div class="set-acc-n" id="profName">—</div>
             <div class="set-acc-e" id="profEmail">—</div>
@@ -1164,7 +1164,7 @@
           <div class="prof-photo-wrap" onclick="document.getElementById('profPhotoInput').click()" style="cursor:pointer;margin-bottom:10px">
             <div class="prof-photo-av" id="profAv2" style="background:var(--cy)">?</div>
             <div class="prof-photo-badge">📷</div>
-            <input type="file" id="profPhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhoto(this,'prof')">
+            <input type="file" id="profPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleProfilePhoto(this,'prof')">
           </div>
           <div style="font-weight:700;font-size:1rem;margin-bottom:3px" id="profName2">—</div>
           <div style="font-size:.78rem;color:var(--mu);margin-bottom:10px" id="profEmail2">—</div>
@@ -1178,11 +1178,12 @@
 <button id="voiceFab" onclick="toggleVoiceMode()" aria-label="Modo voz">🎤</button>
 <div id="voiceBanner"></div>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Librerías copiadas en src/vendor (no se cargan de CDNs de terceros) -->
+<link rel="stylesheet" href="./src/vendor/leaflet/leaflet.css">
+<script src="./src/vendor/leaflet/leaflet.js"></script>
+<script src="./src/vendor/chart.umd.min.js"></script>
+<script src="./src/vendor/qrcode.min.js"></script>
+<script src="./src/vendor/jspdf.umd.min.js"></script>
 <!-- Aceptación de la política para cuentas creadas antes de esta versión -->
 <div class="modal" id="pinModal" role="dialog" aria-modal="true">
   <div class="modal-box" id="pinModalBox" style="max-width:400px"></div>
@@ -1204,21 +1205,22 @@
 </div>
 <script src="./src/app/00-iconos.js?v=20"></script>
 <script src="./src/app/00-busqueda.js?v=20"></script>
-<script src="./src/app/00-estado.js?v=24"></script>
-<script src="./src/app/01-auth.js?v=22"></script>
+<script src="./src/app/00-validacion.js?v=1"></script>
+<script src="./src/app/00-estado.js?v=25"></script>
+<script src="./src/app/01-auth.js?v=23"></script>
 <script src="./src/app/02-voz-notas.js?v=23"></script>
 <script src="./src/app/03-navegacion.js?v=20"></script>
 <script src="./src/app/04-dashboard-historial.js?v=23"></script>
-<script src="./src/app/05-perfil-qr.js?v=20"></script>
+<script src="./src/app/05-perfil-qr.js?v=21"></script>
 <script src="./src/app/06-pacientes.js?v=20"></script>
 <script src="./src/app/07-pwa.js?v=20"></script>
 <script src="./src/app/08-triage.js?v=23"></script>
 <script src="./src/app/09-medicamentos.js?v=20"></script>
 <script src="./src/app/10-init.js?v=21"></script>
 <script src="./src/app/11-dolor-sintomas.js?v=20"></script>
-<script src="./src/app/12-historia-clinica.js?v=21"></script>
+<script src="./src/app/12-historia-clinica.js?v=22"></script>
 <script src="./src/app/13-cola.js?v=21"></script>
-<script src="./src/app/14-herramientas.js?v=21"></script>
+<script src="./src/app/14-herramientas.js?v=22"></script>
 <script src="./src/app/15-mci.js?v=20"></script>
 <script src="./src/app/16-glasgow-gestos.js?v=20"></script>
 <script src="./src/app/17-scores-tablero.js?v=21"></script>

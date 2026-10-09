@@ -39,9 +39,10 @@ La demo no pide registro: entra como administrador con pacientes ficticios, en u
 | Restablecer el PIN de un paciente sin Cloud Functions (plan gratis) | El Worker firma un JWT con una cuenta de servicio y llama a la API de administración de Firebase Auth. |
 | Buscar "rodri" y encontrar "Rodríguez" en una base que no busca texto parcial | Cada historia guarda **claves de búsqueda** normalizadas (sin tildes, prefijos de nombre y documento). |
 | Que cualquiera pueda probarla sin cuentas ni gastar cuota | **Modo demo** con un Firebase simulado en memoria y la misma interfaz real. |
-| Confiar en los cálculos clínicos | **69 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **11 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
+| Confiar en los cálculos clínicos | **87 pruebas unitarias** (scores como qSOFA, NEWS2 y HEART contra sus criterios publicados, seguridad del Worker, PDF, búsqueda) y **12 pruebas de extremo a extremo** con Playwright en GitHub Actions. |
 | Que no se pierda un triage si se cae internet | Sin conexión (o si la IA no responde) se calcula una **clasificación provisional** con reglas de signos vitales, NEWS2 y qSOFA; el triage se guarda en el dispositivo con un id propio y se envía solo al volver la conexión, sin duplicados. |
 | Saber quién cambió qué en un triage | Cada triage lleva un **registro de cambios** (creación, atendido, reclasificación con razón). Las reglas de Firestore solo dejan agregar entradas, nunca borrarlas. |
+| Seguridad antes de lanzar | Revisión de los 20 controles habituales ([SECURITY.md](SECURITY.md)): reglas probadas con el emulador, CSP y cabeceras de seguridad, límites por minuto, anti-bots, validación de entradas y archivos, librerías sin CDNs de terceros y escaneo de secretos y dependencias en cada cambio. |
 | Que sea usable por todos | **axe-core** sin fallas WCAG 2 AA en todas las pantallas y **Lighthouse** en cada cambio (accesibilidad 100 en el modo demo). |
 | Funcionar bien en celular | PWA instalable, barra inferior que respeta la barra de gestos de iOS y Android, tema claro/oscuro y 6 idiomas. |
 
@@ -255,6 +256,14 @@ Usa el runner de pruebas incluido en Node. Cubre:
 - Una prueba de extremo a extremo ejecuta **axe-core** (WCAG 2 A y AA) en Inicio, Triage, Cola, Pacientes, Scores, Ajustes, la historia clínica y el detalle del triage, en tema claro y oscuro, celular y computador. Debe dar cero fallas.
 - Se puede hacer zoom con los dedos (la app ya no lo bloquea) y las filas del inicio son botones que funcionan con teclado y lector de pantalla.
 - GitHub Actions corre **Lighthouse** en el modo demo en cada cambio (`lighthouserc.json`): la accesibilidad debe ser ≥ 90 o el cambio queda marcado en rojo; rendimiento, buenas prácticas y SEO se reportan como aviso. El enlace al reporte completo aparece en el registro del job "Lighthouse".
+
+### Pruebas de las reglas de seguridad
+
+```bash
+npm run test:rules   # necesita Java 11+; descarga el emulador de Firestore la primera vez
+```
+
+Arrancan el emulador oficial de Firestore con `firestore.rules` y prueban, con usuarios de cada rol, qué pueden leer y escribir: sin sesión no hay acceso, el paciente solo ve su historia, nadie se cambia el rol ni manipula campos protegidos, los textos tienen tamaño máximo y el registro de cambios solo crece (`tests-rules/reglas.test.js`). GitHub Actions las ejecuta en cada cambio. El detalle de los 20 controles de seguridad está en [SECURITY.md](SECURITY.md).
 
 ### Pruebas de extremo a extremo
 

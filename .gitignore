@@ -30,3 +30,12 @@ desktop.ini
 
 # Reportes de Lighthouse CI
 .lighthouseci/
+
+# Secretos: nunca subir claves ni cuentas de servicio
+.env
+.env.*
+*.pem
+*.key
+*-firebase-adminsdk-*.json
+service-account*.json
+.dev.vars

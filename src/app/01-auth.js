@@ -181,11 +181,14 @@ async function doAuth(){
     await FB.setPersistence(FB.auth,persistence);
     if(isIn){await FB.signInWithEmailAndPassword(FB.auth,email,pass);}
     else{
-      const name=document.getElementById("aName").value.trim();
-      const phone=document.getElementById("aPhone")?.value.trim()||"";
-      const specialty=document.getElementById("aSpecialty")?.value.trim()||"";
+      const name=_limpiarTexto(document.getElementById("aName").value,LIMITES_TEXTO.nombre);
+      const phone=_limpiarTexto(document.getElementById("aPhone")?.value,LIMITES_TEXTO.telefono);
+      const specialty=_limpiarTexto(document.getElementById("aSpecialty")?.value,LIMITES_TEXTO.especialidad);
       if(!name){err.className="auth-err er";err.textContent="El nombre es obligatorio";return;}
       if(!phone){err.className="auth-err er";err.textContent="El teléfono es obligatorio";return;}
+      if(!_telefonoValido(phone)){err.className="auth-err er";err.textContent="Escribe un teléfono válido (solo números, espacios o +)";return;}
+      const errClave=_validarClave(pass,{correo:email,nombre:name});
+      if(errClave){err.className="auth-err er";err.textContent=errClave;return;}
       if(_staffLoginRole==="medico"&&!specialty){err.className="auth-err er";err.textContent="La especialidad es obligatoria";return;}
       if(_staffLoginRole==="admin"){err.className="auth-err er";err.textContent="Las cuentas de administrador las crea otro administrador. Regístrate como médico.";return;}
       if(!document.getElementById("aTerms")?.checked){err.className="auth-err er";err.textContent="Debes aceptar los términos de uso y la política de tratamiento de datos";return;}
@@ -272,9 +275,23 @@ async function doSignOut(){
   if(_hcUnsub){_hcUnsub();_hcUnsub=null;}_hcCache={};
   _stopRoleWatch();
   if(typeof detenerAvisos==="function")detenerAvisos();
-  if(CR==="paciente"){CR=null;CU=null;try{await FB.signOut(FB.auth);}catch(e){}showAuthScreen();return;}
+  if(CR==="paciente"){CR=null;CU=null;try{await FB.signOut(FB.auth);}catch(e){}await _borrarDatosLocales();showAuthScreen();return;}
   await logAudit("logout");
   try{await FB.signOut(FB.auth);}catch(e){showAuthScreen();}
+  await _borrarDatosLocales();
+}
+
+// Al cerrar sesión se borra la copia local de la base de datos (historias, triages) que Firestore
+// guarda en el dispositivo para funcionar sin conexión: así el siguiente usuario de un equipo
+// compartido no puede leerla. Los triages pendientes de envío se conservan (solo los puede
+// enviar quien los creó, porque las reglas exigen que userId sea el de la sesión).
+async function _borrarDatosLocales(){
+  if(window._demoMode||!FB?.terminate||!FB?.clearIndexedDbPersistence)return;
+  try{
+    await FB.terminate(FB.db);
+    await FB.clearIndexedDbPersistence(FB.db);
+  }catch(_){}
+  setTimeout(()=>location.reload(),150);
 }
 
 function dismissSplash(){

@@ -1,0 +1,25 @@
+# Configuración de gitleaks (busca claves y secretos en cada cambio).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Valores públicos por diseño o de prueba"
+regexes = [
+  # La apiKey de Firebase identifica el proyecto y es pública; la seguridad está en firestore.rules
+  '''AIzaSyAsNUBDVXaU-L7kuM8nDfuiFyZtjAdjSAo''',
+]
+paths = [
+  # Las pruebas generan claves RSA de prueba al vuelo
+  '''tests/.*\.test\.js''',
+]
+# Claves de DeepSeek que quedaron en commits antiguos: ya deben estar revocadas (ver SECURITY.md)
+commits = [
+  "268ab7b8c56a41f4cfe222783fbddecdd7390266",
+  "4ba3afac8945baad43feb22105213e6548165a0b",
+  "8a71a50420cefcaf0cb0342237b83ca84cef07be",
+  "8f9619b4da33a3ff2ff7fe7309211b73494c21a1",
+  "a0a4bffa52599257b9697c6044b24c4ef62930c0",
+  "ad3ea7c50e9ce4df616b5533a926b8b13ea4f622",
+  "c505fcbf728705a986cf42c5e74bca82b7ed6e04",
+  "cbc58e2596942f9a180d561c5920c6aa5a2df37b",
+]

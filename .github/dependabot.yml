@@ -1,0 +1,13 @@
+# Revisa cada semana si hay versiones nuevas (o con parches de seguridad) de las dependencias
+# de npm —incluidas las librerías copiadas en src/vendor— y de las acciones de GitHub.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

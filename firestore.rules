@@ -29,6 +29,19 @@ service cloud.firestore {
     }
     // Los pacientes inician sesión con una cuenta interna <ID>@pacientes.media-suite.app
     // (ID + PIN). Así solo pueden ver la historia cuyo campo "doc" es su propio ID.
+    // Validación de campos: tipos y tamaños máximos (evita datos basura o gigantes)
+    function strMax(d, campo, max) {
+      return !(campo in d) || (d[campo] is string && d[campo].size() <= max);
+    }
+    function listMax(d, campo, max) {
+      return !(campo in d) || (d[campo] is list && d[campo].size() <= max);
+    }
+    function cambiaAlguno(campos) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny(campos);
+    }
+    function soloCambia(campos) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
+    }
     function isPatientOf(data) {
       return signedIn()
         && request.auth.token.email != null
@@ -42,7 +55,10 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSelf(userId) || isStaffAdmin();
       allow create: if isSelf(userId)
-        && request.resource.data.role in ['pendiente', 'paciente'];
+        && request.resource.data.role in ['pendiente', 'paciente']
+        && !('mustChangePin' in request.resource.data) && !('pinResetBy' in request.resource.data)
+        && strMax(request.resource.data, 'name', 120) && strMax(request.resource.data, 'email', 200)
+        && strMax(request.resource.data, 'doc', 30) && strMax(request.resource.data, 'phone', 30);
       allow update: if isAdmin()
         || (isStaffAdmin()                       // admin de hospital: solo revisa solicitudes
             && resource.data.role == 'pendiente'
@@ -50,17 +66,31 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['role', 'reviewedBy', 'reviewedAt']))
         || (isSelf(userId)
-            && !request.resource.data.diff(resource.data).affectedKeys()
-                  .hasAny(['role', 'reviewedBy', 'reviewedAt', 'deletedBy', 'deletedAt', 'pinResetAt', 'pinResetBy']));
+            && !cambiaAlguno(['role', 'reviewedBy', 'reviewedAt', 'deletedBy', 'deletedAt', 'pinResetAt', 'pinResetBy', 'doc'])
+            && strMax(request.resource.data, 'name', 120) && strMax(request.resource.data, 'phone', 30)
+            && strMax(request.resource.data, 'photoBase64', 200000));
       allow delete: if isAdmin();
     }
 
     // ── Historias clínicas ────────────────────────────────────
+    function historiaValida(d) {
+      return ((d.doc is string && d.doc.size() > 0 && d.doc.size() <= 30) || d.doc is int)
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 120
+        && strMax(d, 'notes', 5000) && strMax(d, 'telefono', 30)
+        && listMax(d, 'antecedentes', 60) && listMax(d, 'alergias', 60)
+        && listMax(d, 'medicacion', 60) && listMax(d, 'searchKeys', 400);
+    }
     match /historias/{docId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid
                                     || isPatientOf(resource.data) || isClinician());
-      allow create: if signedIn() && ownsNew() && (isClinician() || isPatientOf(request.resource.data));
-      allow update, delete: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
+      allow create: if signedIn() && ownsNew() && historiaValida(request.resource.data)
+        && (isClinician() || isPatientOf(request.resource.data));
+      // Nadie cambia el dueño; el documento de identidad solo lo corrige un administrador
+      allow update: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin())
+        && historiaValida(request.resource.data)
+        && !cambiaAlguno(['userId', 'createdAt'])
+        && (isStaffAdmin() || !cambiaAlguno(['doc']));
+      allow delete: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
     }
 
     // ── Triages ───────────────────────────────────────────────
@@ -71,30 +101,45 @@ service cloud.firestore {
          request.resource.data.cambios[0:resource.data.cambios.size()] == resource.data.cambios);
     }
 
+    function triageValido(d) {
+      return d.clasificacion in ['ROJO', 'AMARILLO', 'VERDE', 'NEGRO']
+        && strMax(d, 'notas', 5000) && strMax(d, 'justificacion', 5000)
+        && strMax(d, 'pacienteNombre', 120) && strMax(d, 'pacienteDoc', 30)
+        && strMax(d, 'overrideRazon', 500) && listMax(d, 'acciones', 20)
+        && listMax(d, 'cambios', 200);
+    }
     match /triages/{docId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isClinician());
-      allow create: if isClinician() && ownsNew();
-      // Marcar como atendido o revisar la clasificación. El registro de cambios solo puede crecer:
-      // nadie puede borrar ni reescribir entradas anteriores.
-      allow update: if isClinician() && cambiosSoloCrecen();
+      // Al crearse no puede venir ya "atendido" ni con un registro de cambios inventado
+      allow create: if isClinician() && ownsNew() && triageValido(request.resource.data)
+        && (!('atendido' in request.resource.data) || request.resource.data.atendido == false)
+        && listMax(request.resource.data, 'cambios', 1);
+      // Solo se cambian los campos de atención y de revisión de la clasificación; quien lo creó
+      // puede además completar la sincronización de un triage guardado sin conexión.
+      // El registro de cambios solo puede crecer: nadie borra ni reescribe entradas anteriores.
+      allow update: if isClinician() && triageValido(request.resource.data) && cambiosSoloCrecen()
+        && (soloCambia(['atendido', 'atendidoAt', 'atendidoPor', 'clasificacion', 'overridePor',
+                        'overrideRazon', 'overrideAt', 'overrideOriginal', 'cambios'])
+            || (resource.data.userId == request.auth.uid && soloCambia(['createdAt', 'syncedAt', 'offline'])));
       allow delete: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
     }
 
     // ── Notificaciones prehospitalarias ───────────────────────
     match /prehospital/{docId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isStaffAdmin());
-      allow create: if isClinician() && ownsNew();
+      allow create: if isClinician() && ownsNew() && request.resource.data.size() <= 40;
       allow update, delete: if isStaffAdmin();
     }
 
     // ── Presencia (quién está conectado) ──────────────────────
     match /presence/{userId} {
       allow read: if isClinician();
-      allow write: if isSelf(userId);
+      allow write: if isSelf(userId)
+        && request.resource.data.keys().hasOnly(['name', 'role', 'email', 'online', 'lastSeen'])
+        && strMax(request.resource.data, 'name', 120) && strMax(request.resource.data, 'email', 200);
       allow delete: if isAdmin();          // al eliminar un perfil desde el panel
     }
 
-    // ── Auditoría: solo se agregan registros, nunca se editan ─
     // ── Errores de la app en los dispositivos (para depurar) ──
     // Cualquier usuario con sesión puede reportar un error propio, con campos y tamaños limitados.
     match /errorLogs/{docId} {
@@ -106,10 +151,18 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ── Auditoría: solo se agregan registros, nunca se editan ─
     match /auditLogs/{docId} {
-      allow create: if signedIn() && ownsNew();
+      allow create: if signedIn() && ownsNew()
+        && request.resource.data.keys().hasOnly(['userId', 'userEmail', 'userName', 'role', 'action', 'meta', 'ts'])
+        && request.resource.data.action is string && request.resource.data.action.size() <= 60;
       allow read: if isAdmin();
       allow update, delete: if false;
+    }
+  
+    // Cualquier otra colección: denegado por defecto
+    match /{otra=**} {
+      allow read, write: if false;
     }
   }
 }

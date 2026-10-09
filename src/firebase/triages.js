@@ -58,8 +58,14 @@ export async function syncOfflineQueue(FB,queue){
     const{_id,queuedAt,...data}=item;
     // createdAt = hora real del triage (no la de sincronización), para que la cola lo ordene bien
     const doc={...data,createdAt:new Date(queuedAt||Date.now()),syncedAt:FB.serverTimestamp(),offline:true};
-    try{await saveTriage(FB,doc,_id||newTriageId());}
-    catch(e){remaining.push(item);}
+    const id=_id||newTriageId();
+    try{await saveTriage(FB,doc,id);}
+    catch(e){
+      // Si ya existe (p. ej. Firestore lo envió por su cuenta) y las reglas no dejan reescribirlo, ya está guardado
+      let yaExiste=false;
+      if(e?.code==="permission-denied"&&FB.getDoc){try{yaExiste=(await FB.getDoc(FB.doc(FB.db,"triages",id))).exists();}catch(_){}}
+      if(!yaExiste)remaining.push(item);
+    }
   }
   return remaining;
 }

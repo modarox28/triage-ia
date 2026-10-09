@@ -79,6 +79,14 @@ test("reintentar el mismo triage no lo duplica y lo que falla se conserva", asyn
   assert.deepEqual(restantes.map(r => r._id), ["dos"]);
 });
 
+test("si el triage ya existe y las reglas no dejan reescribirlo, sale de la cola", async () => {
+  const FB = fakeFB();
+  FB.setDoc = async () => { const e = new Error("denegado"); e.code = "permission-denied"; throw e; };
+  FB.getDoc = async ref => ({ exists: () => ref.id === "ya-esta" });
+  const restantes = await syncOfflineQueue(FB, [{ _id: "ya-esta", queuedAt: 1 }, { _id: "no-esta", queuedAt: 2 }]);
+  assert.deepEqual(restantes.map(r => r._id), ["no-esta"]);
+});
+
 test("los ids generados tienen 20 caracteres y no se repiten", () => {
   const ids = new Set(Array.from({ length: 500 }, newTriageId));
   assert.equal(ids.size, 500);

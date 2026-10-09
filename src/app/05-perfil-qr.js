@@ -79,6 +79,7 @@ async function doChangePass(){
 
 function handleProfilePhoto(input,ctx){
   const file=input.files[0];if(!file)return;
+  {const _e=_imagenPermitida(file);if(_e){toast(_e);input.value="";return;}}
   const reader=new FileReader();
   reader.onload=e=>{
     const img=new Image();
@@ -114,7 +115,7 @@ function showPatientQR(){
     new QRCode(wrap,{text:qrVal,width:180,height:180,correctLevel:QRCode.CorrectLevel.M,colorDark:isDark?"#00c8f0":"#0099bb",colorLight:isDark?"#0b1120":"#ffffff"});
     setTimeout(()=>{const img=wrap.querySelector("img");if(img){img.style.borderRadius="10px";img.style.display="block";}},80);
   }else{
-    wrap.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrVal)}&bgcolor=${isDark?"0b1120":"ffffff"}&color=${isDark?"00c8f0":"0099bb"}" style="border-radius:10px;width:180px;height:180px;display:block">`;
+    wrap.innerHTML=`<div style="font-size:.8rem;color:var(--mu);text-align:center;padding:20px">No se pudo generar el código QR. Recarga la app.</div>`;
   }
 }
 
@@ -134,8 +135,16 @@ function showQR(){
     new QRCode(wrap,{text:QR_SECRET,width:180,height:180,correctLevel:QRCode.CorrectLevel.M,colorDark:isDark?"#00c8f0":"#0099bb",colorLight:isDark?"#0b1120":"#ffffff"});
     setTimeout(()=>{const img=wrap.querySelector("img");if(img){img.style.borderRadius="10px";img.style.display="block";}},80);
   }else{
-    wrap.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(QR_SECRET)}&bgcolor=${isDark?"0b1120":"ffffff"}&color=${isDark?"00c8f0":"0099bb"}" style="border-radius:10px;width:180px;height:180px;display:block">`;
+    wrap.innerHTML=`<div style="font-size:.8rem;color:var(--mu);text-align:center;padding:20px">No se pudo generar el código QR. Recarga la app.</div>`;
   }
+}
+
+// El QR de recepción solo abre el acceso de pacientes: la sesión siempre se inicia
+// con ID + PIN verificados por Firebase (antes el QR abría la app sin autenticación).
+function _qrAbrirAccesoPaciente(){
+  if(typeof showPatientView==="function")showPatientView();
+  setTimeout(()=>document.getElementById("patientIdInput")?.focus(),150);
+  toast("Ingresa tu número de identificación y tu PIN");
 }
 
 // QR SCAN CAMERA
@@ -156,7 +165,7 @@ async function startQR(){
           const codes=await det.detect(video);
           if(codes.length>0){
             const val=codes[0].rawValue;
-            if(val===QR_SECRET){stopQR();CR="paciente";CU={uid:"patient-qr",email:"Paciente QR",displayName:"Paciente"};showApp();}
+            if(val===QR_SECRET){stopQR();_qrAbrirAccesoPaciente();}
             else{status.style.color="var(--rd)";status.textContent="Codigo no valido. Intenta de nuevo.";}
           }
         }catch(e){}
@@ -164,7 +173,7 @@ async function startQR(){
     }else{
       // jsQR fallback
       const script=document.createElement("script");
-      script.src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js";
+      script.src="./src/vendor/jsQR.js";
       script.onload=()=>{
         const canvas=document.createElement("canvas");const ctx=canvas.getContext("2d");
         qrInt=setInterval(()=>{
@@ -173,7 +182,7 @@ async function startQR(){
             ctx.drawImage(video,0,0,canvas.width,canvas.height);
             const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
             const code=jsQR(imgData.data,imgData.width,imgData.height);
-            if(code&&code.data===QR_SECRET){stopQR();CR="paciente";CU={uid:"patient-qr",email:"Paciente QR",displayName:"Paciente"};showApp();}
+            if(code&&code.data===QR_SECRET){stopQR();_qrAbrirAccesoPaciente();}
           }
         },500);
       };

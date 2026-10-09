@@ -5,6 +5,26 @@
 const PROXY="https://triage-ia-proxy.mdq2804.workers.dev/";
 // Versión de la política de tratamiento de datos (privacidad.html). Si cambia, se pide aceptarla de nuevo.
 const CONSENT_VERSION="1.0";
+// Clave pública de Cloudflare Turnstile (anti-bots del modo demo). Vacía = desactivado.
+// Se activa junto con el secreto TURNSTILE_SECRET del Worker (ver SECURITY.md).
+const TURNSTILE_SITEKEY="";
+let _tsCarga=null;
+function _turnstileToken(){
+  if(!TURNSTILE_SITEKEY)return Promise.resolve(null);
+  _tsCarga=_tsCarga||new Promise((ok,mal)=>{
+    const s=document.createElement("script");
+    s.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";s.async=true;
+    s.onload=ok;s.onerror=()=>{_tsCarga=null;mal(new Error("No se pudo cargar la verificación anti-bots"));};
+    document.head.appendChild(s);
+  });
+  return _tsCarga.then(()=>new Promise((ok,mal)=>{
+    const box=document.createElement("div");box.style.cssText="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:99999";
+    document.body.appendChild(box);
+    const fin=()=>setTimeout(()=>box.remove(),0);
+    window.turnstile.render(box,{sitekey:TURNSTILE_SITEKEY,appearance:"interaction-only",
+      callback:t=>{fin();ok(t);},"error-callback":()=>{fin();mal(new Error("No pudimos verificar que no eres un robot"));}});
+  }));
+}
 // Llamada a la IA a través del Worker. Envía el token de la sesión de Firebase para
 // que el Worker verifique quién consulta y aplique el límite diario. En el modo demo
 // no hay token y el Worker aplica un cupo pequeño por IP.
@@ -15,8 +35,9 @@ async function _aiFetch(payload){
     const u=FB?.auth?.currentUser;
     if(u&&typeof u.getIdToken==="function")headers.Authorization="Bearer "+await u.getIdToken();
   }catch(_){}
+  if(!headers.Authorization&&TURNSTILE_SITEKEY)headers["X-Turnstile"]=await _turnstileToken();
   const r=await fetch(PROXY,{method:"POST",headers,body:JSON.stringify(payload)});
-  if(!r.ok&&[400,401,403,429,503].includes(r.status)){
+  if(!r.ok&&[400,401,403,413,429,502,503].includes(r.status)){
     let j={};try{j=await r.clone().json();}catch(_){}
     throw new Error(j.error||("La IA no está disponible ("+r.status+")"));
   }

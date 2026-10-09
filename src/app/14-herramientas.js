@@ -24,6 +24,7 @@ function closeVitcam(){document.getElementById("vitcamOverlay").classList.remove
 
 function vitcamLoadImage(input){
   const file=input.files[0];if(!file)return;
+  {const _e=_imagenPermitida(file);if(_e){toast(_e);input.value="";return;}}
   const reader=new FileReader();
   reader.onload=e=>{
     const img=document.getElementById("vitcamPreview");

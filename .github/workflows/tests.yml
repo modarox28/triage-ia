@@ -15,6 +15,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Dependencias sin vulnerabilidades altas o críticas
+        run: npm audit --audit-level=high
       - name: Scores clínicos, signos vitales, PDF y Worker de IA
         run: npm test
       - name: Instalar navegador para pruebas de extremo a extremo
@@ -23,6 +25,34 @@ jobs:
         run: npm run test:e2e
         env:
           E2E_OFFLINE: "1"
+
+  reglas:
+    name: Reglas de seguridad de Firestore (emulador)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - name: Probar firestore.rules con usuarios de cada rol
+        run: npm run test:rules
+
+  secretos:
+    name: Secretos en el código (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   lighthouse:
     name: Lighthouse (modo demo)
