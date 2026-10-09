@@ -41,7 +41,13 @@ jobs:
           java-version: 21
       - run: npm ci
       - name: Probar firestore.rules con usuarios de cada rol
-        run: npm run test:rules
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:rules 2>&1 | tee reglas.log || {
+            grep -E "not ok|Error|error:|expected|actual" reglas.log | head -40 | sed 's/^/::error::/'
+            exit 1
+          }
 
   secretos:
     name: Secretos en el código (gitleaks)
